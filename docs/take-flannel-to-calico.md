@@ -1,4 +1,4 @@
-# migrate kubernetes cluster from flannel to Calico
+# Migrate kubernetes cluster from Flannel to Calico
 
 [Source](https://projectcalico.docs.tigera.io/getting-started/kubernetes/flannel/migration-from-flannel "Permalink to Migrate a Kubernetes cluster from flannel/Canal to Calico")
 
