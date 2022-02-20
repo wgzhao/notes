@@ -74,7 +74,7 @@ markdown_extensions:
   - pymdownx.magiclink:
       repo_url_shorthand: true
       user: wgzhao
-      repo: addax
+      repo: notes
   - pymdownx.mark
   - pymdownx.smartsymbols
   - pymdownx.superfences:
@@ -90,3 +90,9 @@ markdown_extensions:
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
+
+# preview control
+use_directory_urls: true
+
+extra_javascript:
+  - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML

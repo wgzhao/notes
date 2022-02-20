@@ -1,8 +1,6 @@
-# .gitlab-ci.yml 详解
+# gitlab-ci.yml 详解
 
 本文对 GitLab CI 流水线配置文件 `.gitlab-ci.yml` 进行详细的介绍。
-
-[[_TOC_]]
 
 ## [GitLab CI介绍](#id37)
 

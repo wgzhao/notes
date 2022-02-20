@@ -4,8 +4,8 @@ Oracle JDK 是从 1.7 才开始支持 `TLSv1.2` 及以上版本，如果又不�
 解决办法如下：
 
 1. 从 [Java Archive Oracle website](https://www.oracle.com/java/technologies/javase-java-archive-javase6-downloads.html) 下载 JDK 1.6
-2. 下载 [Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6](./asset/jce_policy-6.zip)，并去目录方式解压到 JDK 1.6 的 `jre/lib/security` 目录下
-3. 下载 [bcprov-jdk15to18-165.jar](./asset/bcprov-jdk15to18-1.64.jar) 和 [bctls-jdk15to18-165.jar](./asset/bctls-jdk15to18-1.64.jarr) 两个 jar 文件并拷贝到 `${JAVA_HOME}/jre/lib/ext` 目录
+2. 下载 [Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 6](./assets/jce_policy-6.zip)，并去目录方式解压到 JDK 1.6 的 `jre/lib/security` 目录下
+3. 下载 [bcprov-jdk15to18-165.jar](./assets/bcprov-jdk15to18-1.64.jar) 和 [bctls-jdk15to18-165.jar](./assets/bctls-jdk15to18-1.64.jar) 两个 jar 文件并拷贝到 `${JAVA_HOME}/jre/lib/ext` 目录
 4. 修改 `${JAVA_HOME}/jre/lib/security/java.security` 文件，注释`security.provider`的若干行，并增加若干行，如下：
 
     ```ini
