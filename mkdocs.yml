@@ -1,0 +1,92 @@
+site_name: 个人笔记
+site_description: 记录日常工作、学习的一些文档，收藏看到好的资源等
+site_url: https://wgzhao.github.io/notes/
+site_author: wgzhao
+repo_name: wgzhao/notes
+repo_url: https://github.com/wgzhao/notes
+edit_uri: ""
+
+copyright: Copyright &copy; wgzhao
+theme:
+  name: material
+  language: zh
+  icon:
+    repo: fontawesome/brands/github
+  palette:
+    # - primary: blue
+    - scheme: default
+      toggle:
+        icon: material/toggle-switch-off-outline
+        name: Switch to dark mode
+    - scheme: slate
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to light mode
+  features:
+    - navigation.instant
+    - navigation.indexes
+    - content.code.annotate
+    - content.tabs.link
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+
+# nav:
+#   - index.md
+#   - quickstart.md
+#   - setupJob.md
+#   - debug.md
+#   - statsreport.md
+#   - transformer.md
+#   - plugin_development.md
+  
+extra:
+  version:
+    provider: mike
+  social:
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/mlsx
+    - icon: fontawesome/brands/github
+      link: https://github.com/wgzhao
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - abbr
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.magiclink:
+      repo_url_shorthand: true
+      user: wgzhao
+      repo: addax
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+     custom_fences:
+       - name: mermaid
+         class: mermaid
+         format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.snippets:
+      base_path: 
+        - docs/assets
+      check_paths: false
+  - pymdownx.tabbed
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
