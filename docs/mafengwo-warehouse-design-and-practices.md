@@ -1,4 +1,4 @@
-#马蜂窝数据仓库设计与实践
+# 马蜂窝数据仓库设计与实践
 
 [Source](https://mp.weixin.qq.com/s/r-cg-aXhp14FWgHcMY6Vdw "Permalink to 马蜂窝数据仓库设计与实践")
 
