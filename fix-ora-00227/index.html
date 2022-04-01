@@ -1,0 +1,1270 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="记录日常工作、学习的一些文档，收藏看到好的资源等">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/fix-ora-00227/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.8">
+    
+    
+      
+        <title>修复 Oracle ORA-00227 错误 - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.644de097.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.e6a45f82.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#oracle-ora-00227" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              修复 Oracle ORA-00227 错误
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="清空当前内容" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Latex%20Math%20Symbols/" class="md-nav__link">
+        Latex Math Symbols
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ambari-cli/" class="md-nav__link">
+        使用 Ambari API 来操作 Hadoop 集群
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batch-convert-word-to-pdf/" class="md-nav__link">
+        Windows 下批量转换 word 文档为 pdf 的方法
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collect-k8s-log-with-filebeat/" class="md-nav__link">
+        基于 ELK 的 日志收集与自动索引创建
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coredns-support-hosts-file/" class="md-nav__link">
+        CoreDNS 支持解析宿主机的 hosts 文件
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design-restful-api-with-python-and-flask/" class="md-nav__link">
+        使用 Python 和 Flask 设计 RESTful API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        修复 Oracle ORA-00227 错误
+      </a>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flink-cdc-practices/" class="md-nav__link">
+        Flink SQL CDC 实践以及一致性分析
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-tips/" class="md-nav__link">
+        git 不常见的操作技巧
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gitlab-ci-configuration/" class="md-nav__link">
+        gitlab-ci.yml 详解
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-dummy-rpm-package/" class="md-nav__link">
+        快速创建一个虚假 RPM 包
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-change-git-author/" class="md-nav__link">
+        How to change git author name and email
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrating-hive-with-spark/" class="md-nav__link">
+        Integrating Apache Hive with Apache Spark - HWAR
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrating-phoenix-with-kerberos/" class="md-nav__link">
+        Phoenix 集成 HBase 并支持 Kerberos 认证
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ipa-setup/" class="md-nav__link">
+        free IPA setup
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        让 Oracle JDK 1.6 TLSv1.2
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kerberos-setup/" class="md-nav__link">
+        MIT Kerberos  安装及维护手册
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kubernetes-setup/" class="md-nav__link">
+        使用 kubeadm 安装 kubernetes
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn-seaborn-with-10min/" class="md-nav__link">
+        十分钟掌握Seaborn，进阶Python数据可视化分析
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        马蜂窝数据仓库设计与实践
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../maridb-ax-setup/" class="md-nav__link">
+        MariaDB AX 安装测试简记
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matplotlib-support-chinese/" class="md-nav__link">
+        python中 matplotlib 库作图的中文显示
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-cluster-setup/" class="md-nav__link">
+        MySQL Cluster 配置
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../oracle-11g-imp-and-exp/" class="md-nav__link">
+        Oracle 11g 导入导出基本操作
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../oracle-silent-installation/" class="md-nav__link">
+        Oracle静默安装
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../osint-introduce/" class="md-nav__link">
+        超级情报手机工具库：开源验证和调查工具及使用方法
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../percona-cluster-with-haproxy/" class="md-nav__link">
+        HAProxy + Percona XtraDB Cluster 部署
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../presto-with-ssl/" class="md-nav__link">
+        Presto SSL 配置
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../programming-with-vim/" class="md-nav__link">
+        无插件Vim编程技巧
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pure-bash-bible/" class="md-nav__link">
+        Pure Bash Bible
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sed-one-line-tips/" class="md-nav__link">
+        SED单行脚本快速参考
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-tips/" class="md-nav__link">
+        SSH examples, tips and tunnels
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../take-flannel-to-calico/" class="md-nav__link">
+        Migrate kubernetes cluster from Flannel to Calico
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat-contacts-backup/" class="md-nav__link">
+        微信通讯录备份
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zookeeper-optimize/" class="md-nav__link">
+        zookeeper集群应对万级并发的调优
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_38" type="checkbox" id="__nav_38" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_38">
+          Time series analysis
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Time series analysis" data-md-level="1">
+        <label class="md-nav__title" for="__nav_38">
+          <span class="md-nav__icon md-icon"></span>
+          Time series analysis
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/01-basic/" class="md-nav__link">
+        基础篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/02-primer/" class="md-nav__link">
+        初级篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/03-advance/" class="md-nav__link">
+        进阶篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/04-practices/" class="md-nav__link">
+        应用篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/05-complete/" class="md-nav__link">
+        补完篇
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="oracle-ora-00227">修复 Oracle ORA-00227 错误<a class="headerlink" href="#oracle-ora-00227" title="Permanent link">&para;</a></h1>
+<p><a href="http://blog.itpub.net/26736162/viewspace-2652072/" title="Permalink to ORA-00227: corrupt block detected in control file: (block 16, # blocks 1)">Source</a></p>
+<p>具体报错信息为：</p>
+<div class="highlight"><pre><span></span><code> ORA-00227: corrupt block detected in control file: (block 16, # blocks 1)
+</code></pre></div>
+<p>解决的办法为：</p>
+<div class="highlight"><pre><span></span><code><span class="p">[</span><span class="n">oracle</span><span class="o">@</span><span class="n">OCPLHR</span><span class="w"> </span><span class="n">dbs</span><span class="p">]</span><span class="err">$</span><span class="w"> </span><span class="n">sas</span><span class="w"></span>
+<span class="k">SQL</span><span class="o">*</span><span class="n">Plus</span><span class="p">:</span><span class="w"> </span><span class="n">Release</span><span class="w"> </span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="n">Production</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Mon</span><span class="w"> </span><span class="n">Jul</span><span class="w"> </span><span class="mi">29</span><span class="w"> </span><span class="mi">14</span><span class="p">:</span><span class="mi">57</span><span class="p">:</span><span class="mi">47</span><span class="w"> </span><span class="mi">2019</span><span class="w"></span>
+<span class="n">Copyright</span><span class="w"> </span><span class="p">(</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="mi">1982</span><span class="p">,</span><span class="w"> </span><span class="mi">2011</span><span class="p">,</span><span class="w"> </span><span class="n">Oracle</span><span class="p">.</span><span class="w">  </span><span class="k">All</span><span class="w"> </span><span class="n">rights</span><span class="w"> </span><span class="n">reserved</span><span class="p">.</span><span class="w"></span>
+<span class="n">Connected</span><span class="w"> </span><span class="k">to</span><span class="p">:</span><span class="w"></span>
+<span class="n">Oracle</span><span class="w"> </span><span class="k">Database</span><span class="w"> </span><span class="mi">11</span><span class="k">g</span><span class="w"> </span><span class="n">Enterprise</span><span class="w"> </span><span class="n">Edition</span><span class="w"> </span><span class="n">Release</span><span class="w"> </span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">64</span><span class="nb">bit</span><span class="w"> </span><span class="n">Production</span><span class="w"></span>
+<span class="k">With</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">Partitioning</span><span class="p">,</span><span class="w"> </span><span class="n">OLAP</span><span class="p">,</span><span class="w"> </span><span class="k">Data</span><span class="w"> </span><span class="n">Mining</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nb">Real</span><span class="w"> </span><span class="n">Application</span><span class="w"> </span><span class="n">Testing</span><span class="w"> </span><span class="k">options</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">startup</span><span class="w"> </span><span class="k">force</span><span class="w"> </span>
+<span class="n">ORACLE</span><span class="w"> </span><span class="n">instance</span><span class="w"> </span><span class="n">started</span><span class="p">.</span><span class="w"></span>
+<span class="n">Total</span><span class="w"> </span><span class="k">System</span><span class="w"> </span><span class="k">Global</span><span class="w"> </span><span class="n">Area</span><span class="w">  </span><span class="mi">626327552</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">Fixed</span><span class="w"> </span><span class="k">Size</span><span class="w">                  </span><span class="mi">2230952</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Variable</span><span class="w"> </span><span class="k">Size</span><span class="w">             </span><span class="mi">553649496</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Database</span><span class="w"> </span><span class="n">Buffers</span><span class="w">           </span><span class="mi">62914560</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">Redo</span><span class="w"> </span><span class="n">Buffers</span><span class="w">                </span><span class="mi">7532544</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">00227</span><span class="p">:</span><span class="w"> </span><span class="n">corrupt</span><span class="w"> </span><span class="n">block</span><span class="w"> </span><span class="n">detected</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="n">file</span><span class="p">:</span><span class="w"> </span><span class="p">(</span><span class="n">block</span><span class="w"> </span><span class="mi">16</span><span class="p">,</span><span class="w"> </span><span class="o">#</span><span class="w"> </span><span class="n">blocks</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">00202</span><span class="p">:</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="n">file</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/control01.ctl&#39;</span><span class="w"></span>
+<span class="p">[</span><span class="n">oracle</span><span class="o">@</span><span class="n">OCPLHR</span><span class="w"> </span><span class="n">dbs</span><span class="p">]</span><span class="err">$</span><span class="w"> </span>
+<span class="p">[</span><span class="n">oracle</span><span class="o">@</span><span class="n">OCPLHR</span><span class="w"> </span><span class="n">dbs</span><span class="p">]</span><span class="err">$</span><span class="w"> </span><span class="n">cp</span><span class="w"> </span><span class="n">snapcf_OCPLHR1</span><span class="p">.</span><span class="n">f</span><span class="w"> </span><span class="o">/</span><span class="n">u01</span><span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">oracle</span><span class="o">/</span><span class="n">oradata</span><span class="o">/</span><span class="n">OCPLHR1</span><span class="o">/</span><span class="n">control01</span><span class="p">.</span><span class="n">ctl</span><span class="w"></span>
+<span class="p">[</span><span class="n">oracle</span><span class="o">@</span><span class="n">OCPLHR</span><span class="w"> </span><span class="n">dbs</span><span class="p">]</span><span class="err">$</span><span class="w"> </span><span class="n">sas</span><span class="w"></span>
+<span class="k">SQL</span><span class="o">*</span><span class="n">Plus</span><span class="p">:</span><span class="w"> </span><span class="n">Release</span><span class="w"> </span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="n">Production</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Mon</span><span class="w"> </span><span class="n">Jul</span><span class="w"> </span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">06</span><span class="p">:</span><span class="mi">26</span><span class="w"> </span><span class="mi">2019</span><span class="w"></span>
+<span class="n">Copyright</span><span class="w"> </span><span class="p">(</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="mi">1982</span><span class="p">,</span><span class="w"> </span><span class="mi">2011</span><span class="p">,</span><span class="w"> </span><span class="n">Oracle</span><span class="p">.</span><span class="w">  </span><span class="k">All</span><span class="w"> </span><span class="n">rights</span><span class="w"> </span><span class="n">reserved</span><span class="p">.</span><span class="w"></span>
+<span class="n">Connected</span><span class="w"> </span><span class="k">to</span><span class="p">:</span><span class="w"></span>
+<span class="n">Oracle</span><span class="w"> </span><span class="k">Database</span><span class="w"> </span><span class="mi">11</span><span class="k">g</span><span class="w"> </span><span class="n">Enterprise</span><span class="w"> </span><span class="n">Edition</span><span class="w"> </span><span class="n">Release</span><span class="w"> </span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">64</span><span class="nb">bit</span><span class="w"> </span><span class="n">Production</span><span class="w"></span>
+<span class="k">With</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">Partitioning</span><span class="p">,</span><span class="w"> </span><span class="n">OLAP</span><span class="p">,</span><span class="w"> </span><span class="k">Data</span><span class="w"> </span><span class="n">Mining</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nb">Real</span><span class="w"> </span><span class="n">Application</span><span class="w"> </span><span class="n">Testing</span><span class="w"> </span><span class="k">options</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">database</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="n">controlfile</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">trace</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="s1">&#39;/home/oracle/ctl.txt&#39;</span><span class="p">;</span><span class="w"></span>
+<span class="k">Database</span><span class="w"> </span><span class="n">altered</span><span class="p">.</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">startup</span><span class="w"> </span><span class="k">force</span><span class="w"> </span><span class="n">nomount</span><span class="w"></span>
+<span class="n">ORACLE</span><span class="w"> </span><span class="n">instance</span><span class="w"> </span><span class="n">started</span><span class="p">.</span><span class="w"></span>
+<span class="n">Total</span><span class="w"> </span><span class="k">System</span><span class="w"> </span><span class="k">Global</span><span class="w"> </span><span class="n">Area</span><span class="w">  </span><span class="mi">626327552</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">Fixed</span><span class="w"> </span><span class="k">Size</span><span class="w">                  </span><span class="mi">2230952</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Variable</span><span class="w"> </span><span class="k">Size</span><span class="w">             </span><span class="mi">553649496</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Database</span><span class="w"> </span><span class="n">Buffers</span><span class="w">           </span><span class="mi">62914560</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">Redo</span><span class="w"> </span><span class="n">Buffers</span><span class="w">                </span><span class="mi">7532544</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="k">CREATE</span><span class="w"> </span><span class="n">CONTROLFILE</span><span class="w"> </span><span class="n">REUSE</span><span class="w"> </span><span class="k">DATABASE</span><span class="w"> </span><span class="ss">&quot;OCPLHR1&quot;</span><span class="w"> </span><span class="n">NORESETLOGS</span><span class="w">  </span><span class="n">ARCHIVELOG</span><span class="w"></span>
+<span class="w">      </span><span class="n">MAXLOGFILES</span><span class="w"> </span><span class="mi">16</span><span class="w"></span>
+<span class="w">      </span><span class="n">MAXLOGMEMBERS</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+<span class="w">      </span><span class="n">MAXDATAFILES</span><span class="w"> </span><span class="mi">100</span><span class="w"></span>
+<span class="w">      </span><span class="n">MAXINSTANCES</span><span class="w"> </span><span class="mi">8</span><span class="w"></span>
+<span class="w">      </span><span class="n">MAXLOGHISTORY</span><span class="w"> </span><span class="mi">292</span><span class="w"></span>
+<span class="w">  </span><span class="n">LOGFILE</span><span class="w"></span>
+<span class="w">    </span><span class="k">GROUP</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/redo01.log&#39;</span><span class="w">  </span><span class="c1">--SIZE 50M BLOCKSIZE 512,</span>
+<span class="w">    </span><span class="k">GROUP</span><span class="w"> </span><span class="mi">2</span><span class="w"> </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/redo02.log&#39;</span><span class="w">  </span><span class="c1">--SIZE 50M BLOCKSIZE 512,</span>
+<span class="w">     </span><span class="k">GROUP</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/redo03.log&#39;</span><span class="w">  </span><span class="c1">--SIZE 50M BLOCKSIZE 512</span>
+<span class="w">   </span><span class="c1">-- STANDBY LOGFILE</span>
+<span class="w">   </span><span class="n">DATAFILE</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/system01.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/sysaux01.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/undotbs01.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/users01.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/example01.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/a.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/ocplhr1_test01.dbf&#39;</span><span class="p">,</span><span class="w"></span>
+<span class="w">     </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/trpdata.dbf&#39;</span><span class="w"></span>
+<span class="w">   </span><span class="nb">CHARACTER</span><span class="w"> </span><span class="k">SET</span><span class="w"> </span><span class="n">ZHS16GBK</span><span class="w"></span>
+<span class="w">   </span><span class="p">;</span><span class="w"></span>
+<span class="n">Control</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="n">created</span><span class="p">.</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">startup</span><span class="w"> </span><span class="k">force</span><span class="w"></span>
+<span class="n">ORACLE</span><span class="w"> </span><span class="n">instance</span><span class="w"> </span><span class="n">started</span><span class="p">.</span><span class="w"></span>
+<span class="n">Total</span><span class="w"> </span><span class="k">System</span><span class="w"> </span><span class="k">Global</span><span class="w"> </span><span class="n">Area</span><span class="w">  </span><span class="mi">626327552</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">Fixed</span><span class="w"> </span><span class="k">Size</span><span class="w">                  </span><span class="mi">2230952</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Variable</span><span class="w"> </span><span class="k">Size</span><span class="w">             </span><span class="mi">553649496</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Database</span><span class="w"> </span><span class="n">Buffers</span><span class="w">           </span><span class="mi">62914560</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="n">Redo</span><span class="w"> </span><span class="n">Buffers</span><span class="w">                </span><span class="mi">7532544</span><span class="w"> </span><span class="n">bytes</span><span class="w"></span>
+<span class="k">Database</span><span class="w"> </span><span class="n">mounted</span><span class="p">.</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">01113</span><span class="p">:</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="n">needs</span><span class="w"> </span><span class="n">media</span><span class="w"> </span><span class="n">recovery</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">01110</span><span class="p">:</span><span class="w"> </span><span class="k">data</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="w"> </span><span class="s1">&#39;/u01/app/oracle/oradata/OCPLHR1/system01.dbf&#39;</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">recover</span><span class="w"> </span><span class="k">database</span><span class="p">;</span><span class="w"></span>
+<span class="n">Media</span><span class="w"> </span><span class="n">recovery</span><span class="w"> </span><span class="n">complete</span><span class="p">.</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">database</span><span class="w"> </span><span class="k">open</span><span class="p">;</span><span class="w"></span>
+<span class="k">alter</span><span class="w"> </span><span class="k">database</span><span class="w"> </span><span class="k">open</span><span class="w"></span>
+<span class="o">*</span><span class="w"></span>
+<span class="n">ERROR</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="n">line</span><span class="w"> </span><span class="mi">1</span><span class="p">:</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">00603</span><span class="p">:</span><span class="w"> </span><span class="n">ORACLE</span><span class="w"> </span><span class="n">server</span><span class="w"> </span><span class="k">session</span><span class="w"> </span><span class="n">terminated</span><span class="w"> </span><span class="k">by</span><span class="w"> </span><span class="n">fatal</span><span class="w"> </span><span class="n">error</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">00600</span><span class="p">:</span><span class="w"> </span><span class="n">internal</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">arguments</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2662</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3545903</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3551857</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">12583040</span><span class="p">],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">00600</span><span class="p">:</span><span class="w"> </span><span class="n">internal</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">arguments</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2662</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3545902</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3551857</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">12583040</span><span class="p">],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">01092</span><span class="p">:</span><span class="w"> </span><span class="n">ORACLE</span><span class="w"> </span><span class="n">instance</span><span class="w"> </span><span class="n">terminated</span><span class="p">.</span><span class="w"> </span><span class="n">Disconnection</span><span class="w"> </span><span class="n">forced</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">00600</span><span class="p">:</span><span class="w"> </span><span class="n">internal</span><span class="w"> </span><span class="n">error</span><span class="w"> </span><span class="n">code</span><span class="p">,</span><span class="w"> </span><span class="n">arguments</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="mi">2662</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3545900</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">3551857</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">12583040</span><span class="p">],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[],</span><span class="w"> </span><span class="p">[]</span><span class="w"></span>
+<span class="n">Process</span><span class="w"> </span><span class="n">ID</span><span class="p">:</span><span class="w"> </span><span class="mi">14562</span><span class="w"></span>
+<span class="k">Session</span><span class="w"> </span><span class="n">ID</span><span class="p">:</span><span class="w"> </span><span class="mi">96</span><span class="w"> </span><span class="nb">Serial</span><span class="w"> </span><span class="nb">number</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">startup</span><span class="w"> </span><span class="k">force</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">24324</span><span class="p">:</span><span class="w"> </span><span class="n">service</span><span class="w"> </span><span class="n">handle</span><span class="w"> </span><span class="k">not</span><span class="w"> </span><span class="n">initialized</span><span class="w"></span>
+<span class="n">ORA</span><span class="o">-</span><span class="mi">01041</span><span class="p">:</span><span class="w"> </span><span class="n">internal</span><span class="w"> </span><span class="n">error</span><span class="p">.</span><span class="w"> </span><span class="n">hostdef</span><span class="w"> </span><span class="n">extension</span><span class="w"> </span><span class="n">doesn</span><span class="s1">&#39;t exist</span>
+<span class="s1">SYS@OCPLHR1&gt; exit</span>
+<span class="s1">Disconnected from Oracle Database 11g Enterprise Edition Release 11.2.0.3.0 - 64bit Production</span>
+<span class="s1">With the Partitioning, OLAP, Data Mining and Real Application Testing options</span>
+<span class="s1">[oracle@OCPLHR dbs]$ </span>
+<span class="s1">[oracle@OCPLHR dbs]$ </span>
+<span class="s1">[oracle@OCPLHR dbs]$ sas</span>
+<span class="s1">SQL*Plus: Release 11.2.0.3.0 Production on Mon Jul 29 15:10:44 2019</span>
+<span class="s1">Copyright (c) 1982, 2011, Oracle.  All rights reserved.</span>
+<span class="s1">Connected to an idle instance.</span>
+<span class="s1">SYS@OCPLHR1&gt; startup force</span>
+<span class="s1">ORACLE instance started.</span>
+<span class="s1">Total System Global Area  626327552 bytes</span>
+<span class="s1">Fixed Size                  2230952 bytes</span>
+<span class="s1">Variable Size             553649496 bytes</span>
+<span class="s1">Database Buffers           62914560 bytes</span>
+<span class="s1">Redo Buffers                7532544 bytes</span>
+<span class="s1">Database mounted.</span>
+<span class="s1">ORA-01113: file 1 needs media recovery</span>
+<span class="s1">ORA-01110: data file 1: &#39;</span><span class="o">/</span><span class="n">u01</span><span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">oracle</span><span class="o">/</span><span class="n">oradata</span><span class="o">/</span><span class="n">OCPLHR1</span><span class="o">/</span><span class="n">system01</span><span class="p">.</span><span class="n">dbf</span><span class="s1">&#39;</span>
+<span class="s1">SYS@OCPLHR1&gt; recover database;</span>
+<span class="s1">Media recovery complete.</span>
+<span class="s1">SYS@OCPLHR1&gt; alter database open;</span>
+<span class="s1">Database altered.</span>
+<span class="s1">SYS@OCPLHR1&gt; </span>
+<span class="s1">SYS@OCPLHR1&gt; alter system switch logfile;</span>
+<span class="s1">System altered.</span>
+<span class="s1">SYS@OCPLHR1&gt; alter system switch logfile;</span>
+<span class="s1">System altered.</span>
+<span class="s1">SYS@OCPLHR1&gt; startup force</span>
+<span class="s1">ORACLE instance started.</span>
+<span class="s1">Total System Global Area  626327552 bytes</span>
+<span class="s1">Fixed Size                  2230952 bytes</span>
+<span class="s1">Variable Size             553649496 bytes</span>
+<span class="s1">Database Buffers           62914560 bytes</span>
+<span class="s1">Redo Buffers                7532544 bytes</span>
+<span class="s1">Database mounted.</span>
+<span class="s1">Database opened.</span>
+<span class="s1">SYS@OCPLHR1&gt; exit</span>
+<span class="s1">Disconnected from Oracle Database 11g Enterprise Edition Release 11.2.0.3.0 - 64bit Production</span>
+<span class="s1">With the Partitioning, OLAP, Data Mining and Real Application Testing options</span>
+<span class="s1">[oracle@OCPLHR dbs]$ rman target /</span>
+<span class="s1">Recovery Manager: Release 11.2.0.3.0 - Production on Mon Jul 29 15:11:55 2019</span>
+<span class="s1">Copyright (c) 1982, 2011, Oracle and/or its affiliates.  All rights reserved.</span>
+<span class="s1">connected to target database: OCPLHR1 (DBID=2909198110)</span>
+<span class="s1">RMAN&gt; backup database;</span>
+<span class="s1">Starting backup at 2019-07-29 15:12:09</span>
+<span class="s1">using target database control file instead of recovery catalog</span>
+<span class="s1">allocated channel: ORA_DISK_1</span>
+<span class="s1">channel ORA_DISK_1: SID=129 device type=DISK</span>
+<span class="s1">channel ORA_DISK_1: starting full datafile backup set</span>
+<span class="s1">channel ORA_DISK_1: specifying datafile(s) in backup set</span>
+<span class="s1">input datafile file number=00001 name=/u01/app/oracle/oradata/OCPLHR1/system01.dbf</span>
+<span class="s1">input datafile file number=00002 name=/u01/app/oracle/oradata/OCPLHR1/sysaux01.dbf</span>
+<span class="s1">input datafile file number=00005 name=/u01/app/oracle/oradata/OCPLHR1/example01.dbf</span>
+<span class="s1">input datafile file number=00003 name=/u01/app/oracle/oradata/OCPLHR1/undotbs01.dbf</span>
+<span class="s1">input datafile file number=00004 name=/u01/app/oracle/oradata/OCPLHR1/users01.dbf</span>
+<span class="s1">input datafile file number=00008 name=/u01/app/oracle/oradata/OCPLHR1/trpdata.dbf</span>
+<span class="s1">input datafile file number=00006 name=/u01/app/oracle/oradata/OCPLHR1/a.dbf</span>
+<span class="s1">input datafile file number=00007 name=/u01/app/oracle/oradata/OCPLHR1/ocplhr1_test01.dbf</span>
+<span class="s1">channel ORA_DISK_1: starting piece 1 at 2019-07-29 15:12:11</span>
+<span class="s1">channel ORA_DISK_1: finished piece 1 at 2019-07-29 15:13:46</span>
+<span class="s1">piece handle=/u01/app/oracle/fast_recovery_area/OCPLHR1/backupset/2019_07_29/o1_mf_nnndf_TAG20190729T151210_gmx72cd9_.bkp tag=TAG20190729T151210 comment=NONE</span>
+<span class="s1">channel ORA_DISK_1: backup set complete, elapsed time: 00:01:35</span>
+<span class="s1">channel ORA_DISK_1: starting full datafile backup set</span>
+<span class="s1">channel ORA_DISK_1: specifying datafile(s) in backup set</span>
+<span class="s1">including current control file in backup set</span>
+<span class="s1">including current SPFILE in backup set</span>
+<span class="s1">channel ORA_DISK_1: starting piece 1 at 2019-07-29 15:13:47</span>
+<span class="s1">channel ORA_DISK_1: finished piece 1 at 2019-07-29 15:13:48</span>
+<span class="s1">piece handle=/u01/app/oracle/fast_recovery_area/OCPLHR1/backupset/2019_07_29/o1_mf_ncsnf_TAG20190729T151210_gmx75chn_.bkp tag=TAG20190729T151210 comment=NONE</span>
+<span class="s1">channel ORA_DISK_1: backup set complete, elapsed time: 00:00:01</span>
+<span class="s1">Finished backup at 2019-07-29 15:13:48</span>
+<span class="s1">RMAN&gt; sql &#39;</span><span class="k">alter</span><span class="w"> </span><span class="k">system</span><span class="w"> </span><span class="n">switch</span><span class="w"> </span><span class="n">logfile</span><span class="err">&#39;</span><span class="p">;</span><span class="w"></span>
+<span class="k">sql</span><span class="w"> </span><span class="k">statement</span><span class="p">:</span><span class="w"> </span><span class="k">alter</span><span class="w"> </span><span class="k">system</span><span class="w"> </span><span class="n">switch</span><span class="w"> </span><span class="n">logfile</span><span class="w"></span>
+<span class="n">RMAN</span><span class="o">&gt;</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="n">archivelog</span><span class="w"> </span><span class="k">all</span><span class="w"> </span><span class="p">;</span><span class="w"></span>
+<span class="n">Starting</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">18</span><span class="w"></span>
+<span class="k">current</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">archived</span><span class="w"></span>
+<span class="k">using</span><span class="w"> </span><span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">specifying</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909024</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">2</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">2</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909024</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">3</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">3</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909024</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">4</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">4</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909073</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">5</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">5</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909090</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">6</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">6</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909092</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">7</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">7</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909108</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">8</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">8</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909304</span><span class="w"></span>
+<span class="k">input</span><span class="w"> </span><span class="n">archived</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">thread</span><span class="o">=</span><span class="mi">1</span><span class="w"> </span><span class="n">sequence</span><span class="o">=</span><span class="mi">9</span><span class="w"> </span><span class="n">RECID</span><span class="o">=</span><span class="mi">9</span><span class="w"> </span><span class="n">STAMP</span><span class="o">=</span><span class="mi">1014909318</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="n">piece</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">18</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">finished</span><span class="w"> </span><span class="n">piece</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">19</span><span class="w"></span>
+<span class="n">piece</span><span class="w"> </span><span class="n">handle</span><span class="o">=/</span><span class="n">u01</span><span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">oracle</span><span class="o">/</span><span class="n">fast_recovery_area</span><span class="o">/</span><span class="n">OCPLHR1</span><span class="o">/</span><span class="n">backupset</span><span class="o">/</span><span class="mi">2019</span><span class="n">_07_29</span><span class="o">/</span><span class="n">o1_mf_annnn_TAG20190729T151518_gmx786b1_</span><span class="p">.</span><span class="n">bkp</span><span class="w"> </span><span class="n">tag</span><span class="o">=</span><span class="n">TAG20190729T151518</span><span class="w"> </span><span class="k">comment</span><span class="o">=</span><span class="k">NONE</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">complete</span><span class="p">,</span><span class="w"> </span><span class="n">elapsed</span><span class="w"> </span><span class="k">time</span><span class="p">:</span><span class="w"> </span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="w"></span>
+<span class="n">Finished</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">19</span><span class="w"></span>
+<span class="n">RMAN</span><span class="o">&gt;</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">current</span><span class="w"> </span><span class="n">controlfile</span><span class="p">;</span><span class="w"></span>
+<span class="n">Starting</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">36</span><span class="w"></span>
+<span class="k">using</span><span class="w"> </span><span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="k">full</span><span class="w"> </span><span class="n">datafile</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">specifying</span><span class="w"> </span><span class="n">datafile</span><span class="p">(</span><span class="n">s</span><span class="p">)</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"></span>
+<span class="k">including</span><span class="w"> </span><span class="k">current</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="n">file</span><span class="w"> </span><span class="k">in</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">starting</span><span class="w"> </span><span class="n">piece</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">37</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">finished</span><span class="w"> </span><span class="n">piece</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">38</span><span class="w"></span>
+<span class="n">piece</span><span class="w"> </span><span class="n">handle</span><span class="o">=/</span><span class="n">u01</span><span class="o">/</span><span class="n">app</span><span class="o">/</span><span class="n">oracle</span><span class="o">/</span><span class="n">fast_recovery_area</span><span class="o">/</span><span class="n">OCPLHR1</span><span class="o">/</span><span class="n">backupset</span><span class="o">/</span><span class="mi">2019</span><span class="n">_07_29</span><span class="o">/</span><span class="n">o1_mf_ncnnf_TAG20190729T151536_gmx78swd_</span><span class="p">.</span><span class="n">bkp</span><span class="w"> </span><span class="n">tag</span><span class="o">=</span><span class="n">TAG20190729T151536</span><span class="w"> </span><span class="k">comment</span><span class="o">=</span><span class="k">NONE</span><span class="w"></span>
+<span class="n">channel</span><span class="w"> </span><span class="n">ORA_DISK_1</span><span class="p">:</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">set</span><span class="w"> </span><span class="n">complete</span><span class="p">,</span><span class="w"> </span><span class="n">elapsed</span><span class="w"> </span><span class="k">time</span><span class="p">:</span><span class="w"> </span><span class="mi">00</span><span class="p">:</span><span class="mi">00</span><span class="p">:</span><span class="mi">01</span><span class="w"></span>
+<span class="n">Finished</span><span class="w"> </span><span class="n">backup</span><span class="w"> </span><span class="k">at</span><span class="w"> </span><span class="mi">2019</span><span class="o">-</span><span class="mi">07</span><span class="o">-</span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">38</span><span class="w"></span>
+<span class="n">RMAN</span><span class="o">&gt;</span><span class="w"> </span><span class="n">exit</span><span class="w"></span>
+<span class="n">Recovery</span><span class="w"> </span><span class="n">Manager</span><span class="w"> </span><span class="n">complete</span><span class="p">.</span><span class="w"></span>
+<span class="p">[</span><span class="n">oracle</span><span class="o">@</span><span class="n">OCPLHR</span><span class="w"> </span><span class="n">dbs</span><span class="p">]</span><span class="err">$</span><span class="w"> </span><span class="n">sas</span><span class="w"></span>
+<span class="k">SQL</span><span class="o">*</span><span class="n">Plus</span><span class="p">:</span><span class="w"> </span><span class="n">Release</span><span class="w"> </span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="n">Production</span><span class="w"> </span><span class="k">on</span><span class="w"> </span><span class="n">Mon</span><span class="w"> </span><span class="n">Jul</span><span class="w"> </span><span class="mi">29</span><span class="w"> </span><span class="mi">15</span><span class="p">:</span><span class="mi">15</span><span class="p">:</span><span class="mi">44</span><span class="w"> </span><span class="mi">2019</span><span class="w"></span>
+<span class="n">Copyright</span><span class="w"> </span><span class="p">(</span><span class="k">c</span><span class="p">)</span><span class="w"> </span><span class="mi">1982</span><span class="p">,</span><span class="w"> </span><span class="mi">2011</span><span class="p">,</span><span class="w"> </span><span class="n">Oracle</span><span class="p">.</span><span class="w">  </span><span class="k">All</span><span class="w"> </span><span class="n">rights</span><span class="w"> </span><span class="n">reserved</span><span class="p">.</span><span class="w"></span>
+<span class="n">Connected</span><span class="w"> </span><span class="k">to</span><span class="p">:</span><span class="w"></span>
+<span class="n">Oracle</span><span class="w"> </span><span class="k">Database</span><span class="w"> </span><span class="mi">11</span><span class="k">g</span><span class="w"> </span><span class="n">Enterprise</span><span class="w"> </span><span class="n">Edition</span><span class="w"> </span><span class="n">Release</span><span class="w"> </span><span class="mi">11</span><span class="p">.</span><span class="mi">2</span><span class="p">.</span><span class="mi">0</span><span class="p">.</span><span class="mi">3</span><span class="p">.</span><span class="mi">0</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="mi">64</span><span class="nb">bit</span><span class="w"> </span><span class="n">Production</span><span class="w"></span>
+<span class="k">With</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">Partitioning</span><span class="p">,</span><span class="w"> </span><span class="n">OLAP</span><span class="p">,</span><span class="w"> </span><span class="k">Data</span><span class="w"> </span><span class="n">Mining</span><span class="w"> </span><span class="k">and</span><span class="w"> </span><span class="nb">Real</span><span class="w"> </span><span class="n">Application</span><span class="w"> </span><span class="n">Testing</span><span class="w"> </span><span class="k">options</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"> </span><span class="n">archive</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">list</span><span class="p">;</span><span class="w"></span>
+<span class="k">Database</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="k">mode</span><span class="w">              </span><span class="n">Archive</span><span class="w"> </span><span class="k">Mode</span><span class="w"></span>
+<span class="n">Automatic</span><span class="w"> </span><span class="n">archival</span><span class="w">             </span><span class="n">Enabled</span><span class="w"></span>
+<span class="n">Archive</span><span class="w"> </span><span class="n">destination</span><span class="w">            </span><span class="n">USE_DB_RECOVERY_FILE_DEST</span><span class="w"></span>
+<span class="n">Oldest</span><span class="w"> </span><span class="n">online</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">sequence</span><span class="w">     </span><span class="mi">8</span><span class="w"></span>
+<span class="k">Next</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">sequence</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="n">archive</span><span class="w">   </span><span class="mi">10</span><span class="w"></span>
+<span class="k">Current</span><span class="w"> </span><span class="n">log</span><span class="w"> </span><span class="n">sequence</span><span class="w">           </span><span class="mi">10</span><span class="w"></span>
+<span class="n">SYS</span><span class="o">@</span><span class="n">OCPLHR1</span><span class="o">&gt;</span><span class="w"></span>
+</code></pre></div>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            回到页面顶部
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="页脚">
+      
+        
+        <a href="../design-restful-api-with-python-and-flask/" class="md-footer__link md-footer__link--prev" aria-label="上一页: 使用 Python 和 Flask 设计 RESTful API" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              使用 Python 和 Flask 设计 RESTful API
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../flink-cdc-practices/" class="md-footer__link md-footer__link--next" aria-label="下一页: Flink SQL CDC 实践以及一致性分析" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              Flink SQL CDC 实践以及一致性分析
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.indexes", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest"], "search": "../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c44cc438.min.js"></script>
+      
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+    
+  </body>
+</html>

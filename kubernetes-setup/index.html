@@ -1,0 +1,2152 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="记录日常工作、学习的一些文档，收藏看到好的资源等">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/kubernetes-setup/">
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.3.0, mkdocs-material-8.2.8">
+    
+    
+      
+        <title>使用 kubeadm 安装 kubernetes - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.644de097.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.e6a45f82.min.css">
+        
+      
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent="">
+  
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&"object"==typeof palette.color)for(var key of Object.keys(palette.color))document.body.setAttribute("data-md-color-"+key,palette.color[key])</script>
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#kubeadm-kubernetes" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-component="outdated" hidden>
+        <aside class="md-banner md-banner--warning">
+          
+        </aside>
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href=".." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              使用 kubeadm 安装 kubernetes
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      <form class="md-header__option" data-md-component="palette">
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_1">
+          
+            <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_2" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6zm0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4zM7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+            </label>
+          
+        
+          
+          
+          <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="" data-md-color-accent=""  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_2">
+          
+            <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_1" hidden>
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3z"/></svg>
+            </label>
+          
+        
+      </form>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7 0-.24-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91 1.61 0 2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08z"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" aria-label="清空当前内容" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+<nav class="md-nav md-nav--primary" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54z"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        Home
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../Latex%20Math%20Symbols/" class="md-nav__link">
+        Latex Math Symbols
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ambari-cli/" class="md-nav__link">
+        使用 Ambari API 来操作 Hadoop 集群
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batch-convert-word-to-pdf/" class="md-nav__link">
+        Windows 下批量转换 word 文档为 pdf 的方法
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../collect-k8s-log-with-filebeat/" class="md-nav__link">
+        基于 ELK 的 日志收集与自动索引创建
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../coredns-support-hosts-file/" class="md-nav__link">
+        CoreDNS 支持解析宿主机的 hosts 文件
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design-restful-api-with-python-and-flask/" class="md-nav__link">
+        使用 Python 和 Flask 设计 RESTful API
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../fix-ora-00227/" class="md-nav__link">
+        修复 Oracle ORA-00227 错误
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flink-cdc-practices/" class="md-nav__link">
+        Flink SQL CDC 实践以及一致性分析
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-tips/" class="md-nav__link">
+        git 不常见的操作技巧
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../gitlab-ci-configuration/" class="md-nav__link">
+        gitlab-ci.yml 详解
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-dummy-rpm-package/" class="md-nav__link">
+        快速创建一个虚假 RPM 包
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-change-git-author/" class="md-nav__link">
+        How to change git author name and email
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrating-hive-with-spark/" class="md-nav__link">
+        Integrating Apache Hive with Apache Spark - HWAR
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrating-phoenix-with-kerberos/" class="md-nav__link">
+        Phoenix 集成 HBase 并支持 Kerberos 认证
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ipa-setup/" class="md-nav__link">
+        free IPA setup
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        让 Oracle JDK 1.6 TLSv1.2
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kerberos-setup/" class="md-nav__link">
+        MIT Kerberos  安装及维护手册
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" data-md-toggle="toc" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          使用 kubeadm 安装 kubernetes
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        使用 kubeadm 安装 kubernetes
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    主机列表
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    操作系统及磁盘说明
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keepalived-haproxy" class="md-nav__link">
+    keepalived + haproxy 安装
+  </a>
+  
+    <nav class="md-nav" aria-label="keepalived + haproxy 安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keepalived" class="md-nav__link">
+    keepalived
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haproxy" class="md-nav__link">
+    haproxy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubernetes" class="md-nav__link">
+    kubernetes 安装
+  </a>
+  
+    <nav class="md-nav" aria-label="kubernetes 安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    部署环境说明
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    集群架构及部署准备
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    安装和配置 Docker
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes_1" class="md-nav__link">
+    准备 kubernetes 所需的镜像
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubadm-kubelet-kubectl" class="md-nav__link">
+    安装 kubadm, kubelet, kubectl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master" class="md-nav__link">
+    安装 master
+  </a>
+  
+    <nav class="md-nav" aria-label="安装 master">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kubeadm" class="md-nav__link">
+    创建kubeadm配置文件
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master_1" class="md-nav__link">
+    初始化 master 节点
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    安装集群网络
+  </a>
+  
+    <nav class="md-nav" aria-label="安装集群网络">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flannel" class="md-nav__link">
+    获取 flannel 的配置文件
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    安装
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    检测安装是否成功
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    其他节点加入集群
+  </a>
+  
+    <nav class="md-nav" aria-label="其他节点加入集群">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    检查结果
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node" class="md-nav__link">
+    node 加入集群
+  </a>
+  
+    <nav class="md-nav" aria-label="node 加入集群">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    检查结果
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master-node" class="md-nav__link">
+    master 节点也做为node 节点加入
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    后续扩容
+  </a>
+  
+    <nav class="md-nav" aria-label="后续扩容">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    增加 worker  节点
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master_2" class="md-nav__link">
+    增加 master 节点
+  </a>
+  
+    <nav class="md-nav" aria-label="增加 master 节点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#certificate-key" class="md-nav__link">
+    创建 certificate key
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn-seaborn-with-10min/" class="md-nav__link">
+        十分钟掌握Seaborn，进阶Python数据可视化分析
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        马蜂窝数据仓库设计与实践
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../maridb-ax-setup/" class="md-nav__link">
+        MariaDB AX 安装测试简记
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matplotlib-support-chinese/" class="md-nav__link">
+        python中 matplotlib 库作图的中文显示
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-cluster-setup/" class="md-nav__link">
+        MySQL Cluster 配置
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../oracle-11g-imp-and-exp/" class="md-nav__link">
+        Oracle 11g 导入导出基本操作
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../oracle-silent-installation/" class="md-nav__link">
+        Oracle静默安装
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../osint-introduce/" class="md-nav__link">
+        超级情报手机工具库：开源验证和调查工具及使用方法
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../percona-cluster-with-haproxy/" class="md-nav__link">
+        HAProxy + Percona XtraDB Cluster 部署
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../presto-with-ssl/" class="md-nav__link">
+        Presto SSL 配置
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../programming-with-vim/" class="md-nav__link">
+        无插件Vim编程技巧
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pure-bash-bible/" class="md-nav__link">
+        Pure Bash Bible
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sed-one-line-tips/" class="md-nav__link">
+        SED单行脚本快速参考
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-tips/" class="md-nav__link">
+        SSH examples, tips and tunnels
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../take-flannel-to-calico/" class="md-nav__link">
+        Migrate kubernetes cluster from Flannel to Calico
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat-contacts-backup/" class="md-nav__link">
+        微信通讯录备份
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zookeeper-optimize/" class="md-nav__link">
+        zookeeper集群应对万级并发的调优
+      </a>
+    </li>
+  
+
+    
+      
+      
+      
+
+  
+  
+  
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+      
+        <input class="md-nav__toggle md-toggle" data-md-toggle="__nav_38" type="checkbox" id="__nav_38" >
+      
+      
+      
+        
+          
+        
+          
+        
+          
+        
+          
+        
+          
+        
+      
+      
+        <label class="md-nav__link" for="__nav_38">
+          Time series analysis
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <nav class="md-nav" aria-label="Time series analysis" data-md-level="1">
+        <label class="md-nav__title" for="__nav_38">
+          <span class="md-nav__icon md-icon"></span>
+          Time series analysis
+        </label>
+        <ul class="md-nav__list" data-md-scrollfix>
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/01-basic/" class="md-nav__link">
+        基础篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/02-primer/" class="md-nav__link">
+        初级篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/03-advance/" class="md-nav__link">
+        进阶篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/04-practices/" class="md-nav__link">
+        应用篇
+      </a>
+    </li>
+  
+
+            
+          
+            
+              
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/05-complete/" class="md-nav__link">
+        补完篇
+      </a>
+    </li>
+  
+
+            
+          
+        </ul>
+      </nav>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="目录">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      目录
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    主机列表
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    操作系统及磁盘说明
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#keepalived-haproxy" class="md-nav__link">
+    keepalived + haproxy 安装
+  </a>
+  
+    <nav class="md-nav" aria-label="keepalived + haproxy 安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#keepalived" class="md-nav__link">
+    keepalived
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#haproxy" class="md-nav__link">
+    haproxy
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#kubernetes" class="md-nav__link">
+    kubernetes 安装
+  </a>
+  
+    <nav class="md-nav" aria-label="kubernetes 安装">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    部署环境说明
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    集群架构及部署准备
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#docker" class="md-nav__link">
+    安装和配置 Docker
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubernetes_1" class="md-nav__link">
+    准备 kubernetes 所需的镜像
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#kubadm-kubelet-kubectl" class="md-nav__link">
+    安装 kubadm, kubelet, kubectl
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master" class="md-nav__link">
+    安装 master
+  </a>
+  
+    <nav class="md-nav" aria-label="安装 master">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#kubeadm" class="md-nav__link">
+    创建kubeadm配置文件
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master_1" class="md-nav__link">
+    初始化 master 节点
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    安装集群网络
+  </a>
+  
+    <nav class="md-nav" aria-label="安装集群网络">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#flannel" class="md-nav__link">
+    获取 flannel 的配置文件
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    安装
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_7" class="md-nav__link">
+    检测安装是否成功
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#_8" class="md-nav__link">
+    其他节点加入集群
+  </a>
+  
+    <nav class="md-nav" aria-label="其他节点加入集群">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_9" class="md-nav__link">
+    检查结果
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#node" class="md-nav__link">
+    node 加入集群
+  </a>
+  
+    <nav class="md-nav" aria-label="node 加入集群">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#_10" class="md-nav__link">
+    检查结果
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master-node" class="md-nav__link">
+    master 节点也做为node 节点加入
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_11" class="md-nav__link">
+    后续扩容
+  </a>
+  
+    <nav class="md-nav" aria-label="后续扩容">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    增加 worker  节点
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#master_2" class="md-nav__link">
+    增加 master 节点
+  </a>
+  
+    <nav class="md-nav" aria-label="增加 master 节点">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#certificate-key" class="md-nav__link">
+    创建 certificate key
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          <div class="md-content" data-md-component="content">
+            <article class="md-content__inner md-typeset">
+              
+                
+
+
+<h1 id="kubeadm-kubernetes">使用 kubeadm 安装 kubernetes<a class="headerlink" href="#kubeadm-kubernetes" title="Permanent link">&para;</a></h1>
+<p>这里描述如何使用 kubeadm 工具来安装 kubernetes v1.23, 官方也有<a href="https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/">类似文档</a> ，但觉得不够详细</p>
+<h2 id="_1">主机列表<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p>本次安装有如下服务器，信息如下：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>IP 地址</th>
+<th>操作系统</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>node27.k8s.wgzhao.com</td>
+<td>192.168.23.27</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>node28.k8s.wgzhao.com</td>
+<td>192.168.23.28</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>node29.k8s.wgzhao.com</td>
+<td>192.168.23.29</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>node30.k8s.wgzhao.com</td>
+<td>192.168.23.30</td>
+<td>CentOS 7.9</td>
+</tr>
+<tr>
+<td>node31.k8s.wgzhao.com</td>
+<td>192.168.23.31</td>
+<td>CentOS 7.9</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_2">操作系统及磁盘说明<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>系统为最小安装模式进行安装，然后额外必要的软件包</li>
+<li>禁用了 <code>swap</code>， 这是 docker 要求的</li>
+<li>配置好 epel, docker-ce, kubernetes 仓库，这部分可以自行 Google</li>
+<li>开启 <code>node27</code> 到所有节点（包括自身) 的 ssh 密钥登录，使用root。</li>
+</ol>
+<h2 id="keepalived-haproxy">keepalived + haproxy 安装<a class="headerlink" href="#keepalived-haproxy" title="Permanent link">&para;</a></h2>
+<p>为了保证核心组件的高可用以及提供负载均衡能力，在<code>node27</code> - <code>node29</code> 三个节点上部署了 <code>keepalived</code> + <code>haproxy</code> 作为高可用方案。</p>
+<p>其中浮动IP地址(VIP) 为 <code>192.168.23.32</code>, 配置说明如下：</p>
+<h3 id="keepalived">keepalived<a class="headerlink" href="#keepalived" title="Permanent link">&para;</a></h3>
+<p><code>node27</code> 节点作为 <code>keepalived</code> 的 master，配置文件在 <code>/etc/keepalived/keepalived.conf</code> ，内容如下：</p>
+<div class="highlight"><pre><span></span><code>! /etc/keepalived/keepalived.conf
+! Configuration File for keepalived
+global_defs {
+    router_id k8s
+}
+vrrp_script check_haproxy {
+  script &quot;killall -0 haproxy&quot;
+  interval 3
+  weight -2
+  fall 10
+  rise 2
+}
+
+vrrp_instance VI_1 {
+    state MASTER
+    interface bond0
+    virtual_router_id 51
+    priority 250
+    authentication {
+        auth_type PASS
+        auth_pass ZAXRUlay
+    }
+    virtual_ipaddress {
+        192.168.23.32
+    }
+    track_script {
+        check_haproxy
+    }
+}
+</code></pre></div>
+<p><code>node28</code>, <code>node29</code> 两个节点作为 keepalived 的 BACKUP， 其配置文件内如下：</p>
+<div class="highlight"><pre><span></span><code>! /etc/keepalived/keepalived.conf
+! Configuration File for keepalived
+global_defs {
+    router_id k8s
+}
+vrrp_script check_haproxy {
+  script &quot;killall -0 haproxy&quot;
+  interval 3
+  weight -2
+  fall 10
+  rise 2
+}
+
+vrrp_instance VI_1 {
+    state BACKUP
+    interface bond0
+    virtual_router_id 51
+    priority 200
+    authentication {
+        auth_type PASS
+        auth_pass ZAXRUlay
+    }
+    virtual_ipaddress {
+        192.168.23.32
+    }
+    track_script {
+        check_haproxy
+    }
+}
+</code></pre></div>
+<p>注： 两个节点的配置仅有 <code>priority 200</code> 处不同，<code>node29</code> 的配置为 <code>priority 150</code>.</p>
+<h3 id="haproxy">haproxy<a class="headerlink" href="#haproxy" title="Permanent link">&para;</a></h3>
+<p><code>haproxy</code> 在三个节点上的配置都相同，配置文件位于 <code>/etc/haproxy/haproxy.cfg</code> </p>
+<div class="highlight"><pre><span></span><code>global
+  log 127.0.0.1    local2
+  chroot /var/lib/haproxy
+  pidfile /var/run/haproxy.pid
+  maxconn 4000
+  user haproxy
+  group haproxy
+  daemon
+
+defaults
+  log global
+  mode http
+  option dontlognull
+  timeout connect 5000ms
+  timeout client 600000ms
+  timeout server 600000ms
+
+listen stats
+    bind :19090
+    mode http
+    balance
+    stats uri /haproxy_stats
+    stats auth admin:admin@123!
+    stats admin if TRUE
+
+frontend kube-apiserver
+   mode tcp
+   option tcplog
+   bind *:8443
+   default_backend kube-apiserver-backend
+
+backend kube-apiserver-backend
+    mode tcp
+    balance roundrobin
+    server node27.k8s.wgzhao.com node27:6443 check
+    server node28.k8s.wgzhao.com node28:6443 check
+    server node29.k8s.wgzhao.com node29:6443 check
+</code></pre></div>
+<h2 id="kubernetes">kubernetes 安装<a class="headerlink" href="#kubernetes" title="Permanent link">&para;</a></h2>
+<h3 id="_3">部署环境说明<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<p>我们使用 <code>kubeadm</code> 搭建一个高可用的k8s集群，高可用主要体现在对 <code>master</code>节点组件及 <code>etcd</code> 存储的高可用，本次部署使用到的服务器 IP 及角色对应如下：</p>
+<table>
+<thead>
+<tr>
+<th>主机名称</th>
+<th>IP 地址</th>
+<th>角色</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>node.k8s.wgzhao.com</td>
+<td>192.168.23.32</td>
+<td>VIP</td>
+</tr>
+<tr>
+<td>node27.k8s.wgzhao.com</td>
+<td>192.168.23.27</td>
+<td>master/node</td>
+</tr>
+<tr>
+<td>node28.k8s.wgzhao.com</td>
+<td>192.168.23.28</td>
+<td>master/node</td>
+</tr>
+<tr>
+<td>node29.k8s.wgzhao.com</td>
+<td>192.168.23.29</td>
+<td>master/node</td>
+</tr>
+<tr>
+<td>node30.k8s.wgzhao.com</td>
+<td>192.168.23.30</td>
+<td>node</td>
+</tr>
+<tr>
+<td>node31.k8s.wgzhao.com</td>
+<td>192.168.23.31</td>
+<td>node</td>
+</tr>
+</tbody>
+</table>
+<h3 id="_4">集群架构及部署准备<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>搭建三个 master 通过 <code>keepalived</code> 提供一个 <code>vip</code> 实现高可用，并且添加 <code>haproxy</code>来为 <code>apiserver</code> 提供反向代理的作用。
+这样来自 <code>haproxy</code> 的所有请求都将轮询转发到后端的 <code>master</code> 节点上。应架构图如下所示：</p>
+<p><img alt="k8s-arch" src="../images/k8s-arch.jpg" /></p>
+<p>在安装之前要提前做好以下事情：</p>
+<ol>
+<li>修改hosts文件，保证每个节点都能 ping 通设定的主机名</li>
+<li>所有主机的时间必须同步，配置并开启 <code>ntpd</code> 服务</li>
+<li>关闭防火墙</li>
+<li>关闭 selinux</li>
+<li>禁用 swap，并在 <code>/etc/fstab</code> 中注释相应的配置</li>
+<li>配置必要的系统参数</li>
+<li>开启路由
+        <div class="highlight"><pre><span></span><code>cat /etc/sysctl.d/k8s.conf
+net.ipv4.ip_forward <span class="o">=</span> <span class="m">1</span>
+net.bridge.bridge-nf-call-ip6tables <span class="o">=</span> <span class="m">1</span>
+net.bridge.bridge-nf-call-iptables <span class="o">=</span> <span class="m">1</span>
+net.ipv4.ip_forward <span class="o">=</span> <span class="m">1</span>
+net.bridge.bridge-nf-call-ip6tables <span class="o">=</span> <span class="m">1</span>
+net.bridge.bridge-nf-call-iptables <span class="o">=</span> <span class="m">1</span>
+</code></pre></div><ol>
+<li>配置资源文件
+    <div class="highlight"><pre><span></span><code>$ <span class="nb">echo</span> <span class="s2">&quot;* soft nofile 65536&quot;</span> &gt;&gt; /etc/security/limits.conf
+$ <span class="nb">echo</span> <span class="s2">&quot;* hard nofile 65536&quot;</span> &gt;&gt; /etc/security/limits.conf
+$ <span class="nb">echo</span> <span class="s2">&quot;* soft nproc 65536&quot;</span>  &gt;&gt; /etc/security/limits.conf
+$ <span class="nb">echo</span> <span class="s2">&quot;* hard nproc 65536&quot;</span>  &gt;&gt; /etc/security/limits.conf
+$ <span class="nb">echo</span> <span class="s2">&quot;* soft  memlock  unlimited&quot;</span>  &gt;&gt; /etc/security/limits.conf
+$ <span class="nb">echo</span> <span class="s2">&quot;* hard memlock  unlimited&quot;</span>  &gt;&gt; /etc/security/limits.conf
+</code></pre></div></li>
+</ol>
+</li>
+</ol>
+<h3 id="docker">安装和配置 Docker<a class="headerlink" href="#docker" title="Permanent link">&para;</a></h3>
+<p>以下操作在所有节点上执行</p>
+<div class="highlight"><pre><span></span><code>yum install -y docker-ce 
+
+cat -&gt; /etc/docker/daemon.json <span class="s">&lt;&lt;EOF</span>
+<span class="s">{</span>
+<span class="s">  &quot;exec-opts&quot;: [&quot;native.cgroupdriver=systemd&quot;],</span>
+<span class="s">  &quot;log-driver&quot;: &quot;json-file&quot;,</span>
+<span class="s">  &quot;log-opts&quot;: {</span>
+<span class="s">    &quot;max-size&quot;: &quot;100m&quot;</span>
+<span class="s">  },</span>
+<span class="s">  &quot;storage-driver&quot;: &quot;overlay2&quot;,</span>
+<span class="s">  &quot;storage-opts&quot;: [</span>
+<span class="s">    &quot;overlay2.override_kernel_check=true&quot;</span>
+<span class="s">  ]</span>
+<span class="s">}</span>
+<span class="s">EOF</span>
+
+<span class="c1"># systemctl daemon-realod</span>
+<span class="c1"># systemctl enable --now docker</span>
+<span class="c1"># systemctl start docker</span>
+</code></pre></div>
+<p>检查 docker 信息</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker info</span>
+
+Client:
+ Context:    default
+ Debug Mode: <span class="nb">false</span>
+ Plugins:
+  app: Docker App <span class="o">(</span>Docker Inc., v0.9.1-beta3<span class="o">)</span>
+  buildx: Docker Buildx <span class="o">(</span>Docker Inc., v0.7.1-docker<span class="o">)</span>
+  scan: Docker Scan <span class="o">(</span>Docker Inc., v0.12.0<span class="o">)</span>
+
+Server:
+ Containers: <span class="m">14</span>
+  Running: <span class="m">12</span>
+  Paused: <span class="m">0</span>
+  Stopped: <span class="m">2</span>
+ Images: <span class="m">23</span>
+ Server Version: <span class="m">20</span>.10.12
+ Storage Driver: overlay2
+  Backing Filesystem: xfs
+  Supports d_type: <span class="nb">true</span>
+  Native Overlay Diff: <span class="nb">true</span>
+  userxattr: <span class="nb">false</span>
+ Logging Driver: json-file
+ Cgroup Driver: systemd
+ Cgroup Version: <span class="m">1</span>
+ Plugins:
+  Volume: <span class="nb">local</span>
+  Network: bridge host ipvlan macvlan null overlay
+  Log: awslogs fluentd gcplogs gelf journald json-file <span class="nb">local</span> logentries splunk syslog
+  docker info
+Client:
+ Context:    default
+ Debug Mode: <span class="nb">false</span>
+ Plugins:
+  app: Docker App <span class="o">(</span>Docker Inc., v0.9.1-beta3<span class="o">)</span>
+  buildx: Docker Buildx <span class="o">(</span>Docker Inc., v0.7.1-docker<span class="o">)</span>
+  scan: Docker Scan <span class="o">(</span>Docker Inc., v0.12.0<span class="o">)</span>
+</code></pre></div>
+<h3 id="kubernetes_1">准备 kubernetes 所需的镜像<a class="headerlink" href="#kubernetes_1" title="Permanent link">&para;</a></h3>
+<p>因为服务器无法直接联网，这部分需要先自行从网络上下载所需要的镜像，然后打包上传到每台服务器上，并加载镜像，需要的镜像大致如下：</p>
+<blockquote>
+<p>上述只有一行话，但应该是整个部署里耗时最长的操作</p>
+</blockquote>
+<div class="highlight"><pre><span></span><code><span class="c1"># docker images |grep &#39;k8s.gcr.io&#39;</span>
+k8s.gcr.io/kube-apiserver                        v1.23.1    b6d7abedde39   <span class="m">3</span> weeks ago    135MB
+k8s.gcr.io/kube-proxy                            v1.23.1    b46c42588d51   <span class="m">3</span> weeks ago    112MB
+k8s.gcr.io/kube-controller-manager               v1.23.1    f51846a4fd28   <span class="m">3</span> weeks ago    125MB
+k8s.gcr.io/kube-scheduler                        v1.23.1    71d575efe628   <span class="m">3</span> weeks ago    <span class="m">53</span>.5MB
+k8s.gcr.io/controller                            v1.1.0     ae1a7201ec95   <span class="m">7</span> weeks ago    285MB
+k8s.gcr.io/metrics-server                        v0.5.2     f73640fb5061   <span class="m">8</span> weeks ago    <span class="m">64</span>.3MB
+k8s.gcr.io/flannel                               v0.15.1    e6ea68648f0c   <span class="m">2</span> months ago   <span class="m">69</span>.5MB
+k8s.gcr.io/etcd                                  <span class="m">3</span>.5.1-0    25f8c7f3da61   <span class="m">2</span> months ago   293MB
+k8s.gcr.io/kube-webhook-certgen                  v1.1.1     c41e9fcadf5a   <span class="m">3</span> months ago   <span class="m">47</span>.7MB
+k8s.gcr.io/coredns/coredns                       v1.8.6     a4ca41631cc7   <span class="m">3</span> months ago   <span class="m">46</span>.8MB
+k8s.gcr.io/coredns                               v1.8.6     a4ca41631cc7   <span class="m">3</span> months ago   <span class="m">46</span>.8MB
+k8s.gcr.io/pause                                 <span class="m">3</span>.6        6270bb605e12   <span class="m">4</span> months ago   683kB
+k8s.gcr.io/defaultbackend-amd64                  <span class="m">1</span>.5        b5af743e5984   <span class="m">3</span> years ago    <span class="m">5</span>.13MB
+</code></pre></div>
+<h3 id="kubadm-kubelet-kubectl">安装 kubadm, kubelet, kubectl<a class="headerlink" href="#kubadm-kubelet-kubectl" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># yum install -y kubeadm kubelet kubectl</span>
+<span class="c1"># echo &quot;source &lt;(kubectl completion bash)&quot; &gt;&gt; ~/.bashrc</span>
+</code></pre></div>
+<h3 id="master">安装 master<a class="headerlink" href="#master" title="Permanent link">&para;</a></h3>
+<p>在具有 VIP 地址的服务器上进行操作，默认情况下，应该是在 <code>node27</code>  节点上</p>
+<h4 id="kubeadm">创建kubeadm配置文件<a class="headerlink" href="#kubeadm" title="Permanent link">&para;</a></h4>
+<p><div class="highlight"><pre><span></span><code><span class="c1"># mkdir -p /etc/kubernetes/manifests`</span>
+</code></pre></div>
+创建  <code>/etc/kubernetes/manifests/kubeadm-config.yaml</code> 配置文件，内容如下：</p>
+<div class="highlight"><pre><span></span><code><span class="nt">apiServer</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">certSANs</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node27.k8s.wgzhao.com</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node28.k8s.wgzhao.com</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node29.k8s.wgzhao.com</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">node.k8s.wgzhao.com</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.23.27</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.23.28</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.23.29</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">192.168.23.32</span><span class="w"></span>
+<span class="w">    </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">127.0.0.1</span><span class="w"></span>
+<span class="w">  </span><span class="nt">extraArgs</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">authorization-mode</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Node,RBAC</span><span class="w"></span>
+<span class="w">  </span><span class="nt">timeoutForControlPlane</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">4m0s</span><span class="w"></span>
+<span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubeadm.k8s.io/v1beta3</span><span class="w"></span>
+<span class="nt">certificatesDir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/etc/kubernetes/pki</span><span class="w"></span>
+<span class="nt">clusterName</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">kubernetes</span><span class="w"></span>
+<span class="nt">controlPlaneEndpoint</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;node.k8s.wgzhao.com:8443&quot;</span><span class="w"></span>
+<span class="nt">controllerManager</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
+<span class="nt">dns</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">type</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CoreDNS</span><span class="w"></span>
+<span class="nt">etcd</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">local</span><span class="p">:</span><span class="w"></span>
+<span class="w">    </span><span class="nt">dataDir</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">/var/lib/etcd</span><span class="w"></span>
+<span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">ClusterConfiguration</span><span class="w"></span>
+<span class="nt">kubernetesVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1.23.1</span><span class="w"></span>
+<span class="nt">networking</span><span class="p">:</span><span class="w"></span>
+<span class="w">  </span><span class="nt">dnsDomain</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cluster.local</span><span class="w"></span>
+<span class="w">  </span><span class="nt">podSubnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.244.0.0/16</span><span class="w"></span>
+<span class="w">  </span><span class="nt">serviceSubnet</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">10.1.0.0/16</span><span class="w"></span>
+<span class="nt">scheduler</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">{}</span><span class="w"></span>
+</code></pre></div>
+<h4 id="master_1">初始化 master 节点<a class="headerlink" href="#master_1" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># kubeadm init --config /etc/kubernetes/manifests/kubeadm-config.yaml --upload-certs</span>
+</code></pre></div>
+<p>上述操作如果成功的话，则应该看类似下面的输出</p>
+<div class="highlight"><pre><span></span><code>Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p <span class="nv">$HOME</span>/.kube
+  sudo cp -i /etc/kubernetes/admin.conf <span class="nv">$HOME</span>/.kube/config
+  sudo chown <span class="k">$(</span>id -u<span class="k">)</span>:<span class="k">$(</span>id -g<span class="k">)</span> <span class="nv">$HOME</span>/.kube/config
+
+Alternatively, <span class="k">if</span> you are the root user, you can run:
+
+  <span class="nb">export</span> <span class="nv">KUBECONFIG</span><span class="o">=</span>/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run <span class="s2">&quot;kubectl apply -f [podnetwork].yaml&quot;</span> with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+You can now join any number of the control-plane node running the following <span class="nb">command</span> on each as root:
+
+  kubeadm join node.k8s.wgzhao.com:8443 --token ko0dqo.ia527mk472eibub9 <span class="se">\</span>
+        --discovery-token-ca-cert-hash sha256:050903b27c13a642064ea6298458be9d203bcf5def4c5d5af55597a506fd4949 <span class="se">\</span>
+        --control-plane --certificate-key 34c6b1b15c57c2acff76a99752ba65a11c7cb1593f67fa4f0383b126b5509658
+
+Please note that the certificate-key gives access to cluster sensitive data, keep it secret!
+As a safeguard, uploaded-certs will be deleted <span class="k">in</span> two hours<span class="p">;</span> If necessary, you can use
+<span class="s2">&quot;kubeadm init phase upload-certs --upload-certs&quot;</span> to reload certs afterward.
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join node.k8s.wgzhao.com:8443 --token ko0dqo.ia527mk472eibub9 <span class="se">\</span>
+        --discovery-token-ca-cert-hash sha256:050903b27c13a642064ea6298458be9d203bcf5def4c5d5af55597a506fd4949
+</code></pre></div>
+<p>保存上述输出内容到文本文件，后续要用到。</p>
+<p>按照上述提示，进行操作</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># mkdir -p $HOME/.kube</span>
+<span class="c1"># sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span>
+<span class="c1"># sudo chown $(id -u):$(id -g) $HOME/.kube/config</span>
+</code></pre></div>
+<p>查看集群状态</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># kubectl get cs</span>
+NAME                 STATUS    MESSAGE                         ERROR
+scheduler            Healthy   ok
+controller-manager   Healthy   ok
+etcd-0               Healthy   <span class="o">{</span><span class="s2">&quot;health&quot;</span>:<span class="s2">&quot;true&quot;</span>,<span class="s2">&quot;reason&quot;</span>:<span class="s2">&quot;&quot;</span><span class="o">}</span>
+</code></pre></div>
+<h3 id="_5">安装集群网络<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h3>
+<p>这里为了简单起见，没有使用 <code>calico</code> 网络组件，而是使用了较老的<code>flannel</code>网络组件，后续可以转换。</p>
+<p>以下操作继续在 master 节点上执行。</p>
+<h4 id="flannel">获取 <code>flannel</code> 的配置文件<a class="headerlink" href="#flannel" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># wget -c -O kube-flannel.yaml https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml</span>
+</code></pre></div>
+<p>这里注意节点：</p>
+<ol>
+<li>无法访问外网的情况下，先将文件复制到本地，然后粘贴或者上传到服务器</li>
+<li>查看该文件中涉及到哪些镜像，如果本地不存在，则需要先下载然后上传到所有服务器</li>
+<li>后续操作均需要考虑以上步骤</li>
+</ol>
+<h4 id="_6">安装<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># kubectl apply -f kube-flannel.yml </span>
+podsecuritypolicy.policy/psp.flannel.unprivileged created
+clusterrole.rbac.authorization.k8s.io/flannel created
+clusterrolebinding.rbac.authorization.k8s.io/flannel created
+serviceaccount/flannel created
+configmap/kube-flannel-cfg created
+daemonset.apps/kube-flannel-ds-amd64 created
+daemonset.apps/kube-flannel-ds-arm64 created
+daemonset.apps/kube-flannel-ds-arm created
+daemonset.apps/kube-flannel-ds-ppc64le created
+daemonset.apps/kube-flannel-ds-s390x created
+</code></pre></div>
+<h4 id="_7">检测安装是否成功<a class="headerlink" href="#_7" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="c1"># kubectl get pods -n kube-system</span>
+NAME                                          READY   STATUS    RESTARTS      AGE
+coredns-64897985d-6rnps                       <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+coredns-64897985d-slpf2                       <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+etcd-node27.k8s.wgzhao.com                      <span class="m">1</span>/1     Running   <span class="m">6</span>             29h
+etcd-node28.k8s.wgzhao.com                      <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+etcd-node29.k8s.wgzhao.com                      <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-apiserver-node27.k8s.wgzhao.com            <span class="m">1</span>/1     Running   <span class="m">0</span>             29h
+kube-apiserver-node28.k8s.wgzhao.com            <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-apiserver-node29.k8s.wgzhao.com            <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-controller-manager-node27.k8s.wgzhao.com   <span class="m">1</span>/1     Running   <span class="m">1</span> <span class="o">(</span>27h ago<span class="o">)</span>   29h
+kube-controller-manager-node28.k8s.wgzhao.com   <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-controller-manager-node29.k8s.wgzhao.com   <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-flannel-ds-49j7s                         <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-flannel-ds-7vzqd                         <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-flannel-ds-bzkhs                         <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-flannel-ds-kc67m                         <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-flannel-ds-qn2v6                         <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-proxy-6whsp                              <span class="m">1</span>/1     Running   <span class="m">0</span>             29h
+kube-proxy-cndmh                              <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-proxy-dgv4c                              <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-proxy-h55bd                              <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-proxy-jwc9l                              <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-scheduler-node27.k8s.wgzhao.com            <span class="m">1</span>/1     Running   <span class="m">5</span> <span class="o">(</span>27h ago<span class="o">)</span>   29h
+kube-scheduler-node28.k8s.wgzhao.com            <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+kube-scheduler-node29.k8s.wgzhao.com            <span class="m">1</span>/1     Running   <span class="m">0</span>             27h
+</code></pre></div>
+<h3 id="_8">其他节点加入集群<a class="headerlink" href="#_8" title="Permanent link">&para;</a></h3>
+<p>首先将 master 节点上的密钥及相关文件拷贝到 <code>node28</code>, <code>node29</code> 两个节点上</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># ssh root@node28 mkdir -p /etc/kubernetes/pki/etcd</span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># ssh root@node29 mkdir -p /etc/kubernetes/pki/etcd</span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># cd /etc/kubernetes</span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># scp admin.conf root@node28:/etc/kubernetes/admin.conf     </span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># scp admin.conf root@node29:/etc/kubernetes/admin.conf     </span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># scp pki/{ca.*,sa.*,front-proxy-ca.*} root@node28:/etc/kubernetes/pki</span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># scp pki/{ca.*,sa.*,front-proxy-ca.*} root@node29:/etc/kubernetes/pki</span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># scp pki/etcd/ca.* root@node28:/etc/kubernetes/pki/etcd</span>
+<span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># scp pki/etcd/ca.* root@node29:/etc/kubernetes/pki/etcd</span>
+</code></pre></div>
+<p>分别在 <code>node28</code>, <code>node29</code> 上执行下面的命令</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node28<span class="o">]</span><span class="c1"># kubeadm join node.k8s.wgzhao.com:8443 --token ko0dqo.ia527mk472eibub9 \</span>
+        --discovery-token-ca-cert-hash sha256:050903b27c13a642064ea6298458be9d203bcf5def4c5d5af55597a506fd4949 <span class="se">\</span>
+        --control-plane --certificate-key 34c6b1b15c57c2acff76a99752ba65a11c7cb1593f67fa4f0383b126b5509658
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node29<span class="o">]</span><span class="c1"># kubeadm join node.k8s.wgzhao.com:8443 --token ko0dqo.ia527mk472eibub9 \</span>
+        --discovery-token-ca-cert-hash sha256:050903b27c13a642064ea6298458be9d203bcf5def4c5d5af55597a506fd4949 <span class="se">\</span>
+        --control-plane --certificate-key 34c6b1b15c57c2acff76a99752ba65a11c7cb1593f67fa4f0383b126b5509658
+</code></pre></div>
+<p>同样根据命令的输出提示进行后续操作，主要是下面的操作</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node28<span class="o">]</span><span class="c1"># mkdir -p $HOME/.kube</span>
+<span class="o">[</span>root@node28<span class="o">]</span><span class="c1"># cp -i /etc/kubernetes/admin.conf $HOME/.kube/config</span>
+<span class="o">[</span>root@node28<span class="o">]</span><span class="c1"># chown $(id -u):$(id -g) $HOME/.kube/config</span>
+</code></pre></div>
+<h4 id="_9">检查结果<a class="headerlink" href="#_9" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># kubectl get node</span>
+NAME                  STATUS   ROLES                  AGE   VERSION
+node27.k8s.wgzhao.com   Ready    control-plane,master   29h   v1.23.1
+node28.k8s.wgzhao.com   Ready    control-plane,master   27h   v1.23.1
+node29.k8s.wgzhao.com   Ready    control-plane,master   27h   v1.23.1
+</code></pre></div>
+<h3 id="node">node 加入集群<a class="headerlink" href="#node" title="Permanent link">&para;</a></h3>
+<p>在剩下的 <code>node30</code>, <code>node31</code> 节点上执行下面的命令：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node30<span class="o">]</span><span class="c1"># kubeadm join node.k8s.wgzhao.com:8443 --token ko0dqo.ia527mk472eibub9 \</span>
+        --discovery-token-ca-cert-hash sha256:050903b27c13a642064ea6298458be9d203bcf5def4c5d5af55597a506fd4949
+</code></pre></div>
+<h4 id="_10">检查结果<a class="headerlink" href="#_10" title="Permanent link">&para;</a></h4>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># kubectl get node</span>
+NAME                  STATUS   ROLES                  AGE   VERSION
+node27.k8s.wgzhao.com   Ready    control-plane,master   29h   v1.23.1
+node28.k8s.wgzhao.com   Ready    control-plane,master   27h   v1.23.1
+node29.k8s.wgzhao.com   Ready    control-plane,master   27h   v1.23.1
+node30.k8s.wgzhao.com   Ready    &lt;none&gt;                 27h   v1.23.1
+node31.k8s.wgzhao.com   Ready    &lt;none&gt;                 27h   v1.23.1
+</code></pre></div>
+<h3 id="master-node">master 节点也做为node 节点加入<a class="headerlink" href="#master-node" title="Permanent link">&para;</a></h3>
+<p>默认情况下，master节点将来并不会分配 pod，这里我们希望所有的 master 也同时充当 node 角色。需要在任意 master 节点上执行下面的命令：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>root@node27<span class="o">]</span><span class="c1"># kubectl taint nodes --all node-role.kubernetes.io/master-</span>
+node <span class="s2">&quot;node27&quot;</span> untainted
+node <span class="s2">&quot;node28&quot;</span> untainted
+node <span class="s2">&quot;node29&quot;</span> untainted
+taint <span class="s2">&quot;node-role.kubernetes.io/master:&quot;</span> not found
+taint <span class="s2">&quot;node-role.kubernetes.io/master:&quot;</span> not found
+</code></pre></div>
+<h2 id="_11">后续扩容<a class="headerlink" href="#_11" title="Permanent link">&para;</a></h2>
+<h3 id="worker">增加 worker  节点<a class="headerlink" href="#worker" title="Permanent link">&para;</a></h3>
+<p>默认情况下，上述命令输出的 <code>token</code> 有效期是 24 小时，如果之后要加入集群，需要重新生成 token，命令如下：</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 显示获取token列表</span>
+$ kubeadm token list
+<span class="c1"># 生成新的token</span>
+$ kubeadm token create
+</code></pre></div>
+<p>除<code>token</code>外，<code>join</code>命令还需要一个<code>sha256</code>的值，通过以下方法计算</p>
+<div class="highlight"><pre><span></span><code>openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt <span class="p">|</span> openssl rsa -pubin -outform der <span class="m">2</span>&gt;/dev/null <span class="p">|</span> openssl dgst -sha256 -hex <span class="p">|</span> sed <span class="s1">&#39;s/^.* //&#39;</span>
+</code></pre></div>
+<p>用上面输出的<code>token</code>和<code>sha256</code>的值或者是利用<code>kubeadm token create --print-join-command</code>拼接<code>join</code>命令即可</p>
+<h3 id="master_2">增加 master 节点<a class="headerlink" href="#master_2" title="Permanent link">&para;</a></h3>
+<p>如果想要增加 master 节点，大致过程和增加 worker 节点差不多，但有些细微区别，过程如下：</p>
+<h4 id="certificate-key">创建 certificate key<a class="headerlink" href="#certificate-key" title="Permanent link">&para;</a></h4>
+<p>要想作为 master 节点加入，首先得有 <code>certificate key</code>, 在集群中目前是 master 节点上执行下面的命令</p>
+<div class="highlight"><pre><span></span><code>kubeadm init phase upload-certs --upload-certs
+</code></pre></div>
+<p>会得到类似下面的输出</p>
+<div class="highlight"><pre><span></span><code>W0401 <span class="m">20</span>:29:27.970092    <span class="m">4138</span> version.go:103<span class="o">]</span> could not fetch a Kubernetes version from the internet: unable to get URL <span class="s2">&quot;https://dl.k8s.io/release/stable-1.txt&quot;</span>: Get <span class="s2">&quot;https://dl.k8s.io/release/stable-1.txt&quot;</span>: dial tcp: lookup dl.k8s.io on <span class="o">[</span>::1<span class="o">]</span>:53: <span class="nb">read</span> udp <span class="o">[</span>::1<span class="o">]</span>:49473-&gt;<span class="o">[</span>::1<span class="o">]</span>:53: read: connection refused
+W0401 <span class="m">20</span>:29:27.970196    <span class="m">4138</span> version.go:104<span class="o">]</span> falling back to the <span class="nb">local</span> client version: v1.23.1
+<span class="o">[</span>upload-certs<span class="o">]</span> Storing the certificates <span class="k">in</span> Secret <span class="s2">&quot;kubeadm-certs&quot;</span> <span class="k">in</span> the <span class="s2">&quot;kube-system&quot;</span> Namespace
+<span class="o">[</span>upload-certs<span class="o">]</span> Using certificate key:
+a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1
+</code></pre></div>
+<p>上述输出的最后一行 hash <code>a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1</code> 值就是 <code>certificate key</code></p>
+<p>接着创建用于 join 的指令</p>
+<div class="highlight"><pre><span></span><code>kubeadm token create --certificate-key a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1 <span class="se">\</span>
+  --print-join-command
+</code></pre></div>
+<p>上述命令会获得下面的输出</p>
+<div class="highlight"><pre><span></span><code>kubeadm join <span class="m">192</span>.168.23.32:6443 --token guh5md.wgnvivkar5e07oty <span class="se">\</span>
+  --discovery-token-ca-cert-hash sha256:1b9e1ba8899715e67410236b6e478438da4403163afb3bd2439498622df4ceb6 <span class="se">\</span>
+  --control-plane --certificate-key a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1
+</code></pre></div>
+<p>然后在需要作为 master 节点的机器上执行下面的命令</p>
+<div class="highlight"><pre><span></span><code>kubeadm join <span class="m">192</span>.168.23.32:6443 --token guh5md.wgnvivkar5e07oty <span class="se">\</span>
+  --discovery-token-ca-cert-hash sha256:1b9e1ba8899715e67410236b6e478438da4403163afb3bd2439498622df4ceb6 <span class="se">\</span>
+  --control-plane --certificate-key a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1 <span class="se">\</span>
+  --apiserver-advertise-address <span class="m">192</span>.168.23.100
+</code></pre></div>
+<p>注意上述命令增加了 <code>--apiserver-advertise-address 192.168.23.100</code>，这等于告诉其他节点，增加了一个 <code>api-server</code></p>
+<p>上述命令会得到如下的输出：</p>
+<div class="highlight"><pre><span></span><code><span class="o">[</span>preflight<span class="o">]</span> Running pre-flight checks
+<span class="o">[</span>preflight<span class="o">]</span> Reading configuration from the cluster...
+<span class="o">[</span>preflight<span class="o">]</span> FYI: You can look at this config file with <span class="s1">&#39;kubectl -n kube-system get cm kubeadm-config -o yaml&#39;</span>
+<span class="o">[</span>preflight<span class="o">]</span> Running pre-flight checks before initializing the new control plane instance
+<span class="o">[</span>preflight<span class="o">]</span> Pulling images required <span class="k">for</span> setting up a Kubernetes cluster
+<span class="o">[</span>preflight<span class="o">]</span> This might take a minute or two, depending on the speed of your internet connection
+<span class="o">[</span>preflight<span class="o">]</span> You can also perform this action <span class="k">in</span> beforehand using <span class="s1">&#39;kubeadm config images pull&#39;</span>
+<span class="o">[</span>download-certs<span class="o">]</span> Downloading the certificates <span class="k">in</span> Secret <span class="s2">&quot;kubeadm-certs&quot;</span> <span class="k">in</span> the <span class="s2">&quot;kube-system&quot;</span> Namespace
+<span class="o">[</span>certs<span class="o">]</span> Using certificateDir folder <span class="s2">&quot;/etc/kubernetes/pki&quot;</span>
+<span class="o">[</span>certs<span class="o">]</span> Generating <span class="s2">&quot;apiserver&quot;</span> certificate and key
+....
+
+<span class="o">[</span>kubeconfig<span class="o">]</span> Generating kubeconfig files
+<span class="o">[</span>kubeconfig<span class="o">]</span> Using kubeconfig folder <span class="s2">&quot;/etc/kubernetes&quot;</span>
+<span class="o">[</span>kubeconfig<span class="o">]</span> Using existing kubeconfig file: <span class="s2">&quot;/etc/kubernetes/admin.conf&quot;</span>
+...
+<span class="o">[</span>kubeconfig<span class="o">]</span> Using existing kubeconfig file: <span class="s2">&quot;/etc/kubernetes/scheduler.conf&quot;</span>
+<span class="o">[</span>control-plane<span class="o">]</span> Using manifest folder <span class="s2">&quot;/etc/kubernetes/manifests&quot;</span>
+<span class="o">[</span>control-plane<span class="o">]</span> Creating static Pod manifest <span class="k">for</span> <span class="s2">&quot;kube-apiserver&quot;</span>
+<span class="o">[</span>control-plane<span class="o">]</span> Creating static Pod manifest <span class="k">for</span> <span class="s2">&quot;kube-controller-manager&quot;</span>
+<span class="o">[</span>control-plane<span class="o">]</span> Creating static Pod manifest <span class="k">for</span> <span class="s2">&quot;kube-scheduler&quot;</span>
+<span class="o">[</span>check-etcd<span class="o">]</span> Checking that the etcd cluster is healthy
+<span class="o">[</span>kubelet-start<span class="o">]</span> Writing kubelet configuration to file <span class="s2">&quot;/var/lib/kubelet/config.yaml&quot;</span>
+<span class="o">[</span>kubelet-start<span class="o">]</span> Writing kubelet environment file with flags to file <span class="s2">&quot;/var/lib/kubelet/kubeadm-flags.env&quot;</span>
+<span class="o">[</span>kubelet-start<span class="o">]</span> Starting the kubelet
+<span class="o">[</span>kubelet-start<span class="o">]</span> Waiting <span class="k">for</span> the kubelet to perform the TLS Bootstrap...
+<span class="o">[</span>etcd<span class="o">]</span> Announced new etcd member joining to the existing etcd cluster
+<span class="o">[</span>etcd<span class="o">]</span> Creating static Pod manifest <span class="k">for</span> <span class="s2">&quot;etcd&quot;</span>
+<span class="o">[</span>etcd<span class="o">]</span> Waiting <span class="k">for</span> the new etcd member to join the cluster. This can take up to 40s
+The <span class="s1">&#39;update-status&#39;</span> phase is deprecated and will be removed <span class="k">in</span> a future release. Currently it performs no operation
+<span class="o">[</span>mark-control-plane<span class="o">]</span> Marking the node node100 as control-plane by adding the labels: <span class="o">[</span>node-role.kubernetes.io/master<span class="o">(</span>deprecated<span class="o">)</span> node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers<span class="o">]</span>
+<span class="o">[</span>mark-control-plane<span class="o">]</span> Marking the node node100 as control-plane by adding the taints <span class="o">[</span>node-role.kubernetes.io/master:NoSchedule<span class="o">]</span>
+</code></pre></div>
+<p>等待一分钟，然后在该节点上执行 <code>kubectl get nodes</code> 应该就可以看到节点的信息，并显示为 <code>control-plane, master</code> 角色了。</p>
+
+              
+            </article>
+          </div>
+        </div>
+        
+          <a href="#" class="md-top md-icon" data-md-component="top" data-md-state="hidden">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"/></svg>
+            回到页面顶部
+          </a>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    <nav class="md-footer__inner md-grid" aria-label="页脚">
+      
+        
+        <a href="../kerberos-setup/" class="md-footer__link md-footer__link--prev" aria-label="上一页: MIT Kerberos  安装及维护手册" rel="prev">
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12z"/></svg>
+          </div>
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                上一页
+              </span>
+              MIT Kerberos  安装及维护手册
+            </div>
+          </div>
+        </a>
+      
+      
+        
+        <a href="../learn-seaborn-with-10min/" class="md-footer__link md-footer__link--next" aria-label="下一页: 十分钟掌握Seaborn，进阶Python数据可视化分析" rel="next">
+          <div class="md-footer__title">
+            <div class="md-ellipsis">
+              <span class="md-footer__direction">
+                下一页
+              </span>
+              十分钟掌握Seaborn，进阶Python数据可视化分析
+            </div>
+          </div>
+          <div class="md-footer__button md-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4z"/></svg>
+          </div>
+        </a>
+      
+    </nav>
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.1.1 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.indexes", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tracking", "search.highlight", "search.share", "search.suggest"], "search": "../assets/javascripts/workers/search.5e67fbfe.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.config.lang": "ja", "search.config.pipeline": "trimmer, stemmer", "search.config.separator": "[\\uff0c\\u3002]+", "search.placeholder": "\u641c\u7d22", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version.title": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c44cc438.min.js"></script>
+      
+        <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+    
+  </body>
+</html>
