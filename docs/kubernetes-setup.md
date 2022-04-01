@@ -552,7 +552,9 @@ taint "node-role.kubernetes.io/master:" not found
 taint "node-role.kubernetes.io/master:" not found
 ```
 
-### 后续扩容
+## 后续扩容
+
+### 增加 worker  节点
 
 默认情况下，上述命令输出的 `token` 有效期是 24 小时，如果之后要加入集群，需要重新生成 token，命令如下：
 
@@ -570,3 +572,93 @@ openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outfor
 ```
 
 用上面输出的`token`和`sha256`的值或者是利用`kubeadm token create --print-join-command`拼接`join`命令即可
+
+
+### 增加 master 节点
+
+如果想要增加 master 节点，大致过程和增加 worker 节点差不多，但有些细微区别，过程如下：
+
+#### 创建 certificate key
+
+要想作为 master 节点加入，首先得有 `certificate key`, 在集群中目前是 master 节点上执行下面的命令
+
+```shell
+kubeadm init phase upload-certs --upload-certs
+```
+
+会得到类似下面的输出
+
+```shell
+W0401 20:29:27.970092    4138 version.go:103] could not fetch a Kubernetes version from the internet: unable to get URL "https://dl.k8s.io/release/stable-1.txt": Get "https://dl.k8s.io/release/stable-1.txt": dial tcp: lookup dl.k8s.io on [::1]:53: read udp [::1]:49473->[::1]:53: read: connection refused
+W0401 20:29:27.970196    4138 version.go:104] falling back to the local client version: v1.23.1
+[upload-certs] Storing the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
+[upload-certs] Using certificate key:
+a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1
+```
+
+上述输出的最后一行 hash `a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1` 值就是 `certificate key`
+
+接着创建用于 join 的指令
+
+```shell
+kubeadm token create --certificate-key a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1 \
+  --print-join-command
+```
+
+上述命令会获得下面的输出
+
+```shell
+kubeadm join 192.168.23.32:6443 --token guh5md.wgnvivkar5e07oty \
+  --discovery-token-ca-cert-hash sha256:1b9e1ba8899715e67410236b6e478438da4403163afb3bd2439498622df4ceb6 \
+  --control-plane --certificate-key a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1
+```
+
+然后在需要作为 master 节点的机器上执行下面的命令
+
+```shell
+kubeadm join 192.168.23.32:6443 --token guh5md.wgnvivkar5e07oty \
+  --discovery-token-ca-cert-hash sha256:1b9e1ba8899715e67410236b6e478438da4403163afb3bd2439498622df4ceb6 \
+  --control-plane --certificate-key a551f2def4e697f7a11672bae42cc3cd9f0bf7a274455fe7dd0493c9f95a5da1 \
+  --apiserver-advertise-address 192.168.23.100
+```
+
+注意上述命令增加了 `--apiserver-advertise-address 192.168.23.100`，这等于告诉其他节点，增加了一个 `api-server`
+
+上述命令会得到如下的输出：
+
+```shell
+[preflight] Running pre-flight checks
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[preflight] Running pre-flight checks before initializing the new control plane instance
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[download-certs] Downloading the certificates in Secret "kubeadm-certs" in the "kube-system" Namespace
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "apiserver" certificate and key
+....
+
+[kubeconfig] Generating kubeconfig files
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Using existing kubeconfig file: "/etc/kubernetes/admin.conf"
+...
+[kubeconfig] Using existing kubeconfig file: "/etc/kubernetes/scheduler.conf"
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[check-etcd] Checking that the etcd cluster is healthy
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+[etcd] Announced new etcd member joining to the existing etcd cluster
+[etcd] Creating static Pod manifest for "etcd"
+[etcd] Waiting for the new etcd member to join the cluster. This can take up to 40s
+The 'update-status' phase is deprecated and will be removed in a future release. Currently it performs no operation
+[mark-control-plane] Marking the node node100 as control-plane by adding the labels: [node-role.kubernetes.io/master(deprecated) node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node node100 as control-plane by adding the taints [node-role.kubernetes.io/master:NoSchedule]
+```
+
+等待一分钟，然后在该节点上执行 `kubectl get nodes` 应该就可以看到节点的信息，并显示为 `control-plane, master` 角色了。
