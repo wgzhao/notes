@@ -21,7 +21,9 @@ for repo in $(regctl repo ls "$registry" | grep  -E '(staff-center|lczq-ias|ims|
     # both timestamps are converted to seconds since epoc, allowing numeric comparison
     if [ "$createdSec" -lt "$cutoff" ]; then
       # next line is prefixed with echo for debugging, delete the echo to run the tag delete command
-      regctl tag rm "$registry/$repo:$tag"
+      # get digest
+      digest=$(regctl image digest ${registry}/${repo}:${tag})
+      regctl image delete "$registry/$repo:$tag@${digest}"
     fi
   done
 done
