@@ -33,7 +33,7 @@
 
 事务提交的时候，执行器把 binlog cache 里的完整事务写入到 binlog 中，并清空 binlog cache。状态如图 1 所示。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-d9e2d6cb67016131.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/qxAqX7VdtE8n.png)
 
 可以看到，每个线程有自己 binlog cache，但是共用同一份 binlog 文件。
 
@@ -62,7 +62,7 @@ redo log buffer 里面的内容，是不是每次生成后都要直接持久化�
 
 这个问题，要从 redo log 可能存在的三种状态说起。这三种状态，对应的就是图 2 中的三个颜色块。
 
-![redo log 三种状态](https://upload-images.jianshu.io/upload_images/12321605-15e11ef8355650a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![redo log 三种状态](images/deep-in-mysql/xlZK1Mu9clqN.png)
 
 1. 存在 redo log buffer 中，物理上是在 MySQL 进程内存中，就是图中的红色部分；
 2. 写到磁盘 (write)，但是没有持久化（fsync)，物理上是在文件系统的 page cache 里面，也就是图中的黄色部分；
@@ -97,7 +97,7 @@ InnoDB 有一个后台线程，每隔 1 秒，就会把 redo log buffer 中的�
 
 当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log 里面，并更新内存，这个时候更新就算完成了。同时，InnoDB 引擎会在适当的时候，将这个操作记录更新到磁盘里面，而这个更新往往是在系统比较空闲的时候做。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-3dded44ffd4d9c82.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/T8jYibRSSdXJ.png)
 
 write pos 是当前记录的位置，一边写一边后移，写到第 3 号文件末尾后就回到 0 号文件开头。checkpoint 是当前要擦除的位置，也是往后推移并且循环的，擦除记录前要把记录更新到数据文件。
 
@@ -115,11 +115,11 @@ LSN 也会写到 InnoDB 的数据页中，来确保数据页不会被多次执�
 
 如图 3 所示，是三个并发事务 (trx1, trx2, trx3) 在 prepare 阶段，都写完 redo log buffer，持久化到磁盘的过程，对应的 LSN 分别是 50、120 和 160。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-126180d07c62c833.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/z7QWhBw3Zq11.png)
 
 MySQL 为了让组提交的效果更好，把 redo log 做 fsync 的时间拖到了步骤 1 之后。也就是说，上面的图变成了这样：
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-bc7bede59859cd59.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/vBuVNthUkXat.png)
 
 这么一来，binlog 也可以组提交了。在执行图 5 中第 4 步把 binlog fsync 到磁盘时，如果有多个事务的 binlog 已经写完了，也是一起持久化的，这样也可以减少 IOPS 的消耗。
 
@@ -159,7 +159,7 @@ binlog 的三种格式 ：statement、row、mixed
 
 命令看 binlog 中的内容。
 
-![图 4 delete 执行 warnings](https://upload-images.jianshu.io/upload_images/12321605-209fd6c3cdf883d9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![图 4 delete 执行 warnings](images/deep-in-mysql/yXtDeKz0r0V8.png)
 
 * 第二行是一个 BEGIN，跟第四行的 commit 对应，表示中间是一个事务；
 * 第三行就是真实执行的语句了。可以看到，在真实执行的 delete 命令之前，还有一个“use ‘test’”命令。这条命令不是我们主动执行的，而是 MySQL 根据当前要操作的表所在的数据库，自行添加的。这样做可以保证日志传到备库去执行的时候，不论当前的工作线程在哪个库里，都能够正确地更新到 test 库的表 t。
@@ -168,7 +168,7 @@ binlog 的三种格式 ：statement、row、mixed
 
 为了说明 statement 和 row 格式的区别，我们来看一下这条 delete 命令的执行效果图：
 
-![图 4 delete 执行 warnings](https://upload-images.jianshu.io/upload_images/12321605-0b2d0b2aaa4c9ba9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![图 4 delete 执行 warnings](images/deep-in-mysql/oM41JB56Fj1Q.png)
 
 可以看到，运行这条 delete 命令产生了一个 warning，原因是当前 binlog 设置的是 statement 格式，并且语句中有 limit，所以这个命令可能是 unsafe 的。
 
@@ -181,7 +181,7 @@ binlog 的三种格式 ：statement、row、mixed
 
 那么，如果我把 binlog 的格式改为 binlog\_format=‘row’， 是不是就没有这个问题了呢？我们先来看看这时候 binog 中的内容吧。
 
-![图 5 row 格式 binlog 示例](https://upload-images.jianshu.io/upload_images/12321605-9339bcfa75858829.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![图 5 row 格式 binlog 示例](images/deep-in-mysql/7JEHKq0xGr4B.png)
 
 可以看到，与 statement 格式的 binlog 相比，前后的 BEGIN 和 COMMIT 是一样的。但是，row 格式的 binlog 里没有了 SQL 语句的原文，而是替换成了两个 event：Table\_map 和 Delete\_rows。
 
@@ -192,7 +192,7 @@ binlog 的三种格式 ：statement、row、mixed
 
     mysqlbinlog  -vv data/master.000001 --start-position=8900;
 
-![图 6 row 格式 binlog 示例的详细信息](https://upload-images.jianshu.io/upload_images/12321605-945744ba90208f3c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![图 6 row 格式 binlog 示例的详细信息](images/deep-in-mysql/WygoLbBJ2LT3.png)
 
 从这个图中，我们可以看到以下几个信息：
 
@@ -329,7 +329,7 @@ MySQL 这么设计的主要原因是，binlog 是不能“被打断的”。一�
 
 #### 主从循环复制问题
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-e4f57b051c5323e9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/vQFF0kdrkjUX.png)
 
 1. 规定两个库的 server id 必须不同，如果相同，则它们之间不能设定为主备关系；
 2. 一个备库接到 binlog 并在重放的过程中，生成与原 binlog 的 server id 相同的新的 binlog；
@@ -359,7 +359,7 @@ MySQL 这么设计的主要原因是，binlog 是不能“被打断的”。一�
 
 ### 一条SQL如何执行？
 
-![image](https://upload-images.jianshu.io/upload_images/12321605-dafc1ef4bc3a467b?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image](images/deep-in-mysql/9Ypo86SrLX4r.png)
 
 * 连接器，连接器负责跟客户端建立连接、获取权限、维持和管理连接。`show processlist` 可以查看链接状态。客户端如果太长时间没动静，连接器就会自动将它断开。这个时间是由参数 wait\_timeout 控制的，默认值是 8 小时。
 * 查询缓存，MySQL 拿到一个查询请求后，会先到查询缓存看看，之前是不是执行过这条语句。之前执行过的语句及其结果可能会以 key-value 对的形式，被直接缓存在内存中。key 是查询的语句，value 是查询的结果。如果你的查询能够直接在这个缓存中找到 key，那么这个 value 就会被直接返回给客户端。
@@ -376,7 +376,7 @@ MySQL 这么设计的主要原因是，binlog 是不能“被打断的”。一�
 
 这里我给出这个 update 语句的执行流程图，图中浅色框表示是在 InnoDB 内部执行的，深色框表示是在执行器中执行的。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-8e2cc83183584ada.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/JIwpWHvWoozQ.png)
 
 #### change buffer
 
@@ -431,7 +431,7 @@ change buffer 用的是 buffer pool 里的内存，因此不能无限增大。ch
 * 对于普通索引来说，查找到满足条件的第一个记录 (5,500) 后，需要查找下一个记录，直到碰到第一个不满足 k=5 条件的记录。
 * 对于唯一索引来说，由于索引定义了唯一性，查找到第一个满足条件的记录后，就会停止继续检索。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-5880ac0b4e638c14.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/ANoVPnuqPOPf.png)
 
 那么，这个不同带来的性能差距会有多少呢？答案是，微乎其微。
 
@@ -449,7 +449,7 @@ change buffer 用的是 buffer pool 里的内存，因此不能无限增大。ch
 
 InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法，这个算法的核心就是淘汰最久未使用的数据。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-cf5917f5d50a3516.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/ZPfKYYU4qg5b.png)
 
 1. 将LRU分为两个部分： 新生代(new sublist) 老生代(old sublist)
 2. 新老生代收尾相连，即：新生代的尾(tail)连接着老生代的头(head)；
@@ -457,17 +457,21 @@ InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法
 
 线上库 buffer pool 64G
 
-    show variables like '%join_buffer_size%';  //8M
-    show variables like '%sort_buffer_size%'; //8M
-    show variables like '%innodb_buffer_pool_size%'; // 64G
+```mysql
+show variables like '%join_buffer_size%';  //8M
+show variables like '%sort_buffer_size%'; //8M
+show variables like '%innodb_buffer_pool_size%'; // 64G
+```
 
 #### 索引下推
 
-    mysql> select * from tuser where name like '张%' and age=10 and ismale=1;
+```mysql
+mysql> select * from tuser where name like '张%' and age=10 and ismale=1;
+```
 
-![无索引下推执行流程](https://upload-images.jianshu.io/upload_images/12321605-32c099559ba3e868.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![无索引下推执行流程](images/deep-in-mysql/uw0UYJjWzwYZ.png)
 
-![索引下推执行流程](https://upload-images.jianshu.io/upload_images/12321605-333bf3f31548787f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![索引下推执行流程](images/deep-in-mysql/pJUrQuOa2rRh.png)
 
 ### Mysql优化器
 
@@ -483,7 +487,7 @@ InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法
 
 我们可以使用 show index 方法，看到一个索引的基数。如图所示，就是表 t 的 show index 的结果 。虽然这个表的每一行的三个字段值都是一样的，但是在统计信息中，这三个索引的基数值并不同，而且其实都不准确。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-66b22725a0460116.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/t2C4WqFPCFTM.png)
 
 那么，MySQL 是怎样得到索引的基数的呢？这里，我给你简单介绍一下 MySQL 采样统计的方法。
 
@@ -512,11 +516,15 @@ InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法
 
 第一种方式是使用倒序存储。如果你存储身份证号的时候把它倒过来存，每次查询的时候，你可以这么写：
 
-    mysql> select field_list from t where id_card = reverse('input_id_card_string');
+```mysql
+mysql> select field_list from t where id_card = reverse('input_id_card_string');
+```
 
 第二种方式是使用 hash 字段。你可以在表上再创建一个整数字段，来保存身份证的校验码，同时在这个字段上创建索引。
 
-    mysql> alter table t add id_card_crc int unsigned, add index(id_card_crc);
+```mysql
+mysql> alter table t add id_card_crc int unsigned, add index(id_card_crc);
+```
 
 它们的区别，主要体现在以下三个方面：
 
@@ -528,7 +536,7 @@ InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法
 
 这里，我先和你说结论吧。B+ 树这种索引结构，可以利用索引的“最左前缀”，来定位记录。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-967b2dbcda2bbc62.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/zBWwhBxlvwhM.png)
 
 ### 脏页
 
@@ -564,7 +572,7 @@ InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法
 
 然后，根据上述算得的 F1(M) 和 F2(N) 两个值，取其中较大的值记为 R，之后引擎就可以按照 innodb\_io\_capacity 定义的能力乘以 R% 来控制刷脏页的速度。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-21b882b7aa3fe317.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/TpQyPlTbHcuE.png)
 
 ### 其他问题
 
@@ -624,9 +632,9 @@ InnoDB 认真执行了“把这个值修改成 (1,2)”这个操作，该加锁�
 
 ### 当前读 ，快照读
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-24255ed96a43bc71.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/S1zj1KQDyDs1.png)
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-4d43ad08b8f23326.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/jlvmLFSArwPu.png)
 
 #### 事务隔离
 
@@ -638,7 +646,7 @@ InnoDB 认真执行了“把这个值修改成 (1,2)”这个操作，该加锁�
   * a. 若 row trx\_id 在数组中，表示这个版本是由还没提交的事务生成的，不可见；
   * b. 若 row trx\_id 不在数组中，表示这个版本是已经提交了的事务生成的，可见。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-4951deb7d23236a6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/9o2vqZbSCWbG.png)
 
 一个数据版本，对于一个事务视图来说，除了自己的更新总是可见以外，有三种情况：
 
@@ -694,7 +702,7 @@ MySQL 里面表级别的锁有两种：一种是表锁，一种是元数据锁�
 
 MDL 会直到事务提交才释放，在做表结构变更的时候，你一定要小心不要导致锁住线上查询和更新。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-1ccbea6c67cff98e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/F9TMhyMfoUpu.png)
 
 我们可以看到 session A 先启动，这时候会对表 t 加一个 MDL 读锁。由于 session B 需要的也是 MDL 读锁，因此可以正常执行。
 
@@ -704,13 +712,13 @@ MDL 会直到事务提交才释放，在做表结构变更的时候，你一定�
 
 ### 两阶段锁
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-e92660ddd0e713a3.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/6VywiBm8ebMg.png)
 
 也就是说，在 InnoDB 事务中，行锁是在需要的时候才加上的，但并不是不需要了就立刻释放，而是要等到事务结束时才释放。这个就是两阶段锁协议。
 
 ### 死锁和死锁检测
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-64e9193bd1a3063e.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/iXNMCrp6IGOs.png)
 
 这时候，事务 A 在等待事务 B 释放 id=2 的行锁，而事务 B 在等待事务 A 释放 id=1 的行锁。 事务 A 和事务 B 在互相等待对方的资源释放，就是进入了死锁状态。当出现死锁以后，有两种策略：
 
@@ -719,7 +727,7 @@ MDL 会直到事务提交才释放，在做表结构变更的时候，你一定�
 
 #### select 和 insert死锁场景
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-0a3fb6f1da08a56b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/gsmn6tOH4vVn.png)
 
 你看到了，其实都不需要用到后面的 update 语句，就已经形成死锁了。我们按语句执行顺序来分析一下：
 
@@ -746,20 +754,22 @@ MDL 会直到事务提交才释放，在做表结构变更的时候，你一定�
 
 ### 全字段排序
 
-    select city,name,age 
-    CREATE TABLE `t` (
-      `id` int(11) NOT NULL,
-      `city` varchar(16) NOT NULL,
-      `name` varchar(16) NOT NULL,
-      `age` int(11) NOT NULL,
-      `addr` varchar(128) DEFAULT NULL,
-      PRIMARY KEY (`id`),
-      KEY `city` (`city`)
-    ) ENGINE=InnoDB;
-    
-    select from t where city='杭州' order by name limit 1000  ;
+```mysql
+select city,name,age 
+CREATE TABLE `t` (
+  `id` int(11) NOT NULL,
+  `city` varchar(16) NOT NULL,
+  `name` varchar(16) NOT NULL,
+  `age` int(11) NOT NULL,
+  `addr` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `city` (`city`)
+) ENGINE=InnoDB;
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-add9a6a6719df461.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+select from t where city='杭州' order by name limit 1000  ;
+```
+
+![image.png](images/deep-in-mysql/ZdMjzjWgNagw.png)
 
 1. 初始化 sort\_buffer，确定放入 name、city、age 这三个字段；
 2. 从索引 city 找到第一个满足 city=’杭州’条件的主键 id，也就是图中的 ID\_X；
@@ -768,33 +778,35 @@ MDL 会直到事务提交才释放，在做表结构变更的时候，你一定�
 5. 重复步骤 3、4 直到 city 的值不满足查询条件为止，对应的主键 id 也就是图中的 ID\_Y；
 6. 对 sort\_buffer 中的数据按照字段 name 做快速排序；按照排序结果取前 1000 行返回给客户端。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-82eda72c93d03354.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/7NCEkVFJLMIm.png)
 
 `sort_buffer_size`，就是 MySQL 为排序开辟的内存（sort\_buffer）的大小。如果要排序的数据量小于 `sort_buffer_size`，排序就在内存中完成。但如果排序数据量太大，内存放不下，则不得不利用磁盘临时文件辅助排序。
 
 你可以用下面介绍的方法，来确定一个排序语句是否使用了临时文件
 
-    /* 打开optimizer_trace，只对本线程有效 */
-    SET optimizer_trace='enabled=on'; 
-    
-    /* @a保存Innodb_rows_read的初始值 */
-    select VARIABLE_VALUE into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read';
-    
-    /* 执行语句 */
-    select city, name,age from t where city='杭州' order by name limit 1000; 
-    
-    /* 查看 OPTIMIZER_TRACE 输出 */
-    SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
-    
-    /* @b保存Innodb_rows_read的当前值 */
-    select VARIABLE_VALUE into @b from performance_schema.session_status where variable_name = 'Innodb_rows_read';
-    
-    /* 计算Innodb_rows_read差值 */
-    select @b-@a;
+```mysql
+/* 打开optimizer_trace，只对本线程有效 */
+SET optimizer_trace='enabled=on'; 
+
+/* @a保存Innodb_rows_read的初始值 */
+select VARIABLE_VALUE into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read';
+
+/* 执行语句 */
+select city, name,age from t where city='杭州' order by name limit 1000; 
+
+/* 查看 OPTIMIZER_TRACE 输出 */
+SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
+
+/* @b保存Innodb_rows_read的当前值 */
+select VARIABLE_VALUE into @b from performance_schema.session_status where variable_name = 'Innodb_rows_read';
+
+/* 计算Innodb_rows_read差值 */
+select @b-@a;
+```
 
 这个方法是通过查看 OPTIMIZER\_TRACE 的结果来确认的，你可以从 `number_of_tmp_files` 中看到是否使用了临时文件。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-b99aa8b9dfcfbebb.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/nB3QCsnNdk4e.png)
 
 `number_of_tmp_files` 表示的是，排序过程中使用的临时文件数。你一定奇怪，为什么需要 12 个文件？内存放不下时，就需要使用外部排序，**外部排序一般使用归并排序算法**。可以这么简单理解，MySQL 将需要排序的数据分成 12 份，每一份单独排序后存在这些临时文件中。然后把这 12 个有序文件再合并成一个有序的大文件。
 
@@ -820,9 +832,9 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 6. 对 sort\_buffer 中的数据按照字段 name 进行排序；
 7. 遍历排序结果，取前 1000 行，并按照 id 的值回到原表中取出 city、name 和 age 三个字段返回给客户端。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-378fffb77a7ad391.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/fvdHHX4giBl4.png)
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-830abf5d761db5dd.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/YCpEn7a6a66V.png)
 
 现在，我们就来看看结果有什么不同。
 
@@ -836,38 +848,42 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 
 ## Join 实现原理
 
-    CREATE TABLE `t2` (
-      `id` int(11) NOT NULL,
-      `a` int(11) DEFAULT NULL,
-      `b` int(11) DEFAULT NULL,
-      PRIMARY KEY (`id`),
-      KEY `a` (`a`)
-    ) ENGINE=InnoDB;
-    
-    drop procedure idata;
-    delimiter ;;
-    create procedure idata()
-    begin
-      declare i int;
-      set i=1;
-      while(i<=1000)do
-        insert into t2 values(i, i, i);
-        set i=i+1;
-      end while;
-    end;;
-    delimiter ;
-    call idata();
-    
-    create table t1 like t2;
-    insert into t1 (select * from t2 where id<=100)
+```mysql
+CREATE TABLE `t2` (
+  `id` int(11) NOT NULL,
+  `a` int(11) DEFAULT NULL,
+  `b` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `a` (`a`)
+) ENGINE=InnoDB;
+
+drop procedure idata;
+delimiter ;;
+create procedure idata()
+begin
+  declare i int;
+  set i=1;
+  while(i<=1000)do
+    insert into t2 values(i, i, i);
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+call idata();
+
+create table t1 like t2;
+insert into t1 (select * from t2 where id<=100)
+```
 
 ### Index Nested-Loop Join - NLJ （无join\_buffer）
 
-    select * from t1 straight_join t2 on (t1.a=t2.a);
+```mysql
+select * from t1 straight_join t2 on (t1.a=t2.a);
+```
 
 如果直接使用 join 语句，MySQL 优化器可能会选择表 t1 或 t2 作为驱动表，这样会影响我们分析 SQL 语句的执行过程。所以，为了便于分析执行过程中的性能问题，我改用 straight\_join 让 MySQL 使用固定的连接方式执行查询，这样优化器只会按照我们指定的方式去 join。在这个语句里，t1 是驱动表，t2 是被驱动表。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-c1b57f4a9e0419e6.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/Bo6ngFnWzHf0.png)
 
 可以看到，在这条语句里，被驱动表 t2 的字段 a 上有索引，join 过程用上了这个索引，因此这个语句的执行流程是这样的：
 
@@ -878,7 +894,7 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 
 这个过程是先遍历表 t1，然后根据从表 t1 中取出的每行数据中的 a 值，去表 t2 中查找满足条件的记录。在形式上，这个过程就跟我们写程序时的嵌套查询类似，并且可以用上被驱动表的索引，所以我们称之为“Index Nested-Loop Join”，简称 NLJ。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-9acb602e169b749f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/JvIoRTGUlgP8.png)
 
 在这个流程里：
 
@@ -893,7 +909,9 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 
 ### Simple Nested-Loop Join （无join\_buffer - mysql 没用）
 
-    select * from t1 straight_join t2 on (t1.a=t2.b);
+```mysql
+select * from t1 straight_join t2 on (t1.a=t2.b);
+```
 
 由于表 t2 的字段 b 上没有索引，因此再用图 2 的执行流程时，每次到 t2 去匹配的时候，就要做一次全表扫描。
 
@@ -912,15 +930,17 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 1. 把表 t1 的数据读入线程内存 join\_buffer 中，由于我们这个语句中写的是 select \*，因此是把整个表 t1 放入了内存；
 2. 扫描表 t2，把表 t2 中的每一行取出来，跟 join\_buffer 中的数据做对比，满足 join 条件的，作为结果集的一部分返回。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-95f132a8113eebab.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/K7edi1K2IU5w.png)
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-89b38f61b4f9f067.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/E6ZsIpt7GB1x.png)
 
 可以看到，在这个过程中，对表 t1 和 t2 都做了一次全表扫描，因此总的扫描行数是 1100。由于 join\_buffer 是以无序数组的方式组织的，因此对表 t2 中的每一行，都要做 100 次判断，总共需要在内存中做的判断次数是：100\*1000=10 万次。
 
 `join_buffer` 的大小是由参数 `join_buffer_size` 设定的，默认值是 256k。如果放不下表 t1 的所有数据话，策略很简单，就是分段放。我把 `join_buffer_size` 改成 1200，再执行：
 
-    select * from t1 straight_join t2 on (t1.a=t2.b);
+```mysql
+select * from t1 straight_join t2 on (t1.a=t2.b);
+```
 
 执行过程就变成了：
 
@@ -929,7 +949,7 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 3. 清空 join\_buffer；
 4. 继续扫描表 t1，顺序读取最后的 12 行数据放入 join\_buffer 中，继续执行第 2 步。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-97a082ef3ba4bb5c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/vOttR8t3Hlla.png)
 
 图中的步骤 4 和 5，表示清空 join\_buffer 再复用。
 
@@ -981,7 +1001,7 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 
 主键索引是一棵 B+ 树，在这棵树上，每次只能根据一个主键 id 查到一行数据。因此，回表肯定是一行行搜索主键索引的，基本流程如图 1 所示。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-183dd8d210bc98e2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/Ec3byDVBYGZt.png)
 
 如果随着 a 的值递增顺序查询的话，**id 的值就变成随机的**，那么就会出现随机访问，性能相对较差。虽然“按行查”这个机制不能改，但是调整查询的顺序，还是能够加速的。
 
@@ -997,15 +1017,15 @@ sort\_mode 里面的 packed\_additional\_fields 的意思是，排序过程对�
 
 另外需要说明的是，如果你想要稳定地使用 MRR 优化的话，需要设置set optimizer\_switch=”mrr\_cost\_based=off”。（官方文档的说法，是现在的优化器策略，判断消耗的时候，会更倾向于不使用 MRR，把 mrr\_cost\_based 设置为 off，就是固定使用 MRR 了。）
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-83dda4dd3e250e4f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/C5zQO2C37Wui.png)
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-814460f0b60c64c7.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/5JeAUaS1H0OY.png)
 
 MRR 能够提升性能的核心在于，这条查询语句在索引 a 上做的是一个范围查询（也就是说，这是一个多值查询），可以得到足够多的主键 id。这样通过排序以后，再去主键索引查数据，才能体现出“顺序性”的优势。
 
 ### Batched Key Access - BKA （NLJ - join\_buffer）
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-af4e048ecf38627d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/lj7GJ10h33Lf.png)
 
 NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**，再到被驱动表 t2 去做 join。也就是说，对于表 t2 来说，每次都是匹配一个值。这时，MRR 的优势就用不上了。
 
@@ -1015,11 +1035,13 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 通过上一篇文章，我们知道 `join_buffer` 在 BNL 算法里的作用，是暂存驱动表的数据。但是在 NLJ 算法里并没有用。那么，我们刚好就可以复用 `join_buffer` 到 BKA 算法中。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-750b48f0ee00b608.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/SK0pPBRknqOm.png)
 
 #### 临时表去join
 
-    select * from t1 join t2 on (t1.b=t2.b) where t2.b>=1 and t2.b<=2000;
+```mysql
+select * from t1 join t2 on (t1.b=t2.b) where t2.b>=1 and t2.b<=2000;
+```
 
 我们在文章开始的时候，在表 t2 中插入了 100 万行数据，但是经过 where 条件过滤后，需要参与 join 的只有 2000 行数据。如果这条语句同时是一个低频的 SQL 语句，那么再为这个语句在表 t2 的字段 b 上创建一个索引就很浪费了。
 
@@ -1032,8 +1054,8 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
  我在上一篇文章中说过，对于表 t2 的每一行，判断 join 是否满足的时候，都需要遍历 join\_buffer 中的所有行。因此判断等值条件的次数是 1000\*100 万 =10 亿次，这个判断的工作量很大。
 
- ![image.png](https://upload-images.jianshu.io/upload_images/12321605-c93c567cd51dd9c5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-cd13a7493613b65b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+ ![image.png](images/deep-in-mysql/wQACctvcIhqm.png)
+![image.png](images/deep-in-mysql/MpJMf4NgWTcZ.png)
 
 可以看到，explain 结果里 Extra 字段显示使用了 BNL 算法。在我的测试环境里，这条语句需要执行 1 分 11 秒。
 
@@ -1045,11 +1067,13 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 此时，对应的 SQL 语句的写法如下：
 
-    create temporary table temp_t(id int primary key, a int, b int, index(b))engine=innodb;
-    insert into temp_t select * from t2 where b>=1 and b<=2000;
-    select * from t1 join temp_t on (t1.b=temp_t.b);
+```mysql
+create temporary table temp_t(id int primary key, a int, b int, index(b))engine=innodb;
+insert into temp_t select * from t2 where b>=1 and b<=2000;
+select * from t1 join temp_t on (t1.b=temp_t.b);
+```
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-c7ab0399b824b793.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/JUhIDZss6zno.png)
 
 1. 执行 insert 语句构造 temp\_t 表并插入数据的过程中，对表 t2 做了全表扫描，这里扫描行数是 100 万。
 2. 之后的 join 语句，扫描表 t1，这里的扫描行数是 1000；join 比较过程中，做了 1000 次带索引的查询。相比于优化前的 join 语句需要做 10 亿次条件判断来说，这个优化效果还是很明显的。
@@ -1085,33 +1109,37 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 ### 内存临时表
 
-    mysql> CREATE TABLE `words` (
-      `id` int(11) NOT NULL AUTO_INCREMENT,
-      `word` varchar(64) DEFAULT NULL,
-      PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB;
-    
-    delimiter ;;
-    create procedure idata()
-    begin
-      declare i int;
-      set i=0;
-      while i<10000 do
-        insert into words(word) values(concat(char(97+(i div 1000)), char(97+(i % 1000 div 100)), char(97+(i % 100 div 10)), char(97+(i % 10))));
-        set i=i+1;
-      end while;
-    end;;
-    delimiter ;
-    
-    call idata();
+```mysql
+mysql> CREATE TABLE `words` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `word` varchar(64) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+delimiter ;;
+create procedure idata()
+begin
+  declare i int;
+  set i=0;
+  while i<10000 do
+    insert into words(word) values(concat(char(97+(i div 1000)), char(97+(i % 1000 div 100)), char(97+(i % 100 div 10)), char(97+(i % 10))));
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+
+call idata();
+```
 
 这个语句的意思很直白，随机排序取前 3 个。虽然这个 SQL 语句写法很简单，但执行流程却有点复杂的。
 
-    mysql> select word from words order by rand() limit 3;
+```mysql
+mysql> select word from words order by rand() limit 3;
+```
 
 我们先用 explain 命令来看看这个语句的执行情况。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-19f40953fafe8881.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/N1bzxmNhKZCM.png)
 
 1. 创建一个临时表。这个临时表使用的是 memory 引擎，表里有两个字段，第一个字段是 double 类型，为了后面描述方便，记为字段 R，第二个字段是 varchar(64) 类型，记为字段 W。并且，这个表没有建索引。
 2. 从 words 表中，按主键顺序取出所有的 word 值。对于每一个 word 值，调用 rand() 函数生成一个大于 0 小于 1 的随机小数，并把这个随机小数和 word 分别存入临时表的 R 和 W 字段中，到此，扫描行数是 10000。
@@ -1121,7 +1149,7 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 6. 在 sort\_buffer 中根据 R 的值进行排序。注意，这个过程没有涉及到表操作，所以不会增加扫描行数。
 7. 排序完成后，取出前三个结果的位置信息，依次到内存临时表中取出 word 值，返回给客户端。这个过程中，访问了表的三行数据，总扫描行数变成了 20003。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-184b04aae91a1b8f.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/oAYBv5qnJ6MK.png)
 
 ### 磁盘临时表
 
@@ -1129,19 +1157,21 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 磁盘临时表使用的引擎默认是 InnoDB，是由参数 internal\_tmp\_disk\_storage\_engine 控制的。
 
-    set tmp_table_size=1024;
-    set sort_buffer_size=32768;
-    set max_length_for_sort_data=16;
-    /* 打开 optimizer_trace，只对本线程有效 */
-    SET optimizer_trace='enabled=on'; 
-    
-    /* 执行语句 */
-    select word from words order by rand() limit 3;
-    
-    /* 查看 OPTIMIZER_TRACE 输出 */
-    SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
+```mysql
+set tmp_table_size=1024;
+set sort_buffer_size=32768;
+set max_length_for_sort_data=16;
+/* 打开 optimizer_trace，只对本线程有效 */
+SET optimizer_trace='enabled=on'; 
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-1b6eb162e47ef602.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+/* 执行语句 */
+select word from words order by rand() limit 3;
+
+/* 查看 OPTIMIZER_TRACE 输出 */
+SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
+```
+
+![image.png](images/deep-in-mysql/9CoyhhojxUqA.png)
 
 因为将 max\_length\_for\_sort\_data 设置成 16，小于 word 字段的长度定义，所以我们看到 sort\_mode 里面显示的是 rowid 排序，这个是符合预期的，参与排序的是随机值 R 字段和 rowid 字段组成的行。
 
@@ -1159,28 +1189,32 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 #### union 执行流程
 
-    create table t1(id int primary key, a int, b int, index(a));
-    delimiter ;;
-    create procedure idata()
-    begin
-      declare i int;
-    
-      set i=1;
-      while(i<=1000)do
-        insert into t1 values(i, i, i);
-        set i=i+1;
-      end while;
-    end;;
-    delimiter ;
-    call idata();
+```mysql
+create table t1(id int primary key, a int, b int, index(a));
+delimiter ;;
+create procedure idata()
+begin
+  declare i int;
+
+  set i=1;
+  while(i<=1000)do
+    insert into t1 values(i, i, i);
+    set i=i+1;
+  end while;
+end;;
+delimiter ;
+call idata();
+```
 
 然后，我们执行下面这条语句：
 
-    (select 1000 as f) union (select id from t1 order by id desc limit 2);
+```mysql
+(select 1000 as f) union (select id from t1 order by id desc limit 2);
+```
 
 这条语句用到了 union，它的语义是，取这两个子查询结果的并集。并集的意思就是这两个集合加起来，重复的行只保留一行。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-4001801f06638ca4.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/iq9njwYPJvhT.png)
 
 * 第二行的 key=PRIMARY，说明第二个子句用到了索引 id。
 * 第三行的 Extra 字段，表示在对子查询的结果集做 union 的时候，使用了临时表 (Using temporary)。
@@ -1194,15 +1228,17 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
   * 取到第二行 id=999，插入临时表成功。
 4. 从临时表中按行取出数据，返回结果，并删除临时表，结果中包含两行数据分别是 1000 和 999。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-27a0ebaf024b74ae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/Te6s2gU2q5f8.png)
 
 #### group by 执行流程
 
-    select id%10 as m, count(*) as c from t1 group by m;
+```mysql
+select id%10 as m, count(*) as c from t1 group by m;
+```
 
 这个语句的逻辑是把表 t1 里的数据，按照 id%10 进行分组统计，并按照 m 的结果排序后输出。它的 explain 结果如下：
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-35b19794e6c2f1db.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/yiibGVr9TU8G.png)
 
 在 Extra 字段里面，我们可以看到三个信息：
 
@@ -1220,15 +1256,17 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 这个流程的执行图如下：
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-638c0dea792883ae.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/TIQKkNeu7heO.png)
 
 图中最后一步，对内存临时表的排序，在第 17 篇文章中已经有过介绍，我把图贴过来，方便你回顾。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-edd24def2b9c5a44.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/7emyNzD5m7WQ.png)
 
 如果你的需求并不需要对结果进行排序，那你可以在 SQL 语句末尾增加 order by null，也就是改成：如果你的需求并不需要对结果进行排序，那你可以在 SQL 语句末尾增加 order by null，也就是改成：
 
-    select id%10 as m, count(*) as c from t1 group by m order by null;
+```mysql
+select id%10 as m, count(*) as c from t1 group by m order by null;
+```
 
 把内存临时表的大小限制为最大 1024 字节，并把语句改成 id % 100，这样返回结果里有 100 行数据。但是，这时的内存临时表大小不够存下这 100 行数据，也就是说，执行过程中会发现内存临时表大小到达了上限（1024 字节）。
 
@@ -1240,11 +1278,15 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 在 MySQL 5.7 版本支持了 generated column 机制，用来实现列数据的关联更新。你可以用下面的方法创建一个列 z，然后在 z 列上创建一个索引（如果是 MySQL 5.6 及之前的版本，你也可以创建普通列和索引，来解决这个问题）。
 
-    alter table t1 add column z int generated always as(id % 100), add index(z);
+```mysql
+alter table t1 add column z int generated always as(id % 100), add index(z);
+```
 
 这样，索引 z 上的数据就是类似图 10 这样有序的了。上面的 group by 语句就可以改成：
 
-    select z, count(*) as c from t1 group by z;
+```mysql
+select z, count(*) as c from t1 group by z;
+```
 
 #### group by 优化方法 – 直接排序
 
@@ -1258,7 +1300,9 @@ NLJ 算法执行的逻辑是：**从驱动表 t1，一行行地取出 a 的值**
 
 MySQL 的优化器一看，磁盘临时表是 B+ 树存储，存储效率不如数组来得高。所以，既然你告诉我数据量很大，那从磁盘空间考虑，还是直接用数组来存吧。
 
-    select SQL_BIG_RESULT id%100 as m, count(*) as c from t1 group by m;
+```mysql
+select SQL_BIG_RESULT id%100 as m, count(*) as c from t1 group by m;
+```
 
 的执行流程就是这样的：
 
@@ -1267,9 +1311,9 @@ MySQL 的优化器一看，磁盘临时表是 B+ 树存储，存储效率不如�
 3. 扫描完成后，对 sort\_buffer 的字段 m 做排序（如果 sort\_buffer 内存不够用，就会利用磁盘临时文件辅助排序）；
 4. 排序完成后，就得到了一个有序数组。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-ae7d42d638c79aa1.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/aQOkqYlWMGbW.png)
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-394d69bd71231348.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/B70lQ5x3u2S7.png)
 
 从 Extra 字段可以看到，这个语句的执行没有再使用临时表，而是直接用了排序算法。
 
@@ -1281,12 +1325,16 @@ MySQL 的优化器一看，磁盘临时表是 B+ 树存储，存储效率不如�
 
 #### distinct 和 group by 的性能
 
-    select a from t group by a order by null;
-    select distinct a from t;
+```mysql
+select a from t group by a order by null;
+select distinct a from t;
+```
 
 首先需要说明的是，这种 group by 的写法，并不是 SQL 标准的写法。标准的 group by 语句，是需要在 select 部分加一个聚合函数，比如：
 
-    select a,count(*) from t group by a order by null;
+```mysql
+select a,count(*) from t group by a order by null;
+```
 
 这条语句的逻辑是：按照字段 a 分组，计算每组的 a 出现的次数。在这个结果里，由于做的是聚合计算，相同的 a 只出现一次。
 
@@ -1315,7 +1363,7 @@ MySQL 的优化器一看，磁盘临时表是 B+ 树存储，存储效率不如�
 
 这里，你可以使用 alter table A engine=InnoDB 命令来重建表。在 MySQL 5.5 版本之前，这个命令的执行流程跟我们前面描述的差不多，区别只是这个临时表 B 不需要你自己创建，MySQL 会自动完成转存数据、交换表名、删除旧表的操作。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-2a6bac61608d54ee.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/Xt4qCuNsLBwN.png)
 
 ### Online DDL
 
@@ -1325,7 +1373,7 @@ MySQL 的优化器一看，磁盘临时表是 B+ 树存储，存储效率不如�
 4. 临时文件生成后，将日志文件中的操作应用到临时文件，得到一个逻辑数据上与表 A 相同的数据文件，对应的就是图中 state3 的状态；
 5. 用临时文件替换表 A 的数据文件。
 
-![image.png](https://upload-images.jianshu.io/upload_images/12321605-79ff4f42f79adfce.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![image.png](images/deep-in-mysql/Wj5rkEztMdgK.png)
 
 确实，图 4 的流程中，alter 语句在启动的时候需要获取 MDL 写锁，但是这个写锁在真正拷贝数据之前就退化成读锁了。
 
