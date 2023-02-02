@@ -1,3 +1,5 @@
+# 用于 LateX 的数学符号
+
 http://web.ift.uib.no/Teori/KURS/WRK/TeX/symALL.html 有常用的数学符号的LaTex 写法，下面的 PDF 文件来自该网站
 
 [Latex Math Symbols.pdf](images/EB05AB5AD4CB7E32C5966244916FA959.pdf)
