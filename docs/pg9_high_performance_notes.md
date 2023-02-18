@@ -1,4 +1,9 @@
-# 《PostgreSQL 9 High Performance》读书笔记
+---
+title: 《PostgreSQL 9 High Performance》读书笔记
+descrption: 阅读 《PostgreSQL 9 High Performance》 做的一些笔记
+tags: ["postgresql", "performance"]
+---
+
 
 这是很早前阅读 [《PostgreSQL 9 High Performance》](https://www.packtpub.com/product/postgresql-90-high-performance/9781849510301) 做的一些笔记
 

@@ -9,6 +9,8 @@ edit_uri: ""
 copyright: Copyright &copy; wgzhao
 theme:
   name: material
+  # https://squidfunk.github.io/mkdocs-material/customization/#extending-the-theme
+  custom_dir: overrides
   language: zh
   icon:
     repo: fontawesome/brands/github
@@ -33,6 +35,10 @@ theme:
     - search.share
     - search.suggest
 
+  # font:
+  #   text: Noto Serif
+  #   code: Roboto Mono
+
 # nav:
 #   - index.md
 #   - quickstart.md
@@ -41,58 +47,148 @@ theme:
 #   - statsreport.md
 #   - transformer.md
 #   - plugin_development.md
-  
+#
+# Extras
+#
 extra:
+  # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-analytics/
   version:
     provider: mike
+  
+  # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-analytics/#cookie-consent
+  consent:
+    title: Cookie consent
+    description: >-
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better.
+  
+  # https://squidfunk.github.io/mkdocs-material/setup/setting-up-the-footer
   social:
-    - icon: fontawesome/brands/twitter
-      link: https://twitter.com/mlsx
-    - icon: fontawesome/brands/github
+    - icon: fontawesome/brands/github-alt
       link: https://github.com/wgzhao
+      name: wgzhao
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/01mlsx
+      name: 01mlsx
+  generator: false # hide the line "Made with Material for MkDocs"
 
 # Extensions
 markdown_extensions:
-  - admonition
-  - abbr
-  - attr_list
-  - def_list
-  - footnotes
-  - meta
-  - md_in_html
-  - toc:
+  - abbr # add a small tooltip to elements
+  - admonition # add call-out blocks
+  - attr_list # allow to add HTML attributes and CSS classes
+  - def_list # add description lists
+  - footnotes # define inline footnotes
+  - meta # attach arbitrary key-value pairs to a document
+  - md_in_html # allow to write Markdown inside HTML elements
+  - tables # create tables in Markdown
+  - toc:  # generate a table of contents from documents
       permalink: true
+      toc_depth: 4 # header 1 to header 4
+      # slugify: !!python/name:pymdownx.slugs.uslugify # convert title to html-compatible text
+  - sane_lists # make better lists
+  - smarty: # convert some special characters
+      smart_angled_quotes: true
+  #
+  # Python Markdown Extensions
+  # https://squidfunk.github.io/mkdocs-material/setup/extensions/python-markdown-extensions/
+  #
   - pymdownx.arithmatex:
       generic: true
   - pymdownx.betterem:
       smart_enable: all
-  - pymdownx.caret
-  - pymdownx.details
+  - pymdownx.caret # define superscript
+  - pymdownx.mark # highlight text
+  - pymdownx.tilde # define subscript
+  - pymdownx.critic # track changes
+  - pymdownx.details # add collapsible call-outs
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.keys
+  - pymdownx.emoji: # add inlines bundled and custom icons and emojis 
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.superfences # define code blocks and nesting of code
+  - pymdownx.highlight: # highlight of code blocks
+      linenums_style: pymdownx-inline
+      # anchor_linenums: true # create anchor link on each line of code
+  - pymdownx.inlinehilite # highlight inline code blocks
+  - pymdownx.smartsymbols # convert some sequences of characters into their corresponding symbols
+  - pymdownx.tabbed: # group related content and code blocks under accessible tabs
+      alternate_style: true
+  - pymdownx.escapeall:
+      hardbreak: true # use \ to create new line
+      nbsp: true # use \<space> to create &nbsp;
+  # - pymdownx.keys # syntax ++ctrl+c++ does not look clear in MD document
+  - pymdownx.progressbar
   - pymdownx.magiclink:
       repo_url_shorthand: true
       user: wgzhao
       repo: notes
-  - pymdownx.mark
-  - pymdownx.smartsymbols
   - pymdownx.superfences:
      custom_fences:
        - name: mermaid
          class: mermaid
          format: !!python/name:pymdownx.superfences.fence_code_format
-  - pymdownx.snippets:
+  - pymdownx.snippets: #embbed content from arbitrary files into a document
       base_path: 
         - docs/assets
-      check_paths: false
-  - pymdownx.tabbed
-  - pymdownx.tasklist:
+      check_paths: true
+  - pymdownx.tasklist: # define list of task with checkbox
       custom_checkbox: true
-  - pymdownx.tilde
 
 # preview control
 use_directory_urls: true
 
+plugins: 
+  - search:
+  - awesome-pages:
+      # collapse_single_pages: true # replaced by navigation.indexes
+  # - section-index # must be after awesome-pages, replaced by navigation.indexes
+  - git-revision-date-localized:
+        enable_creation_date: true
+        fallback_to_build_date: true
+        type: iso_date
+  - encryptcontent:
+        hljs: false
+        arithmatex: false
+        mermaid2: false
+        password_button: true
+        remember_password: true
+        default_expire_dalay: 24
+        # reload_scripts:
+            # - "./assets/extra.js"
+  - exclude:
+        glob:
+          - '*/exclude/*'
+        regex:
+          - '.*\[exclude\].*'
+  # - pdf-with-js:
+        # enable: false # should enable only when need PDF files
+        # add_download_button: false
+        # display_header_footer: true
+        # header_template: >-
+            # <div style="font-size:8px; margin:auto; color:lightgray;">
+                # <span class="title"></span>
+            # </div>
+        # footer_template: >-
+            # <div style="font-size:8px; margin:auto; color:lightgray;">
+                # Page <span class="pageNumber"></span> of 
+                # <span class="totalPages"></span>
+            # </div>
+  # - tags:
+
+#
+# Custom styles and scripts
+#
+extra_css:
+  - assets/view-bigimg.css
+  - assets/extra.css
 extra_javascript:
   - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - https://polyfill.io/v3/polyfill.min.js?features=es6
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+  - assets/view-bigimg.js
+  - assets/extra.js

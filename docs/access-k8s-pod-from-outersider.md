@@ -1,3 +1,9 @@
+---
+title: 外部机器如何直接直接访问 kubernetes 集群内服务
+description: 这篇帖子主要描述如何配置，使得 k8s 集群外部的机器也可以直接访问集群内的服务，包括名称解析
+tags: ["dns", "k8s", "service"]
+---
+
 # 外部机器如何直接直接访问 kubernetes 集群内服务
 
 

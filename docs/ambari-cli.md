@@ -1,4 +1,9 @@
-# 使用 Ambari API 来操作 Hadoop 集群
+---
+title: 使用 Ambari API 来操作 Hadoop 集群
+description: 这篇帖子主要描述一些 ambari 命令行操作的内容
+tags: ["ambari", "cli"]
+---
+
 
 Ambari 管理的hadoop集群，大部分操作都可以在其管理页面上完成想要的操作，但是有些操作却不行，比如一些服务并不提供删除操作，另外当一个节点处于心跳丢失情况下，也无法在页面上将其从集群中剥离出来。
 
