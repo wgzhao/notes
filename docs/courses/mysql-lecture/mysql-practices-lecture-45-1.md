@@ -24,7 +24,39 @@ mysql> select * from T where ID=10；
 
 下面我给出的是 MySQL 的基本架构示意图，从中你可以清楚地看到 SQL 语句在 MySQL 的各个功能模块中的执行过程。
 
-![img](../../images/mysql-lecture-45/0d2070e8f84c4801adbfa03bda1f98d9.png)
+
+
+```mermaid
+graph 
+	%%define comment
+	client["fa:fa-user 客户端"]
+	subgraph Server
+		direction TB
+		connector("连接器<br/>管理连接，权限验证")
+		qc("查询缓存<br/>命中则直接返回结果")
+		analyzer("分析器<br/>词法分析，语法分析")
+		optimizer("优化器<br/>执行计划生成，索引选择")
+		executor("执行器<br/>操作引擎，返回结果")
+		
+		connector --> qc
+		connector --> analyzer --> optimizer --> executor
+		analyzer --> qc
+	end
+	
+	subgraph Storage
+		direction LR
+		node1(存储引擎)
+		node2(存储引擎)
+		node3(存储引擎)
+		
+		node1:::nolink -.- node2 -.- node3
+		
+		linkStyle 5,6 nolink stroke:white,stroke-width:0px;
+	end
+
+	client --> Server
+	Server --> Storage
+```
 
 大体来说，MySQL 可以分为 Server 层和存储引擎层两部分。
 
@@ -187,8 +219,6 @@ mysql> update T set c=c+1 where ID=2;
 
 前面我有跟你介绍过 SQL 语句基本的执行链路，这里我再把那张图拿过来，你也可以先简单看看这个图回顾下。首先，可以确定的说，查询语句的那一套流程，更新语句也是同样会走一遍。
 
-![img](../../images/mysql-lecture-45/0d2070e8f84c4801adbfa03bda1f98d9.png)
-
 你执行语句前要先连接数据库，这是连接器的工作。
 
 前面我们说过，在一个表上有更新的时候，跟这个表有关的查询缓存会失效，所以这条语句就会把表 T 上所有缓存结果都清空。这也就是我们一般不建议使用查询缓存的原因。
@@ -220,7 +250,25 @@ mysql> update T set c=c+1 where ID=2;
 
 与此类似，InnoDB 的 redo log 是固定大小的，比如可以配置为一组 4 个文件，每个文件的大小是 1GB，那么这块“粉板”总共就可以记录 4GB 的操作。从头开始写，写到末尾就又回到开头循环写，如下面这个图所示。
 
-![img](../../images/mysql-lecture-45/b075250cad8d9f6c791a52b6a600f69c.jpg)
+```mermaid
+graph LR
+
+	checkpoint --> ib_logfile_1
+	
+	wp["write pos"] --> ib_logfile_3
+	
+	subgraph "Logfile Group"
+    direction LR
+    ib_logfile_0
+    ib_logfile_1
+    ib_logfile_2
+    ib_logfile_3
+
+    ib_logfile_0:::nolink  --- ib_logfile_1 --- ib_logfile_2 --- ib_logfile_3
+    
+    linkStyle 2,3,4 nolink stroke:white,stroke-width:0px;
+	end
+```
 
 write pos 是当前记录的位置，一边写一边后移，写到第 3 号文件末尾后就回到 0 号文件开头。checkpoint 是当前要擦除的位置，也是往后推移并且循环的，擦除记录前要把记录更新到数据文件。
 
@@ -254,7 +302,24 @@ write pos 和 checkpoint 之间的是“粉板”上还空着的部分，可以�
 
 这里我给出这个 update 语句的执行流程图，图中浅色框表示是在 InnoDB 内部执行的，深色框表示是在执行器中执行的。
 
-![img](../../images/mysql-lecture-45/2e5bff4910ec189fe1ee6e2ecc7b4bbe.png)
+
+
+```mermaid
+flowchart TD
+	%% define node
+	
+	A["取ID=2这一行"]:::heavygreen --> B{"数据也在内存中？"}
+	B -->|Yes| C["返回数据行"]
+	C -->D["将这行的值加一"]:::heavygreen --> E["写入新行"]:::heavygreen --> F["新行更新到内存"]
+	F --> G["写入redolog<br/>处于prepare阶段"]
+	G --> H["写 binlog"]:::heavygreen --> I["提交事务<br/>处于 commit 状态"]
+	
+	B -->|No| M["磁盘中读入内存"] --> C
+	
+	classDef heavygreen fill:#558241
+```
+
+
 
 你可能注意到了，最后三步看上去有点“绕”，将 redo log 的写入拆成了两个步骤：prepare 和 commit，这就是"两阶段提交"。
 
@@ -316,7 +381,29 @@ sync\_binlog 这个参数设置成 1 的时候，表示每次事务的 binlog �
 
 假设一个值从 1 被按顺序改成了 2、3、4，在回滚日志里面就会有类似下面的记录。
 
-![img](../../images/mysql-lecture-45/d9c313809e5ac148fc39feff532f0fee.png)当前值是 4，但是在查询这条记录的时候，不同时刻启动的事务会有不同的 read-view。如图中看到的，在视图 A、B、C 里面，这一个记录的值分别是 1、2、4，同一条记录在系统中可以存在多个版本，就是数据库的多版本并发控制（MVCC）。对于 read-view A，要得到 1，就必须将当前值依次执行图中所有的回滚操作得到。
+```mermaid
+flowchart LR
+	%% define node
+		A["read view A"] .-> 2to1
+	B["read view B"] .-> 3to2
+	
+	curr["当前值4"] --> 4to3
+	direction TB
+	C["read view C"] .-> curr
+	
+	subgraph redo ["回滚段"]
+		direction RL
+		2to1["将2改成1"]:::heavygreen
+		3to2["将3改成2"]
+		4to3["将4改成3"]:::heavygreen
+		
+		4to3  --> 3to2 --> 2to1
+	end
+	
+	classDef heavygreen fill:#f8f2
+```
+
+当前值是 4，但是在查询这条记录的时候，不同时刻启动的事务会有不同的 read-view。如图中看到的，在视图 A、B、C 里面，这一个记录的值分别是 1、2、4，同一条记录在系统中可以存在多个版本，就是数据库的多版本并发控制（MVCC）。对于 read-view A，要得到 1，就必须将当前值依次执行图中所有的回滚操作得到。
 
 同时你会发现，即使现在有另外一个事务正在将 4 改成 5，这个事务跟 read-view A、B、C 对应的事务是不会冲突的。
 
@@ -695,7 +782,13 @@ MySQL 里面表级别的锁有两种：一种是表锁，一种是元数据锁�
 
 > 备注：这里的实验环境是 MySQL 5.6。
 
-![img](../../images/mysql-lecture-45/7cf6a3bf90d72d1f0fc156ececdfb0ce.jpg)
+| session A                  | session B                  | session C                  | session D                  |
+| -------------------------- | -------------------------- | -------------------------- | -------------------------- |
+| `begin;`                   |                            |                            |                            |
+| `select * from t limit 1;` |                            |                            |                            |
+|                            | `select * from t limit 1;` |                            |                            |
+|                            |                            | `select * from t limit 1;` |                            |
+|                            |                            |                            | `select * from t limit 1;` |
 
 我们可以看到 session A 先启动，这时候会对表 t 加一个 MDL 读锁。由于 session B 需要的也是 MDL 读锁，因此可以正常执行。
 
@@ -749,7 +842,13 @@ MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所�
 
 #### 从两阶段锁说起
 
-我先给你举个例子。在下面的操作序列中，事务 B 的 update 语句执行时会是什么现象呢？假设字段 id 是表 t 的主键。![img](../../images/mysql-lecture-45/51f501f718e420244b0a2ec2ce858710.jpg)
+我先给你举个例子。在下面的操作序列中，事务 B 的 update 语句执行时会是什么现象呢？假设字段 id 是表 t 的主键。
+
+| 事务 A                                                       | 事务 B                                     |
+| ------------------------------------------------------------ | ------------------------------------------ |
+| begin;<br />update t set k=k+1 where id=1;<br />update t set = k+1 where id=2; |                                            |
+|                                                              | begin;<br />update t set k=k+2 where id=1; |
+| commit;                                                      |                                            |
 
 这个问题的结论取决于事务 A 在执行完两条 update 语句后，持有哪些锁，以及在什么时候释放。你可以验证一下：实际上事务 B 的 update 语句会被阻塞，直到事务 A 执行 commit 之后，事务 B 才能继续执行。
 
@@ -779,7 +878,14 @@ MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所�
 
 ### 死锁和死锁检测
 
-当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态，称为死锁。这里我用数据库中的行锁举个例子。![img](../../images/mysql-lecture-45/4d0eeec7b136371b79248a0aed005a52.jpg)
+当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态，称为死锁。这里我用数据库中的行锁举个例子。
+
+| 事务 A                                     | 事务 B                         |
+| ------------------------------------------ | ------------------------------ |
+| begin;<br />update t set k=k+1 where id=1; | begin;                         |
+|                                            | update t set k=k+1 where id=2; |
+| update t set k=k+1 where id=2;             |                                |
+|                                            | update t set k=k+1 whre id=1;  |
 
 这时候，事务 A 在等待事务 B 释放 id=2 的行锁，而事务 B 在等待事务 A 释放 id=1 的行锁。 事务 A 和事务 B 在互相等待对方的资源释放，就是进入了死锁状态。当出现死锁以后，有两种策略：
 
