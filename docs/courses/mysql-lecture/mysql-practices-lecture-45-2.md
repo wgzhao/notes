@@ -661,7 +661,23 @@ InnoDB 每次写入的日志都有一个序号，当前写入的序号跟 checkp
 
 上述的计算流程比较抽象，不容易理解，所以我画了一个简单的流程图。图中的 F1、F2 就是上面我们通过脏页比例和 redo log 写入速度算出来的两个值。
 
-![img](../../images/mysql-lecture-45/cc44c1d080141aa50df6a91067475374.png)
+```mermaid
+%%{ init: {"flowchart": {"curve": "catmullRom"}}}%%
+graph TB
+	begin((" "))
+	begin --> M("脏页比例M<br/>max_dirty_pages_pct")
+	begin --> N("(当前日志序列 - checkponit) N")
+	M --> F1
+	N --> F2
+	F1 --> R["R = max{F1,F2}"]
+	F2 --> R
+	R --> refresh("按照 R% 速度刷新脏页")
+	refresh --> over(("   "))
+	
+	over .-> begin
+```
+
+
 
 图 3 InnoDB 刷脏页速度策略
 

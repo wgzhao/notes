@@ -913,7 +913,14 @@ LSN 也会写到 InnoDB 的数据页中，来确保数据页不会被多次执�
 
 为了让一次 fsync 带的组员更多，MySQL 有一个很有趣的优化：拖时间。在介绍两阶段提交的时候，我曾经给你画了一个图，现在我把它截过来。
 
-![img](../../images/mysql-lecture-45/98b3b4ff7b36d6d72e38029b86870551.png)
+```mermaid
+graph TB
+	A["写入redolog<br/>处于prepare阶段"]
+	B["写 binlog"]
+	C["提交事务<br/>处于 commit 状态"]
+	
+	A --> B --> C
+```
 
 图 4 两阶段提交
 
@@ -924,7 +931,20 @@ LSN 也会写到 InnoDB 的数据页中，来确保数据页不会被多次执�
 
 MySQL 为了让组提交的效果更好，把 redo log 做 fsync 的时间拖到了步骤 1 之后。也就是说，上面的图变成了这样：
 
-![img](../../images/mysql-lecture-45/5ae7d074c34bc5bd55c82781de670c28.png)
+```mermaid
+graph TB
+	A["1. redo log prepare: write"]
+	B["2. binlog: write"]
+	C["3. redo log preapre: fsync"]
+	D["4. binlog: fsync"]
+	E["5. redo log commit: write"]
+	
+	A --> B --> C 
+	A .-> C
+	B .-> D
+	C --> D 
+	D --> E
+```
 
 图 5 两阶段提交细化
 
@@ -1028,7 +1048,26 @@ MySQL 为了让组提交的效果更好，把 redo log 做 fsync 的时间拖到
 
 接下来，我们再看看**节点 A 到 B 这条线的内部流程是什么样的**。图 2 中画出的就是一个 update 语句在节点 A 执行，然后同步到节点 B 的完整流程图。
 
-![img](../../images/mysql-lecture-45/a66c154c1bc51e071dd2cc8c1d6ca6a3.png)
+```mermaid
+graph TB 
+	subgraph A ["master A"]
+    direction LR
+    undo["undo log(mem)"] --> data["data(mem)"] --> redo["redo log(prepare)"] --> binlog
+    binlog --> redo2["redo log (commit)"]
+    binlog --> dump["dump_thread"]
+
+    bg_thread --> undo2["undo log(disk)"] --> data2["data(disk)"]
+	end
+	
+	subgraph B ["slave B"]
+		direction RL
+		ioThread["io_thread"] --> relay["relay log"] --> sqlThread["sql_thread"] --> dataB["DATA"] 
+	end
+	
+	dump --> ioThread
+	start -->undo
+	redo2 --> ack
+```
 
 图 2 主备流程图
 
