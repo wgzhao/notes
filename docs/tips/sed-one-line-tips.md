@@ -1,4 +1,10 @@
-# SED单行脚本快速参考
+---
+title: SED 单行脚本快速参考
+description: SED 单行脚本快速参考
+tags: ["sed"]
+---
+
+# SED 单行脚本快速参考
 
 在以下地址可找到本文档的最新（英文）版本：
    [http://sed.sourceforge.net/sed1line.txt](http://sed.sourceforge.net/sed1line.txt)

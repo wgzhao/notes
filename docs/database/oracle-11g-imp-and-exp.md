@@ -1,3 +1,9 @@
+---
+title: Oracle 11g 导入导出基本操作
+description: 这篇帖子简单描述了 Oracle 导入和导出的基本操作
+tags: ["oracle", "exp", "imp", "expdp", "impdp"]
+---
+
 # Oracle 11g 导入导出基本操作
 
 [Source](http://www.liuhuachao.com/blog/2018/10/23/oracle/ "Permalink to oracle 11g 数据库的导入导出")

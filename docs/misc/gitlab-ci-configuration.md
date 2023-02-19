@@ -1,3 +1,9 @@
+---
+title: gitlab-ci.yml 详解
+description: 本文对 GitLab CI 流水线配置文件 .gitlab-ci.yml 进行详细的介绍。
+tags: ["gitlab", "ci", "gitlab-ci"]
+---
+
 # gitlab-ci.yml 详解
 
 本文对 GitLab CI 流水线配置文件 `.gitlab-ci.yml` 进行详细的介绍。
@@ -8,7 +14,7 @@
 * `.gitlab-ci.yml` 文件告诉运行器需要做哪些事情，默认情况下，流水线有 `build` 、`test` 、`deploy` 三个阶段，即 `构建` 、`测试` 、`部署` ，未被使用的阶段将会被自动忽略。
 * 如果一切运行正常（没有非零返回值），您将获得与提交相关联的漂亮绿色复选标记(如下图所示)。这样可以在查看代码之前轻松查看提交是否导致任何测试失败。
 
-![green_checkmark.png](images/gitlab/gitlab_cicd_green_checkmark.png)
+![green_checkmark.png](../images/gitlab/gitlab_cicd_green_checkmark.png)
 
 * 大多数项目使用GitLab的CI服务来运行测试套件，以便开发人员在破坏某些内容时可以立即获得反馈。使用持续交付和持续部署将测试代码自动部署到模拟环境和生产环境的趋势越来越明显。
 * 由于将 `.gitlab-ci.yml` 文件存放在仓库中进行版本控制，使用单一的配置文件来控制流水线，具有读访问权限的每个人都可以查看内容，从而使其更有吸引力地改进和查看构建脚本。旧的版本也能构建成功，forks项目也容易使用CI，分支可以有不同的流水线和作业。
@@ -144,9 +150,9 @@ build1:
 
 将修改上传提交，查看作业build1的控制台输出：
 
-![before_script.png](images/gitlab/job_before_script_overwrited_global_before_script.png)
+![before_script.png](../images/gitlab/job_before_script_overwrited_global_before_script.png)
 
-![ after_script.png](images/gitlab/job_after_script_overwrited_global_after_script.png)
+![ after_script.png](../images/gitlab/job_after_script_overwrited_global_after_script.png)
 
 可以发现 `build1` 作业的 `before_script` 和 `after_script` 将全局的 `before_script` 和 `after_script` 覆盖了。
 
@@ -231,17 +237,17 @@ test2:
 
 我们增加一个 `code_check` 阶段，该阶段有一个作业 `find Bugs` ，该作业主要是先安装Flake8，然后使用Flake8对Python代码进行规范检查。
 
-![check_failed.png](images/gitlab/job_code_check_failed.png)
+![check_failed.png](../images/gitlab/job_code_check_failed.png)
 
 由于Flake8检查到了Python代码中的缺陷，导致find Bugs作业失败！这样可以控制开发人员提交有坏味道的代码到仓库中。
 
 另外，在上一个流水线中，Test阶段的作业test1和test2是并行执行的，如下图所示：
 
-![executed_in_parallel.png](images/gitlab/test_jobs_are_executed_in_parallel.png)
+![executed_in_parallel.png](../images/gitlab/test_jobs_are_executed_in_parallel.png)
 
 本次(pipeline \#7)流水线由于在作业 `find Bugs` 检查不通过，导致整个流水线运行失败，后续的作业不会执行：
 
-![further_stage_are_executed.png](images/gitlab/code_check_failed_no_jobs_of_further_stage_are_executed.png)
+![further_stage_are_executed.png](../images/gitlab/code_check_failed_no_jobs_of_further_stage_are_executed.png)
 
 Attention
 
@@ -474,15 +480,15 @@ docker build service one:
 
 我们将 `bluelog` 项目的描述和主题进行修改：
 
-![description_tags.png](images/gitlab/project_description_tags.png)
+![description_tags.png](../images/gitlab/project_description_tags.png)
 
 并创建三个分支 `issue-pylint` 、`Issue-flake8` 和 `severe-issues` ：
 
-![three_branches.png](images/gitlab/project_three_branches.png)
+![three_branches.png](../images/gitlab/project_three_branches.png)
 
 刚新增的三个分支，自动继承了master主干的CI RUNNER，因为Flake8检查代码质量没通过，流水线都失败了：
 
-![pipeline_failed.png](images/gitlab/project_three_branches_pipeline_failed.png)
+![pipeline_failed.png](../images/gitlab/project_three_branches_pipeline_failed.png)
 
 
 现在朝 `.gitlab-ci.yml` 文件中增加 `only` 和 `except` 策略。
@@ -491,11 +497,11 @@ docker build service one:
 
 创建仅匹配 `issue-` 开头的分支：
 
-![match_startwith_issue.png](images/gitlab/only_match_startwith_issue.png)
+![match_startwith_issue.png](../images/gitlab/only_match_startwith_issue.png)
 
 可以发现master主干没有执行 `find Bugs` 作业：
 
-![no_find_bugs.png](images/gitlab/master_no_find_bugs.png)
+![no_find_bugs.png](../images/gitlab/master_no_find_bugs.png)
 
 为了快速测试，我们对对个作业都使用 `only` 和 `except` 策略:
 
@@ -594,7 +600,7 @@ tags:
 统计作业流水线作业情况：
 
 
-![pipeline_22.png](images/gitlab/gitlab_only_except_pipeline_22.png)
+![pipeline_22.png](../images/gitlab/gitlab_only_except_pipeline_22.png)
 
 解释上面的流水作业策略：
 
@@ -718,8 +724,8 @@ deploy1:
 
 正如我们预期的一样，`issue-pylint` 和 `Issue-flake8` 分支会触发流水线执行，`master` 主干和 `severe-issues` 分支不会触发流水线执行：
 
-![pipeline_23.png](images/gitlab/gitlab_only_except_pipeline_23.png)
-![pipeline_24.png](images/gitlab/gitlab_only_except_pipeline_24.png)
+![pipeline_23.png](../images/gitlab/gitlab_only_except_pipeline_23.png)
+![pipeline_24.png](../images/gitlab/gitlab_only_except_pipeline_24.png)
 
 解释上面的流水作业策略：
 
@@ -831,9 +837,9 @@ deploy1:
 
 正如我们预期的一样，`issue-pylint` 、 `Issue-flake8` 和 `severe-issues` 分支会触发流水线执行，`master` 主干不会触发流水线执行：
 
-![pipeline_25.png](images/gitlab/gitlab_only_except_pipeline_25.png)
-![pipeline_26.png](images/gitlab/gitlab_only_except_pipeline_26.png)
-![pipeline_27.png](images/gitlab/gitlab_only_except_pipeline_27.png)
+![pipeline_25.png](../images/gitlab/gitlab_only_except_pipeline_25.png)
+![pipeline_26.png](../images/gitlab/gitlab_only_except_pipeline_26.png)
+![pipeline_27.png](../images/gitlab/gitlab_only_except_pipeline_27.png)
 
 解释上面的流水作业策略：
 
@@ -887,7 +893,7 @@ deploy1:
 
 使用标签，可以标记提交历史上的特定点为重要提交，可以标记重要版本，如下图，是GitLab官方的Tag标签列表：
 
-![tags_list.png](images/gitlab/gitlab_office_tags_list.png)
+![tags_list.png](../images/gitlab/gitlab_office_tags_list.png)
 
 我们将流水线配置文件 `.gitlab-ci.yml` 修改为以下内容:
 
@@ -1057,7 +1063,7 @@ To 192.168.56.14:higit/bluelog.git
 
 查看是否触发流水线，可以发现没有触发流水线执行：
 
-![tags_no_trigger_pipeline.png](images/gitlab/gitlab_submit_tags_no_trigger_pipeline.png)
+![tags_no_trigger_pipeline.png](../images/gitlab/gitlab_submit_tags_no_trigger_pipeline.png)
 
 我们给 `bluelog` 打个 `tag` 标签，标签名称 `V0.1`:
 
@@ -1079,21 +1085,21 @@ To 192.168.56.14:higit/bluelog.git
 
 可以发现 `bluelog` 已经生成了一个tag版本：
 
-![bluelog_tag_v0.1.png](images/gitlab/gitlab_bluelog_tag_v0.1.png)
+![bluelog_tag_v0.1.png](../images/gitlab/gitlab_bluelog_tag_v0.1.png)
 
 在流水线列表中，也可以看 `#31` 号流水线被触发了，并且标签是 `v0.1`:
 
-![with_tag_v0.1.png](images/gitlab/gitlab_bluelog_pipeline_31_with_tag_v0.1.png)
+![with_tag_v0.1.png](../images/gitlab/gitlab_bluelog_pipeline_31_with_tag_v0.1.png)
 
 #### [使用流水线触发器触发流水线执行](#id58)
 
 我们给 `bluelog` 项目创建一个流水线触发器( `Trigger` )，在项目的 `设置 –> CI/CD –> 流水线触发器` 处增加流水线触发器：
 
-![pipeline_trigger_page.png](images/gitlab/gitlab_bluelog_add_pipeline_trigger_page.png)
+![pipeline_trigger_page.png](../images/gitlab/gitlab_bluelog_add_pipeline_trigger_page.png)
 
 在”触发器描述”处填写”bluelog trigger”，然后点击”增加触发器”按钮，则会新增一个触发器:
 
-![bluelog_trigger.png](images/gitlab/gitlab_bluelog_trigger.png)
+![bluelog_trigger.png](../images/gitlab/gitlab_bluelog_trigger.png)
 
 我们修改 `.gitlab-ci.yml` 配置文件，将 `build1` 和 `find Bugs` 作业设置为仅 `triggers` 触发器能够触发执行:
 
@@ -1236,7 +1242,7 @@ To 192.168.56.14:higit/bluelog.git
 
 检查发现并没有触发流水线的执行：
 
-![no_trigger_pipeline.png](images/gitlab/gitlab_submit_triggers_no_trigger_pipeline.png)
+![no_trigger_pipeline.png](../images/gitlab/gitlab_submit_triggers_no_trigger_pipeline.png)
 
 我们现在使用 `curl` 发送请求，触发流水线触发器执行:
 
@@ -1246,11 +1252,11 @@ $ curl -X POST -F token=cf8a32f6f8a583263f6d042e6362d2 -F ref=master https://loc
 {"id":33,"sha":"57f64a35cad6d069dc62ddc93f0747296383826e","ref":"master","status":"pending","web_url":"https://localhost/higit/bluelog/pipelines/33","before_sha":"0000000000000000000000000000000000000000","tag":false,"yaml_errors":null,"user":{"id":2,"name":"wgzhao","username":"wgzhao","state":"active","avatar_url":"https://localhost/uploads/-/system/user/avatar/2/avatar.png","web_url":"https://localhost/wgzhao"},"created_at":"2019-07-06T22:08:52.761+08:00","updated_at":"2019-07-06T22:08:53.026+08:00","started_at":null,"finished_at":null,"committed_at":null,"duration":null,"coverage":null,"detailed_status":{"icon":"status_pending","text":"等待中","label":"等待中","group":"pending","tooltip":"等待中","has_details":false,"details_path":"/higit/bluelog/pipelines/33","illustration":null,"favicon":"/assets/ci_favicons/favicon_status_pending-5bdf338420e5221ca24353b6bff1c9367189588750632e9a871b7af09ff6a2ae.png"}}
 ```
 
-![pipeline_trigger.png](images/gitlab/use_curl_post_gitlab_pipeline_trigger.png)
+![pipeline_trigger.png](../images/gitlab/use_curl_post_gitlab_pipeline_trigger.png)
 
 可以发现流水线已经被执行，`#33` 号流水线执行了 `build1` 和 `find Bugs` 作业，其他作业并未执行，与我们预期的相同：
 
-![trigger_33.png](images/gitlab/use_curl_post_gitlab_pipeline_trigger_33.png)
+![trigger_33.png](../images/gitlab/use_curl_post_gitlab_pipeline_trigger_33.png)
 
 根据流水线触发器( `Trigger` )创建处的提示，我们也可以在依赖项目中配置触发器，依赖项目流水线结束时触发此项目重新构建。
 
@@ -1987,7 +1993,7 @@ deploy1:
 
 查看各阶段的输出内容。
 
-![variables_job_build1.png](images/gitlab/gitlab_bluelog_variables_job_build1.png)
+![variables_job_build1.png](../images/gitlab/gitlab_bluelog_variables_job_build1.png)
 
 可以看到 `build1` 作业中:
 
@@ -1997,7 +2003,7 @@ deploy1:
 
 再看 `find Bugs` 作业：
 
-![variables_job_find_Bugs.png](images/gitlab/gitlab_bluelog_variables_job_find_Bugs.png)
+![variables_job_find_Bugs.png](../images/gitlab/gitlab_bluelog_variables_job_find_Bugs.png)
 
 * 因为没有定义 `variables` 关键字，这个作用将使用全局变量。
 * 39、40、41三行输出的结果都是全局变量定义的值。
@@ -2007,7 +2013,7 @@ deploy1:
 
 再看 `test1` 作业：
 
-![variables_job_test1.png](images/gitlab/gitlab_bluelog_variables_job_test1.png)
+![variables_job_test1.png](../images/gitlab/gitlab_bluelog_variables_job_test1.png)
 
 * 该作业定义 `variables` 关键字，增加了一个 `CKEDITOR_SERVE_LOCAL` 变量。
 * 上一个作业的修改 `SQLALCHEMY_ECHO="Nothing"` 对本作业显示 `SQLALCHEMY_ECHO` 变量没有影响，仍然会显示全局变量定义的值”True”。再一次证明了作业内部修改全局变量只对当前作用生效，不会影响其他作业。
@@ -2248,32 +2254,32 @@ deploy1:
 
 提交后，流水线触发了：
 
-![git_strategy_pipeline.png](images/gitlab/gitlab_bluelog_git_strategy_pipeline.png)
+![git_strategy_pipeline.png](../images/gitlab/gitlab_bluelog_git_strategy_pipeline.png)
 
 我们检查一下每个作业的log日志信息：
 
 先看build1作业：
 
-![pipeline_build1_job_top.png](images/gitlab/gitlab_bluelog_git_strategy_pipeline_build1_job_top.png)
-![pipeline_build1_job_bottom.png](images/gitlab/gitlab_bluelog_git_strategy_pipeline_build1_job_bottom.png)
+![pipeline_build1_job_top.png](../images/gitlab/gitlab_bluelog_git_strategy_pipeline_build1_job_top.png)
+![pipeline_build1_job_bottom.png](../images/gitlab/gitlab_bluelog_git_strategy_pipeline_build1_job_bottom.png)
 
 可以看到默认情况下，会使用 `git fetch` 方式来获取最新的修改，并且 `echo "GIT_STRATEGY:${GIT_STRATEGY}"` 打印 `${GIT_STRATEGY}` 变量为空，也就是默认情况下GitLab并不会设置 `GIT_STRATEGY` 变量。
 
 再看一下find Bugs作业：
 
-![git_strategy_find_Bugs.png](images/gitlab/gitlab_bluelog_git_strategy_find_Bugs.png)
+![git_strategy_find_Bugs.png](../images/gitlab/gitlab_bluelog_git_strategy_find_Bugs.png)
 
 此处也是直接使用现有项目空间里面的本地仓库，使用 `git fetch` 方式来获取最新的修改，由于在作业级中设置了 `GIT_STRATEGY` 变量，最后打印出打印 `${GIT_STRATEGY}` 变量的值为 `fetch` 。
 
 再看一下test1作业：
 
-![git_strategy_test1.png](images/gitlab/gitlab_bluelog_git_strategy_test1.png)
+![git_strategy_test1.png](../images/gitlab/gitlab_bluelog_git_strategy_test1.png)
 
 因为设置了 `GIT_STRATEGY: "clone"` ，这个时候GitLab Runner会从头开始克隆远程仓库，最后打印出打印 `${GIT_STRATEGY}` 变量的值为 `clone` 。
 
 再看一下test2作业：
 
-![git_strategy_test2.png](images/gitlab/gitlab_bluelog_git_strategy_test2.png)
+![git_strategy_test2.png](../images/gitlab/gitlab_bluelog_git_strategy_test2.png)
 
 因为设置了 `GIT_STRATEGY: "none"` ，这个时候GitLab Runner什么也不做，不会获取最新的修改，最后打印出打印 `${GIT_STRATEGY}` 变量的值为 `none` 。
 
@@ -2352,33 +2358,33 @@ deploy1:
 
 提交后，流水线触发了，但有build1作业后面的作业需要手动执行：
 
-![manual_pipeline.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline.png)
+![manual_pipeline.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline.png)
 
 我们检查build1作业：
 
-![job_bottom.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_build1_job_bottom.png)
+![job_bottom.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_build1_job_bottom.png)
 
 可以获取到整个仓库的大小，也可以读取到仓库中”README.md”文件。
 
 假设我们此时在服务器端将 `/root/gitlab-runner/builds/1aXYZ5H9/0/higit/bluelog` 和 `/root/gitlab-runner/builds/1aXYZ5H9/0/higit/bluelog.tmp` 目录删除，并触发find Bugs作业运行：
 
-![delete_project_workspace.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_delete_project_workspace.png)
+![delete_project_workspace.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_delete_project_workspace.png)
 
 因为设置了 `GIT_STRATEGY: "fetch"` ，但因为我把项目空间里面的本地仓库内容都删除了，这个时候GitLab Runner发现本地并没有远程仓库的文件，只能从头开始克隆远程仓库，最后打印出打印 `${GIT_STRATEGY}` 变量的值为 `fetch` 。
 
-![find_bugs_job.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_find_bugs_job.png)
+![find_bugs_job.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_find_bugs_job.png)
 
 再触发test1作业运行，还是从头开始下载远程仓库：
 
-![test1_job.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_test1_job.png)
+![test1_job.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_test1_job.png)
 
 关键一步，我们再次删除工作空间中的 `/root/gitlab-runner/builds/1aXYZ5H9/0/higit/bluelog` 和 `/root/gitlab-runner/builds/1aXYZ5H9/0/higit/bluelog.tmp` 目录：
 
-![delete_project_workspace_again.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_delete_project_workspace_again.png)
+![delete_project_workspace_again.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_delete_project_workspace_again.png)
 
 再触发test2作业运行：
 
-![test2_job_failed.png](images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_test2_job_failed.png)
+![test2_job_failed.png](../images/gitlab/gitlab_bluelog_git_strategy_manual_pipeline_test2_job_failed.png)
 
 此时发现，GitLab Runner仅仅创建了一个目录 `bluelog` ，但不从远程获取数据，这个时候我们获取仓库目录数据大小为0，也查看不到README.md文件的详情，由于没有README.md文件，执行命令就报错。
 
@@ -2388,7 +2394,7 @@ deploy1:
 
 流水线的默认Git策略，可以在项目的流水线通用设置中查看：
 
-![git_strategy.png](images/gitlab/gitlab_bluelog_default_git_strategy.png)
+![git_strategy.png](../images/gitlab/gitlab_bluelog_default_git_strategy.png)
 
 #### [子模块策略Git submodule strategy `GIT_SUBMODULE_STRATEGY`](#id88)
 
@@ -2601,11 +2607,11 @@ deploy1:
 
 提交修改构建目录后，流水线执行失败：
 
-![directory_failure.png](images/gitlab/gitlab_bluelog_custom_build_directory_failure.png)
+![directory_failure.png](../images/gitlab/gitlab_bluelog_custom_build_directory_failure.png)
 
 查看作业详情：
 
-![directory_failure_job_details.png](images/gitlab/gitlab_bluelog_custom_build_directory_failure_job_details.png)
+![directory_failure_job_details.png](../images/gitlab/gitlab_bluelog_custom_build_directory_failure_job_details.png)
 
 可以看到提示 `ERROR: Job failed: setting GIT_CLONE_PATH is not allowed, enable custom_build_dir feature`
 
@@ -2678,11 +2684,11 @@ drwxr-xr-x 3 root root  26 Jul 12 23:08 sub_folder.tmp
 
 查看”build1”和”find Bugs”作业的详情：
 
-![details.png](images/gitlab/gitlab_bluelog_custom_build_directory_success_build1_job_details.png)
+![details.png](../images/gitlab/gitlab_bluelog_custom_build_directory_success_build1_job_details.png)
 
 可以看到”build1”作业使用作业级定义的 `GIT_CLONE_PATH: $CI_BUILDS_DIR/sub_folder` ，仓库会被下载到 `/root/gitlab-runner/builds/sub_folder` 目录下。
 
-![job_details.png](images/gitlab/gitlab_bluelog_custom_build_directory_success_find_bugs_job_details.png)
+![job_details.png](../images/gitlab/gitlab_bluelog_custom_build_directory_success_find_bugs_job_details.png)
 
 可以看到”build1”作业使用全局级定义的 `GIT_CLONE_PATH: $CI_BUILDS_DIR/global_folder` ，仓库会被下载到 `/root/gitlab-runner/builds/global_folder` 目录下。
 
@@ -2870,28 +2876,28 @@ test:mysql:
 
 我们第一次修改配置文件，commit日志为”移除自定义构建目录，测试忽略ci构建 ci skip”，包含有 `ci skip` 关键字，但是没有左右中括号，进行提交：
 
-![git_commit_with_ci_skip.png](images/gitlab/gitlab_bluelog_git_commit_with_ci_skip.png)
+![git_commit_with_ci_skip.png](../images/gitlab/gitlab_bluelog_git_commit_with_ci_skip.png)
 
 但是发现流水线被触发了，正常运行了：
 
-![pipeline.png](images/gitlab/gitlab_bluelog_git_commit_with_ci_skip_trigger_success_pipeline.png)
+![pipeline.png](../images/gitlab/gitlab_bluelog_git_commit_with_ci_skip_trigger_success_pipeline.png)
 
 我们第二次修改配置文件，commit日志为”移除自定义构建目录，测试忽略ci构建 [CI Skip]”，包含有 `[CI Skip]` 关键字，进行提交：
 
-![Capitalization.png](images/gitlab/gitlab_bluelog_git_commit_with_CI_Skip_Capitalization.png)
+![Capitalization.png](../images/gitlab/gitlab_bluelog_git_commit_with_CI_Skip_Capitalization.png)
 
 可以发现流水线没有被触发，但是提交已经创建成功了：
 
-![skipped_pipeline.png](images/gitlab/gitlab_bluelog_git_commit_with_ci_skip_trigger_skipped_pipeline.png)
-![pipeline1.png](images/gitlab/gitlab_bluelog_git_commit_with_ci_skip_trigger_skipped_pipeline1.png)
+![skipped_pipeline.png](../images/gitlab/gitlab_bluelog_git_commit_with_ci_skip_trigger_skipped_pipeline.png)
+![pipeline1.png](../images/gitlab/gitlab_bluelog_git_commit_with_ci_skip_trigger_skipped_pipeline1.png)
 
 我们第三次修改配置文件，commit日志为 ”测试使用git push添加推送选项”，进行提交：
 
-![push_ci_skip_option.png](images/gitlab/gitlab_bluelog_git_commit_with_git_push_ci_skip_option.png)
+![push_ci_skip_option.png](../images/gitlab/gitlab_bluelog_git_commit_with_git_push_ci_skip_option.png)
 
 可以发现流水线没有被触发，但是提交已经创建成功了：
 
-![option_trigger_skipped_pipeline.png](images/gitlab/gitlab_bluelog_git_commit_with_git_push_ci_skip_option_trigger_skipped_pipeline.png)
+![option_trigger_skipped_pipeline.png](../images/gitlab/gitlab_bluelog_git_commit_with_git_push_ci_skip_option_trigger_skipped_pipeline.png)
 
 `.gitlab-ci.yml` 配置文件各个关键字的使用就介绍到这里。
 

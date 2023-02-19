@@ -1,3 +1,9 @@
+---
+title: Pure Bash Bible
+description: A collection of pure `bash` alternatives to external processes and programs. The `bash` scripting language is more powerful than people realise and most tasks can be accomplished without depending on external programs.
+tags: ["bash", "shell"]
+---
+
 # Pure Bash Bible
 
 [source](https://github.com/dylanaraps/pure-bash-bible/blob/master/README.md)

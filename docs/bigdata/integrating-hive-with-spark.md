@@ -1,3 +1,8 @@
+---
+title: Integrating Apache Hive with Apache Spark
+descrption: This article targets to describe and demonstrate Apache Hive Warehouse Connector which is a newer generation to read and write data between Apache Spark and Apache Hive.
+tags: ["hive", "spark"]
+---
 # Integrating Apache Hive with Apache Spark - HWAR
 
 [Source](https://community.hortonworks.com/content/kbentry/223626/integrating-apache-hive-with-apache-spark-hive-war.html "Permalink to Integrating Apache Hive with Apache Spark - Hive Warehouse Connector - Hortonworks")

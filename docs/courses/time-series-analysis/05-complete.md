@@ -17,11 +17,11 @@
 
 通过前述四篇文章的介绍可知，金融时间序列分析的核心是找到资产收益率序列的自相关性，并利用它。以 2012 年 1 月 1 日到 2019 年 7 月 31 日上证指数日频对数收益率为例，假设使用 ARMA(3, 2) 对其建模，并考察其残差。下图展示了残差时序以及它的 ACF 和 Partial ACF（PACF）。
 
-![IMAGE](../images/time-series/597895B8B02ADE852D45ECA4909F421B.jpg)
+![IMAGE](../../images/time-series/597895B8B02ADE852D45ECA4909F421B.jpg)
 
 从 ACF 和 PACF 上不难看出，在很多 lags 上，自相关系数是超过 95% 的置信区间的；而从最上面一副图中也能明显看出收益率序列的一大特征 —— 波动率聚类。如果把残差取平方，并再次作图，上述波动率聚类则会变得更加直观。它在数学上被称为条件异方差（conditional heteroskedasticity）。
 
-![IMAGE](../images/time-series/287BF764B9D9C5C9D3DB911E880D410C.jpg)
+![IMAGE](../../images/time-series/287BF764B9D9C5C9D3DB911E880D410C.jpg)
 
 上述结果意味着，仅使用 ARMA 对收益率序列建模是不够的，它对条件异方差无能为力。为了解决这个问题需要对波动率建模，即使用 **Generalized Autoregressive Conditional Heteroskedasticity（GARCH）模型**。
 
@@ -167,7 +167,7 @@ $$
 
 OK，回到例子。下表展示了两种方法建模时，AR(2) 的参数，可以看出它们之间的差异。
 
-![IMAGE](../images/time-series/BD59B99E6568A03C9F880CF29EF3EB30.jpg)
+![IMAGE](../../images/time-series/BD59B99E6568A03C9F880CF29EF3EB30.jpg)
 
 所以，GARCH 模型虽好，但是 use with care。我们应时刻搞清楚是在对什么建模、怎么建模，mean model 是什么、volatility model 又是什么。
 
@@ -181,11 +181,11 @@ OK，回到例子。下表展示了两种方法建模时，AR(2) 的参数，可
 
 首先来看 T = 60 个交易日的情况。下图展示了 AR 和 AR + GARCH 两种策略的净值和回撤曲线。就表现而言，它们均战胜了上证指数本身（benchmark）。但是在股灾之后（波动率变大了），这两种模型的表现发生了分化，就这个简单实证而言，AR 的效果比 AR + GARCH 更好。
 
-![IMAGE](../images/time-series/462A5BD6B11368FA9971F000C8DFB791.jpg)
+![IMAGE](../../images/time-series/462A5BD6B11368FA9971F000C8DFB791.jpg)
 
 再来看看把滚动窗口长度换到 T = 252 的情况。结果和上面接近，依然是 AR 战胜了 AR + GARCH 的组合。
 
-![IMAGE](../images/time-series/6A10F1EFFFF3115FF02CFEB4B9B489BC.jpg)
+![IMAGE](../../images/time-series/6A10F1EFFFF3115FF02CFEB4B9B489BC.jpg)
 
 从本小节的例子来看，加入了 GARCH 的策略似乎并没有仅使用 AR 的策略优异。我在最后的结语部分对此做简单评价。
 

@@ -1,3 +1,9 @@
+---
+title: free IPA setup
+description: how to setup free IPA in hortonwork HDP cluster
+tags: ["ipa", "kerberos", "hdp", "hadoop"]
+---
+
 # free IPA setup
 
 ## Instuctions for IPA Lab 

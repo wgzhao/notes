@@ -1,4 +1,10 @@
-# python中 matplotlib 库作图的中文显示
+---
+title: 让 Python 中 matplotlib 图支持中文
+description: 默认情况下， mtaplotlib 不支持中文显示标题，轴标等。如果需要中文支持，则需要显式的引入字体管理，并指定使用何种字体显示，这里给出一个例子
+tags: ["python", "matplot", "chinse"]
+---
+
+# 让 Python 中 matplotlib 图支持中文
 
 默认情况下， mtaplotlib 不支持中文显示标题，轴标等。如果需要中文支持，则需要显式的引入字体管理，并指定使用何种字体显示，这里给出一个例子
 
@@ -20,7 +26,7 @@ plt.show()
 
 显示的图如下：
 
-![image](images/6DA939AB14548909F835031BE0E864FA.jpg)
+![image](../images/6DA939AB14548909F835031BE0E864FA.jpg)
 
 如果设置的中文较多，上述代码显得啰嗦，可以先预先设定画图时的默认字体及相关属性，类似如下：
 

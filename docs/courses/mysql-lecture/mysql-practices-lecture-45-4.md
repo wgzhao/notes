@@ -1,4 +1,10 @@
-#《MySQL 实战45讲》节选第四部分
+---
+title: 《MySQL 实战45讲》节选第四部分
+description: 这篇摘要内容节选自 “丁奇” 在极客时间的 《MySQL实战45讲》的内容，这是第四部分
+tags: ["mysql", "tuning"]
+---
+
+# 《MySQL 实战45讲》节选第四部分
 
 [Source](http://learn.lianglianglee.com/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/MySQL%E5%AE%9E%E6%88%9845%E8%AE%B2.md "Permalink to MySQL实战45讲.md")
 
@@ -53,7 +59,7 @@ select * from t where id>9 and id<12 order by id desc for update;
 
 如图 1 所示，是这个表的索引 id 的示意图。
 
-![img](images/mysql-lecture-45/ac1aa07860c565b907b32c5f75c4f2bb.png)
+![img](../../images/mysql-lecture-45/ac1aa07860c565b907b32c5f75c4f2bb.png)
 
 图 1 索引 id 示意图
 
@@ -215,7 +221,7 @@ Record lock, heap no 5 PHYSICAL RECORD: n_fields 5; compact format; info bits 0
  4: len 4; hex 8000000f; asc     ;;
 ```
 
-![img](images/mysql-lecture-45/c3744fb7b61df2a5b45b8eb1f2a853a6.png)
+![img](../../images/mysql-lecture-45/c3744fb7b61df2a5b45b8eb1f2a853a6.png)
 
 图 5 锁等待信息
 
@@ -259,7 +265,7 @@ Record lock, heap no 5 PHYSICAL RECORD: n_fields 5; compact format; info bits 0
 1. 插入 `(c=1, id=5)` 这个记录；
 2. 删除 `(c=5, id=5)` 这个记录。
 
-按照我们上一节说的，索引 c 上 (5,10) 间隙是由这个间隙右边的记录，也就是 c=10 定义的。所以通过这个操作，session A 的加锁范围变成了图 7 所示的样子：![img](images/mysql-lecture-45/d2f6a0c46dd8d12f6a90dacc466d53e9.png)
+按照我们上一节说的，索引 c 上 (5,10) 间隙是由这个间隙右边的记录，也就是 c=10 定义的。所以通过这个操作，session A 的加锁范围变成了图 7 所示的样子：![img](../../images/mysql-lecture-45/d2f6a0c46dd8d12f6a90dacc466d53e9.png)
 
 图 7 session B 修改后， session A 的加锁范围
 
@@ -539,7 +545,7 @@ Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
 
 首先，执行 set global innodb_thread_concurrency=2，将 InnoDB 的并发线程上限数设置为 2；然后，执行下面的序列：
 
-![img](images/mysql-lecture-45/32e4341409fabfe271db3dd4c4df696e.png)
+![img](../../images/mysql-lecture-45/32e4341409fabfe271db3dd4c4df696e.png)
 
 图 2 kill query 无效的例子
 
@@ -550,7 +556,7 @@ Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
 3. 直到 session E 执行了 kill connection 命令，才断开了 session C 的连接，提示“Lost connection to MySQL server during query”，
 4. 但是这时候，如果在 session E 中执行 show processlist，你就能看到下面这个图。
 
-![img](images/mysql-lecture-45/915c20e4c11b104d7bcf9d3457304c53.png)
+![img](../../images/mysql-lecture-45/915c20e4c11b104d7bcf9d3457304c53.png)
 
 图 3 kill connection 之后的效果
 
@@ -640,7 +646,7 @@ mysql -h$host -P$port -u$user -p$pwd -e "select * from db1.t" > $target_file
 
 这个过程对应的流程图如下所示。
 
-![img](images/mysql-lecture-45/a027c300d7dde8cea4fad8f34b670ebd.jpg)
+![img](../../images/mysql-lecture-45/a027c300d7dde8cea4fad8f34b670ebd.jpg)
 
 图 1 查询结果发送流程
 
@@ -723,7 +729,7 @@ InnoDB 内存管理用的是最近最少使用 (Least Recently Used, LRU) 算法
 
 下图是一个 LRU 算法的基本模型。
 
-![img](images/mysql-lecture-45/e0ac92febac50a5d881f1188ea5bfd65.jpg)
+![img](../../images/mysql-lecture-45/e0ac92febac50a5d881f1188ea5bfd65.jpg)
 
 图 6 基本 LRU 算法
 
@@ -744,7 +750,7 @@ InnoDB 管理 Buffer Pool 的 LRU 算法，是用链表来实现的。
 
 所以，InnoDB 不能直接使用这个 LRU 算法。实际上，InnoDB 对 LRU 算法做了改进。
 
-![img](images/mysql-lecture-45/25e18920dd204cf99eec2d62755fe99e.png)
+![img](../../images/mysql-lecture-45/25e18920dd204cf99eec2d62755fe99e.png)
 
 图 7 改进的 LRU 算法
 
@@ -959,7 +965,7 @@ select * from t1 straight_join t2 on (t1.a=t2.b);
 
 执行流程图也就变成这样：
 
-![img](images/mysql-lecture-45/695adf810fcdb07e393467bcfd2f6ac4.jpg)
+![img](../../images/mysql-lecture-45/695adf810fcdb07e393467bcfd2f6ac4.jpg)
 
 图 5 Block Nested-Loop Join -- 两段
 
@@ -1107,7 +1113,7 @@ select * from t1 where a>=1 and a<=100;
 
 主键索引是一棵 B+ 树，在这棵树上，每次只能根据一个主键 id 查到一行数据。因此，回表肯定是一行行搜索主键索引的，基本流程如图 1 所示。
 
-![img](images/mysql-lecture-45/1761edbd7734276ae0a213af3cdd3311.jpg)
+![img](../../images/mysql-lecture-45/1761edbd7734276ae0a213af3cdd3311.jpg)
 
 图 1 基本回表流程
 
@@ -1127,7 +1133,7 @@ select * from t1 where a>=1 and a<=100;
 
 下面两幅图就是使用了 MRR 优化后的执行流程和 explain 结果。
 
-![img](images/mysql-lecture-45/d502fbaea7cac6f815c626b078da86c7.jpg)
+![img](../../images/mysql-lecture-45/d502fbaea7cac6f815c626b078da86c7.jpg)
 
 图 2 MRR 执行流程
 
@@ -1152,7 +1158,7 @@ mysql> explain select * from t2 where a>=1 and a<=100;
 
 我们再来看看上一篇文章中用到的 NLJ 算法的流程图：
 
-![img](images/mysql-lecture-45/10e14e8b9691ac6337d457172b641a3d.jpg)
+![img](../../images/mysql-lecture-45/10e14e8b9691ac6337d457172b641a3d.jpg)
 
 图 4 Index Nested-Loop Join 流程图
 
@@ -1166,7 +1172,7 @@ NLJ 算法执行的逻辑是：从驱动表 t1，一行行地取出 a 的值，�
 
 如图 5 所示，是上面的 NLJ 算法优化后的 BKA 算法的流程。
 
-![img](images/mysql-lecture-45/31d85666542b9cb0b47a447a8593a47e.jpg)
+![img](../../images/mysql-lecture-45/31d85666542b9cb0b47a447a8593a47e.jpg)
 
 图 5 Batched Key Acess 流程
 

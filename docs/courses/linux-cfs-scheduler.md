@@ -12,7 +12,7 @@
 
 CFS（Completely Fair Scheduler）是 Linux 内置（也是目前默认）的一个**内核调度器**， 如名字所示，它实现了所谓的“完全公平”调度算法，将 CPU 资源均匀地分配给各进程（ 在内核代码中称为“任务”，task）。 简单来说，如果一台机器有一个 CPU 多个（计算密集型）进程，那采用 CFS 调度器时，
 
-![](images/cfs.png)
+![](../images/cfs.png)
 
 * 两个进程：每个进程会各占 50% CPU 时间；
 * 四个进程：每个进程会各占 25% CPU 时间；
@@ -84,7 +84,7 @@ CFS 自己也存在一些问题或限制：
 
   CFS **只关注 CPU 平均分配，并不保证 CPU 时间**（上下限）。 换句话说，CPU share/quota 只有相对意义，share 大的一定比 share 小的能分到更多 CPU，仅此而已。 进程越多，每个进程分到的 CPU 时间越少。 CPU 限额（上限）对**按 CPU 时间计费**的场景非常关键，例如公有云。
 
-  ![](images/cfs-share-hierarchy.png)
+  ![](../images/cfs-share-hierarchy.png)
 
   图片来自 google paper [5]。注意：严格来说，这里的相对时间还只是在 SCHED\_NORMAL 里的时间，不包括 SCHED\_RT 进程占掉的 CPU 时间。
 

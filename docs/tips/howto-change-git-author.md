@@ -1,3 +1,9 @@
+---
+title: How to change git author name and email
+description: how to change the author name and email for committed
+tags: ["git"]
+---
+
 # How to change git author name and email
 
 [Source](https://stackoverflow.com/questions/750172/how-to-change-the-author-and-committer-name-and-e-mail-of-multiple-commits-in-gi)

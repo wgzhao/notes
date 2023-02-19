@@ -1,3 +1,9 @@
+---
+title: CoreDNS 支持解析宿主机的 hosts 文件
+description: 这篇帖子讲述通过配置，使得 kubernetes 的 DNS 组件 CoreDNS 支持宿主机的 hosts 文件的静态名称映射
+tags: ["kubernetes", "coredns"]
+---
+
 # CoreDNS 支持解析宿主机的 hosts 文件
 
 默认情况下， [CoreDNS](https://coredns.io/) 不支持节点的 `/etc/hosts` 文件里的静态域名解析。需要修改 `coredns` 的 `configmap` 配置，病在 `coredns` 增加节点 `/etc/hosts` 的挂载。

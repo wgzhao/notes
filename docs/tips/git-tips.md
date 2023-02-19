@@ -1,3 +1,9 @@
+---
+title: git 不常见的操作技巧
+description: 以下记录一些不太常见的git操作技巧
+tags: ["git"]
+---
+
 # git 不常见的操作技巧
 
 以下记录一些不太常见的git操作技巧

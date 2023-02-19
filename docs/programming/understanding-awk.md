@@ -1,3 +1,9 @@
+---
+title: Understanding AWK
+description: I will be using Awk to look at book reviews and pick my next book to read. I will start with short Awk one-liners and build towards a simple 33 line program that ranks books by the 19 million reviews on Amazon.com.
+tags: ["awk"]
+---
+
 ## Understanding AWK
 
 ## Background

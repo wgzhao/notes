@@ -1,3 +1,9 @@
+---
+title: 修复 Oracle ORA-00227 错误
+description: 这篇摘要描述了如何修复 Oracle 数据库控制文件块损坏(ORA-00227) 的故障
+tags: ["oracle", "controlfile", "ora-00227"]
+---
+
 # 修复 Oracle ORA-00227 错误
 
 [Source](http://blog.itpub.net/26736162/viewspace-2652072/ "Permalink to ORA-00227: corrupt block detected in control file: (block 16, # blocks 1)")

@@ -1,3 +1,9 @@
+---
+title: 微信通讯录备份
+description: 这篇摘要讲述了如何通过技术手段导出微信里的通讯录
+tags: ["wechat", "contact"]
+---
+
 # 微信通讯录备份
 
 [Source](https://pwfee.com/2020/03/back-up-wechat-contacts "Permalink to 数据备份系列（一）：微信通讯录备份")

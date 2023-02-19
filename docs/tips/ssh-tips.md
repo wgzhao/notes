@@ -1,3 +1,9 @@
+---
+title: SSH examples, tips and tunnels
+description: examples to take your remote system admin game to the next level. Commands and tips to not only use SSH but master ways to move around the network. 
+tags: ["ssh", "forward", "tunnel", "proxy"]
+---
+
 # SSH examples, tips and tunnels
 
 [Source](https://hackertarget.com/ssh-examples-tunnels/ "Permalink to 22 SSH Examples, Practical Tips & Tunnels | HackerTarget.com")

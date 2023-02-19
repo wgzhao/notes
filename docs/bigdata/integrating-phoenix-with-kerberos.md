@@ -1,6 +1,8 @@
-# Phoenix 集成 HBase 并支持 Kerberos 认证
-
-该文档用来简要描述当前生产环境下phoenix如何和hbase集成，并支持kerberos认证
+---
+title: Phoenix 集成 HBase 并支持 Kerberos 认证
+description: 该文档用来简要描述当前生产环境下phoenix如何和hbase集成，并支持kerberos认证
+tags: ["hbase", "phoenix", "prestodb", "trino"]
+---
 
 ## 降级
 

@@ -1,6 +1,8 @@
-# MIT Kerberos  安装及维护手册
-
-本文档描述如何在大数据集群环境下配置和启用 MIT Kerberos 环境，并给出在日常维护中如何增加、修改、删除凭证
+---
+title: MIT Kerberos  安装及维护手册
+descrption: 本文档描述如何在大数据集群环境下配置和启用 MIT Kerberos 环境，并给出在日常维护中如何增加、修改、删除凭证
+tags: ["kerberos", "security"]
+---
 
 ## 概述
 
@@ -14,7 +16,7 @@
 认证原理如下：
 
 
-![IMAGE](images/6A134438C03225BA6B02D43CB5BB77D9.jpg)
+![IMAGE](../images/6A134438C03225BA6B02D43CB5BB77D9.jpg)
 
 
 ## 部署 KDC Server

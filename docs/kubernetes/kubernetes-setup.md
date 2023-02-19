@@ -165,7 +165,7 @@ backend kube-apiserver-backend
 搭建三个 master 通过 `keepalived` 提供一个 `vip` 实现高可用，并且添加 `haproxy`来为 `apiserver` 提供反向代理的作用。
 这样来自 `haproxy` 的所有请求都将轮询转发到后端的 `master` 节点上。应架构图如下所示：
 
-![k8s-arch](images/k8s-arch.jpg)
+![k8s-arch](../images/k8s-arch.jpg)
 
 在安装之前要提前做好以下事情：
 

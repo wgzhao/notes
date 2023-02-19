@@ -1,3 +1,9 @@
+---
+title: 如何删除 nexus 私服上的 Docker 镜像
+description: 通过脚本来自动删除过时的 Nexus 上的 Docker 镜像
+tags: ["docker", "registry", "nexus"]
+---
+
 # 如何删除 nexus 私服上的 Docker 镜像
 
 当 nexus 的 docker 镜像越来越多时，老的镜像就需要删除，用来释放空间

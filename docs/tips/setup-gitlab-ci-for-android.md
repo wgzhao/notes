@@ -1,3 +1,9 @@
+---
+title: Setup Gitlab CI For Android
+description: learn the GitLab CI with simple steps. GitLab is a complete DevOps platform, delivered as a single application.
+tags: ["gitlab", "ci", "gitlab-ci", "android"]
+---
+
 # Setup Gitlab CI For Android
 
 [Source](https://www.howtodoandroid.com/setup-gitlab-ci-android/ "Permalink to Setup Gitlab CI For Android [Step By Step] - Howtodoandroid")
@@ -20,7 +26,7 @@ You create a project in Gitlab, first, we need to sign up an account with GitLab
 
 Once sign-in, the next step is to create a new project and repository.
 
-![create new project in gitlab](images/create-new-project-1024x650.png)create a new project in GitLab
+![create new project in gitlab](../images/create-new-project-1024x650.png)create a new project in GitLab
 
 Enter the Project Name and the description to create a new project. Also, I have initialized the readme file for the project details.
 
@@ -28,7 +34,7 @@ Enter the Project Name and the description to create a new project. Also, I have
 
 Before setup, the GitLab project in android studio, you first, need to install the git in your local machine. you can download git in [Git – Downloads (git-scm.com)](https://git-scm.com/downloads) link. Now, you can create a new project in android studio and set up the GitLab project using the git commands.
 
-![Create a new android studio project to setup gitlab](images/create-new-android-project-1024x736.png)create a new android studio project
+![Create a new android studio project to setup gitlab](../images/create-new-android-project-1024x736.png)create a new android studio project
 
 Once the project got created, open the terminal in android studio and enter the git commands to add the project into the GitLab repository.
 
@@ -41,7 +47,7 @@ Once the project got created, open the terminal in android studio and enter the 
 
 **Note:**
 
-![pushing code to gitlab repository](images/git-push-1024x124.png) git push command
+![pushing code to gitlab repository](../images/git-push-1024x124.png) git push command
 
  When you are entering **git push** it will ask for the username and password for your GitLab account. 
 
@@ -51,7 +57,7 @@ After the git push, you can able to see the initial android project code pushed 
 
 Already we have completed the GitLab repository setup, Let’s create a GitLab pipeline to automate test and deployment. To get started we need to create** .gitlab-ci.yml** in the root direct of the project.
 
-![Create gitlab-ci.yml file in root directory of the project](images/create-new-gitlab-ci-yml-file.png)
+![Create gitlab-ci.yml file in root directory of the project](../images/create-new-gitlab-ci-yml-file.png)
 
  Once created the .gitlab-ci.yml file, paste the below code in that file. I will explain the code in detail below,
 
@@ -259,11 +265,11 @@ same as building the app, first need to define the job name and the stage. Then,
 
 After you’ve added your new **.gitlab-ci.yml** file to the root of your directory, just push your changes to the repository. Then the build will be triggered automatically, you can see the process in the Pipelines tab of your project. Also, you have an option to run the pipeline manually in the pipeline tab.
 
-![](images/run-pipeline-1024x382.png)
+![](../images/run-pipeline-1024x382.png)
 
 After your build is done, you can retrieve your build artifacts.
 
-![](images/download-artifacts-1024x192.png)
+![](../images/download-artifacts-1024x192.png)
 
 ### Gitlab CI/CD Editor
 
@@ -271,7 +277,7 @@ GitLab provides the Editor for the **.gitlab-ci.yml **file. You can directly edi
 
 Check the gitlab ci templetes **[here](https://gitlab.com/gitlab-org/gitlab-foss/tree/master/lib/gitlab/ci/templates)**.
 
-![](images/gitlab-editor-1024x383.png)
+![](../images/gitlab-editor-1024x383.png)
 
 **Conclusion**
 

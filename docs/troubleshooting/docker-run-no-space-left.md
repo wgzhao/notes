@@ -1,7 +1,8 @@
 ---
-typora-copy-images-to: ./images
+title: Docker 运行容器报磁盘空间不足的错误
+description: 这篇摘抄描述了一则故障排查，即 Docker 运行容器报磁盘空间不足的错误
+tags: ["docker"]
 ---
-
 # Docker 运行容器报磁盘空间不足的错误
 
 [Source](https://www.manjusaka.blog/posts/2023/01/07/special-case-no-space-left-on-device/)
@@ -26,14 +27,14 @@ typora-copy-images-to: ./images
 df -ih
 ```
 
-[![inode](images/211155731-c54b1146-2daa-48b3-8e1e-294040d73201.png)](https://user-images.githubusercontent.com/7054676/211155731-c54b1146-2daa-48b3-8e1e-294040d73201.png)
+[![inode](../images/211155731-c54b1146-2daa-48b3-8e1e-294040d73201.png)](https://user-images.githubusercontent.com/7054676/211155731-c54b1146-2daa-48b3-8e1e-294040d73201.png)
 
 
 我们能看到 /data1 实际上的 inode 和整机的 inode 数量都是足够的（备注：这里是我自己在我自己的机器上复现问题的截图，第一步由群友完成，然后给我提供了信息）
 
 那么我们继续排查，我们看到了我们使用了 [mount bind](https://www.manjusaka.blog/posts/2023/01/07/special-case-no-space-left-on-device/#refer-anchor-1) 的方式将宿主机的 /data1 挂载到了容器内部的 /cache 目录下, mount bind 可以用下面一张图来表示和 volume 的区别
 
-[![mount bind](images/types-of-mounts-bind.png)](https://docs.docker.com/storage/images/types-of-mounts-bind.png)
+[![mount bind](../images/types-of-mounts-bind.png)](https://docs.docker.com/storage/images/types-of-mounts-bind.png)
 
 都在不同版本的内核上，mount bind 的行为有一些特殊的情况，所以我们需要确认下 mount bind 的情况是否正确，我们用 [fallocate2](https://www.manjusaka.blog/posts/2023/01/07/special-case-no-space-left-on-device/#refer-anchor-2) 来创建一个 1G 的文件，然后在容器内部查看文件的大小
 

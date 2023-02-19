@@ -1,3 +1,9 @@
+---
+title: 《MySQL 实战45讲》节选第二部分
+description: 这篇摘要内容节选自 “丁奇” 在极客时间的 《MySQL实战45讲》的内容，这是第二部分
+tags: ["mysql", "tuning"]
+---
+
 # 《MySQL 实战45讲》节选第二部分
 
 [Source](http://learn.lianglianglee.com/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/MySQL%E5%AE%9E%E6%88%9845%E8%AE%B2.md "Permalink to MySQL实战45讲.md")
@@ -238,7 +244,7 @@ mysql> select * from t where (a between 1 and 1000)  and (b between 50000 and 10
 
 为了便于分析，我们先来看一下 a、b 这两个索引的结构图。
 
-![img](images/mysql-lecture-45/1d037f92063e800c3bfff3f4dbf1a2b9.png)
+![img](../../images/mysql-lecture-45/1d037f92063e800c3bfff3f4dbf1a2b9.png)
 
 图 7 a、b 索引的结构图
 
@@ -398,11 +404,11 @@ mysql> alter table SUser add index index2(email(6));
 
 那么，这两种不同的定义在数据结构和存储上有什么区别呢？如图 2 和 3 所示，就是这两个索引的示意图。
 
-![img](images/mysql-lecture-45/d31da662bee595991862c439a5567eb7.jpg)
+![img](../../images/mysql-lecture-45/d31da662bee595991862c439a5567eb7.jpg)
 
 图 1 email 索引结构
 
-![img](images/mysql-lecture-45/134583875561de914991fc2e192cf842.jpg)
+![img](../../images/mysql-lecture-45/134583875561de914991fc2e192cf842.jpg)
 
 图 2 email(6) 索引结构
 
@@ -565,7 +571,7 @@ mysql> select field_list from t where id_card_crc=crc32('input_id_card_string') 
 
 接下来，我们用一个示意图来展示一下“孔乙己赊账”的整个操作过程。假设原来孔乙己欠账 10 文，这次又要赊 9 文。
 
-![img](images/mysql-lecture-45/349cfab9e4f5d2a75e07b2132a301fda.jpeg)
+![img](../../images/mysql-lecture-45/349cfab9e4f5d2a75e07b2132a301fda.jpeg)
 
 图 1 “孔乙己赊账”更新和 flush 过程
 
@@ -577,7 +583,7 @@ mysql> select field_list from t where id_card_crc=crc32('input_id_card_string') 
 
 * 第一种场景是，粉板满了，记不下了。这时候如果再有人来赊账，掌柜就只得放下手里的活儿，将粉板上的记录擦掉一些，留出空位以便继续记账。当然在擦掉之前，他必须先将正确的账目记录到账本中才行。 这个场景，对应的就是 InnoDB 的 redo log 写满了。这时候系统会停止所有更新操作，把 checkpoint 往前推进，redo log 留出空间可以继续写。我在第二讲画了一个 redo log 的示意图，这里我改成环形，便于大家理解。
 
-![img](images/mysql-lecture-45/a25bdbbfc2cfc5d5e20690547fe7f2e5.jpg)
+![img](../../images/mysql-lecture-45/a25bdbbfc2cfc5d5e20690547fe7f2e5.jpg)
 
 图 2 redo log 状态图
 
@@ -655,7 +661,7 @@ InnoDB 每次写入的日志都有一个序号，当前写入的序号跟 checkp
 
 上述的计算流程比较抽象，不容易理解，所以我画了一个简单的流程图。图中的 F1、F2 就是上面我们通过脏页比例和 redo log 写入速度算出来的两个值。
 
-![img](images/mysql-lecture-45/cc44c1d080141aa50df6a91067475374.png)
+![img](../../images/mysql-lecture-45/cc44c1d080141aa50df6a91067475374.png)
 
 图 3 InnoDB 刷脏页速度策略
 
@@ -726,7 +732,7 @@ mysql> select @a/@b;
 
 我们先再来看一下 InnoDB 中一个索引的示意图。在前面第4和第5篇文章中，我和你介绍索引时曾经提到过，InnoDB 里的数据都是用 B+ 树的结构组织的。
 
-![img](images/mysql-lecture-45/f0b1e4ac610bcb5c5922d0b18563f3c8.png)
+![img](../../images/mysql-lecture-45/f0b1e4ac610bcb5c5922d0b18563f3c8.png)
 
 图 1 B+ 树索引示意图
 
@@ -754,7 +760,7 @@ mysql> select @a/@b;
 
 假设图 1 中 page A 已经满了，这时我要再插入一行数据，会怎样呢？
 
-![img](images/mysql-lecture-45/8083f05a4a4c0372833a6e01d5a8e6ea.png)
+![img](../../images/mysql-lecture-45/8083f05a4a4c0372833a6e01d5a8e6ea.png)
 
 图 2 插入数据导致页分裂
 
@@ -776,7 +782,7 @@ mysql> select @a/@b;
 
 这里，你可以使用 `alter table A engine=InnoDB` 命令来重建表。在 MySQL 5.5 版本之前，这个命令的执行流程跟我们前面描述的差不多，区别只是这个临时表 B 不需要你自己创建，MySQL 会自动完成转存数据、交换表名、删除旧表的操作。
 
-![img](images/mysql-lecture-45/02e083adaec6e1191f54992f7bc13dcd.png)
+![img](../../images/mysql-lecture-45/02e083adaec6e1191f54992f7bc13dcd.png)
 
 图 3 改锁表 DDL
 
@@ -792,7 +798,7 @@ mysql> select @a/@b;
 4. 临时文件生成后，将日志文件中的操作应用到临时文件，得到一个逻辑数据上与表 A 相同的数据文件，对应的就是图中 state3 的状态；
 5. 用临时文件替换表 A 的数据文件。
 
-![img](images/mysql-lecture-45/2d1cfbbeb013b851a56390d38b5321f0.png)
+![img](../../images/mysql-lecture-45/2d1cfbbeb013b851a56390d38b5321f0.png)
 
 图 4 Online DDL
 
@@ -947,7 +953,7 @@ InnoDB 引擎支持事务，我们利用好事务的原子性和隔离性，就�
 
 我再放一次两阶段提交的图，方便你学习下面的内容。
 
-![img](images/mysql-lecture-45/ee9af616e05e4b853eba27048351f62a.jpg)
+![img](../../images/mysql-lecture-45/ee9af616e05e4b853eba27048351f62a.jpg)
 
 图 1 两阶段提交示意图
 
@@ -1022,7 +1028,7 @@ InnoDB 接入了 MySQL 后，发现既然 binlog 没有崩溃恢复的能力，�
 
 而如果说**实现上的原因**的话，就有很多了。就按照问题中说的，只用 binlog 来实现崩溃恢复的流程，我画了一张示意图，这里就没有 redo log 了。
 
-![img](images/mysql-lecture-45/eb838b87e9c20fa00aca50ef154f2a63.jpg)
+![img](../../images/mysql-lecture-45/eb838b87e9c20fa00aca50ef154f2a63.jpg)
 
 图 2 只用 binlog 支持崩溃恢复
 
@@ -1289,7 +1295,7 @@ Extra 这个字段中的“Using filesort”表示的就是需要排序，MySQL 
 
 为了说明这个 SQL 查询语句的执行过程，我们先来看一下 city 这个索引的示意图。
 
-![img](images/mysql-lecture-45/5334cca9118be14bde95ec94b02f0a3e.png)
+![img](../../images/mysql-lecture-45/5334cca9118be14bde95ec94b02f0a3e.png)
 
 图 2 city 字段的索引示意图
 
@@ -1307,7 +1313,7 @@ Extra 这个字段中的“Using filesort”表示的就是需要排序，MySQL 
 
 我们暂且把这个排序过程，称为全字段排序，执行流程的示意图如下所示，下一篇文章中我们还会用到这个排序。
 
-![img](images/mysql-lecture-45/6c821828cddf46670f9d56e126e3e772.jpg)
+![img](../../images/mysql-lecture-45/6c821828cddf46670f9d56e126e3e772.jpg)
 
 图 3 全字段排序
 
@@ -1396,7 +1402,7 @@ SET max_length_for_sort_data = 16;
 
 这个执行流程的示意图如下，我把它称为 rowid 排序。
 
-![img](images/mysql-lecture-45/dc92b67721171206a302eb679c83e86d.jpg)
+![img](../../images/mysql-lecture-45/dc92b67721171206a302eb679c83e86d.jpg)
 
 图 5 rowid 排序
 
@@ -1461,7 +1467,7 @@ alter table t add index city_user(city, name);
 
 作为与 city 索引的对比，我们来看看这个索引的示意图。
 
-![img](images/mysql-lecture-45/f980201372b676893647fb17fac4e2bf.png)
+![img](../../images/mysql-lecture-45/f980201372b676893647fb17fac4e2bf.png)
 
 图 7 city 和 name 联合索引示意图
 
@@ -1474,7 +1480,7 @@ alter table t add index city_user(city, name);
 3. 从索引 `(city,name)` 取下一个记录主键 id；
 4. 重复步骤 2、3，直到查到第 1000 条记录，或者是不满足 `city='杭州'` 条件时循环结束。
 
-![img](images/mysql-lecture-45/3f590c3a14f9236f2d8e1e2cb9686692.jpg)
+![img](../../images/mysql-lecture-45/3f590c3a14f9236f2d8e1e2cb9686692.jpg)
 
 图 8 引入 `(city,name)` 联合索引后，查询语句的执行计划
 
@@ -1510,7 +1516,7 @@ alter table t add index city_user_age(city, name, age);
 2. 从索引 `(city,name,age)` 取下一个记录，同样取出这三个字段的值，作为结果集的一部分直接返回；
 3. 重复执行步骤 2，直到查到第 1000 条记录，或者是不满足 `city='杭州'` 条件时循环结束。
 
-![img](images/mysql-lecture-45/df4b8e445a59c53df1f2e0f115f02cd6.jpg)
+![img](../../images/mysql-lecture-45/df4b8e445a59c53df1f2e0f115f02cd6.jpg)
 
 图 10 引入 (city,name,age) 联合索引后，查询语句的执行流程
 
@@ -1684,7 +1690,7 @@ select word from words order by rand() limit 3;
 
 现在，我来把完整的排序执行流程图画出来。
 
-![img](images/mysql-lecture-45/2abe849faa7dcad0189b61238b849ffc.png)
+![img](../../images/mysql-lecture-45/2abe849faa7dcad0189b61238b849ffc.png)
 
 图 4 随机排序完整流程图 1
 
@@ -1774,7 +1780,7 @@ SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
 
 这里我简单画了一个优先队列排序过程的示意图。
 
-![img](images/mysql-lecture-45/e9c29cb20bf9668deba8981e444f6897.png)
+![img](../../images/mysql-lecture-45/e9c29cb20bf9668deba8981e444f6897.png)
 
 图 6 优先队列排序算法示例
 
@@ -1905,7 +1911,7 @@ mysql> select count(*) from tradelog where month(t_modified)=7;
 
 下面是这个 `t_modified` 索引的示意图。方框上面的数字就是 `month()` 函数对应的值。
 
-![img](images/mysql-lecture-45/3e30d9a5e67f711f5af2e2599e800286.png)
+![img](../../images/mysql-lecture-45/3e30d9a5e67f711f5af2e2599e800286.png)
 
 图 1 t_modified 索引示意图
 
@@ -2065,7 +2071,7 @@ mysql> explain select d.* from tradelog t, trade_detail d where d.tradeid=t.trad
 
 接下来，我们看下这个 explain 结果表示的执行流程：
 
-![img](images/mysql-lecture-45/8289c184c8529acea0269a7460dc62a9.png)
+![img](../../images/mysql-lecture-45/8289c184c8529acea0269a7460dc62a9.png)
 
 图 5 语句 Q1 的执行过程
 

@@ -1,8 +1,12 @@
+---
+title: Ubuntu 下修改键盘映射
+description: 通过修改内置的配置文件，来修改 ubuntu 系统的键盘映射，无需而外安装软件
+tags: ["ubuntu", "keybord", "evdev", "layout"]
+---
+
 # Ubuntu 下修改键盘映射
 
 习惯了把 `Ctrl` 键 和 `Caps Lock` 键交换，在 Linux 下如果也要修改这个映射的话。可以直接修改 `/usr/share/X11/xkb/keycodes/evdev` 这个键盘映射文件。
-
-
 
 修改之前，记得备份。
 

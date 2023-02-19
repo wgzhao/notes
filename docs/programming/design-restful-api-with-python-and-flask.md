@@ -1,3 +1,9 @@
+---
+title: 使用 Python 和 Flask 设计 RESTful API
+description: 近些年来 REST (REpresentational State Transfer) 已经变成了 web services 和 web APIs 的标配。在本文中我将向你展示如何简单地使用 Python 和 Flask 框架来创建一个 RESTful 的 web service。
+tags: ["restful", "flask", "api"]
+---
+
 # 使用 Python 和 Flask 设计 RESTful API
 
 近些年来 REST (REpresentational State Transfer) 已经变成了 web services 和 web APIs 的标配。

@@ -1,3 +1,9 @@
+---
+title: 十分钟掌握 Seaborn
+description: Seaborn 可以实现 Python 环境下的绝大部分探索性分析的任务，图形化的表达帮助你对数据进行分析,十分钟的时间，你就可以了解 Seaborn 中常用图形的绘制方法，以及进阶的可视化分析技巧
+tags: ["python", "seaborn", "matplot"]
+---
+
 # 十分钟掌握Seaborn，进阶Python数据可视化分析
 
 [Source](https://zhuanlan.zhihu.com/p/49035741 "Permalink to 十分钟掌握Seaborn，进阶Python数据可视化分析")

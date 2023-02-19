@@ -1,4 +1,10 @@
-#《MySQL 实战45讲》节选第五部分
+---
+title: 《MySQL 实战45讲》节选第五部分
+description: 这篇摘要内容节选自 “丁奇” 在极客时间的 《MySQL实战45讲》的内容，这是第五部分
+tags: ["mysql", "tuning"]
+---
+
+# 《MySQL 实战45讲》节选第五部分
 
 [Source](http://learn.lianglianglee.com/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/MySQL%E5%AE%9E%E6%88%9845%E8%AE%B2.md "Permalink to MySQL实战45讲.md")
 

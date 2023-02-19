@@ -1,4 +1,8 @@
-# Flink SQL CDC 实践以及一致性分析
+---
+title: Flink SQL CDC 实践以及一致性分析
+dscription: 这篇摘要由民生银行王健、文乔分享，主要介绍民生银行 Flink SQL CDC 实践以及一致性分析
+tags: ["flink", "cdc"]
+---
 
 [Source](https://developer.aliyun.com/article/782653 "Permalink to Flink SQL CDC 实践以及一致性分析")
 

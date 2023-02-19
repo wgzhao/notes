@@ -1,3 +1,9 @@
+---
+title:  快速创建一个虚假 RPM 包
+description: 有的时候有一些包有依赖，但是依赖的文件可能永远用不到，因此我们可以采取快速创建一个虚拟 RPM 包的方式“骗过”系统的依赖检查，以下是快速创建 RPM 包的脚本
+tags: ["rpm", "rpmbuild", "dummy"]
+---
+
 # 快速创建一个虚假 RPM 包
 
 有的时候有一些包有依赖，但是依赖的文件可能永远用不到，因此我们可以采取快速创建一个虚拟 RPM 包的方式“骗过”系统的依赖检查，以下是快速创建 RPM 包的脚本
@@ -82,13 +88,13 @@ popd
 用法如下
 
 ```shell
-create_dummy_rpm.sh <package_name> <version> <release-version>
+$ create_dummy_rpm.sh <package_name> <version> <release-version>
 ```
 
 比如
 
 ```shell
-create_dummy_rpm.sh texinfo-tex 5.1 4.el7
+$ create_dummy_rpm.sh texinfo-tex 5.1 4.el7
 ```
 
 则生成的 rpm 文件为 `/root/rpm_factory/RPM/x86_64/texinfo-text-5.1-4.el7.x86_64.rpm`

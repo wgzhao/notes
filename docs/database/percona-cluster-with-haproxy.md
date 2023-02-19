@@ -1,3 +1,9 @@
+---
+title: HAProxy + Percona XtraDB Cluster 部署
+description: 这篇帖子描述了，如何安装 Percona XtraDB 集群，并利用 HAProxy 工具来做到负载均衡
+tags: ["percona", "xtradb", "mysql", "cluster", "haproxy"]
+---
+
 # HAProxy + Percona XtraDB Cluster 部署
 
 ## 环境说明

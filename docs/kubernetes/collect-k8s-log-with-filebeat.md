@@ -1,3 +1,9 @@
+---
+title: 基于 ELK 的 日志收集与自动索引创建
+description: 这篇帖子主要描述如何利用 ELK 套件来收集 kubernetes 日志，并自动创建索引
+tags: ["elk", "kubernetes"]
+---
+
 # 基于 ELK 的 日志收集与自动索引创建
 
 文章来源： [Source](https://blog.csdn.net/yanggd1987/article/details/108414587 "Permalink to filebeat收集K8S日志，写入自动创建的索引")

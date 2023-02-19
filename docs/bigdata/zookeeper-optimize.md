@@ -1,3 +1,9 @@
+---
+title: zookeeper集群应对万级并发的调优
+description: 这篇摘抄主要讲述了 zookeeper 集群调优的几种方式
+tags: ["zookeeper", "tuning", "performance"]
+---
+
 # zookeeper集群应对万级并发的调优
 
 [Source](https://codeleading.com/article/77225589233/ "Permalink to zookeeper集群应对万级并发的调优")

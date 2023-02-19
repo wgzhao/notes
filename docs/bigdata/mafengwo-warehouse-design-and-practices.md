@@ -1,3 +1,9 @@
+---
+title: 马蜂窝数据仓库设计与实践
+description: 这篇摘要描述了马蜂窝数据库仓库设计实践，以及后续的演进
+tags: ["warehouse", "edw"]
+---
+
 # 马蜂窝数据仓库设计与实践
 
 [Source](https://mp.weixin.qq.com/s/r-cg-aXhp14FWgHcMY6Vdw "Permalink to 马蜂窝数据仓库设计与实践")

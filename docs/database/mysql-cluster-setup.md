@@ -1,3 +1,9 @@
+---
+title: MySQL Cluster 配置
+description: 这篇帖子描述了如何快速创建一个基于 MySQL NDB 集群
+tags: ["mysql", "ndb", "cluster"]
+---
+
 # MySQL Cluster 配置
 
 ## 准备服务器

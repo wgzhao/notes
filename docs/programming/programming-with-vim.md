@@ -1,4 +1,10 @@
-# 无插件Vim编程技巧
+---
+title: 无插件Vim编程技巧
+description: 这篇摘要主要描述如何在使用 VIM 原生指令的情况下，通过一些提交来提升编辑效率
+tags: ["vim"]
+---
+
+# 无插件 Vim 编程技巧
 
 相信大家看过《简明Vim教程》也玩了《Vim大冒险》的游戏了，相信大家对Vim都有一个好的入门了。我在这里把我日常用Vim编程的一些技巧列出来给大家看看，希望对大家有用，另外，也是一个抛砖引玉的过程，也希望大家把你们的技巧跟贴一下，我会更新到这篇文章中。另外，这篇文章里的这些技巧全都是vim原生态的，不需要你安装什么插件。我的Vim的版本是7.2。
 
@@ -12,15 +18,15 @@
 
 注意，是大写。于是，你会看到下面这样的界面：
 
-![vim_explorer](images/vim_explorer_1437796292.png)
+![vim_explorer](../images/vim_explorer.png)
 
 这个界面中，你可以用 j, k 键上下移动，然后回车，进入一个目录，或是找开一个文件。你可以看到上面有一堆命令：
 
 - `–` 到上级目录
-- `D`删除文件（大写）
-- `R`改文件名（大写）
-- `s`对文件排序（小写）
-- `x`执行文件
+- `D` 删除文件（大写）
+- `R` 改文件名（大写）
+- `s` 对文件排序（小写）
+- `x` 执行文件
 
 当然，打开的文件会把现有已打开的文件给冲掉——也就是说你只看到了一个文件。
 
@@ -38,7 +44,14 @@
 `:ls`
 
 于是，在你的Vim下，你会看到如下界面：
-![vim_buffer_ls](media/vim_buffer_ls.png)
+
+```
+:ls
+  1 %a   "design-restful-api-with-python-and-flask.md" line 1
+  2      "pure-bash-bible.md"           line 0
+  3      "understanding-awk.md"         line 0
+  4      "programming-with-vim.md"      line 0
+```
 
 你可以看到Vim打开了四个文件，编号是4，5，6，7，如果你要切换打开的文件，这个时候，你不要按回车（按了也没事，只不过按了就看不到:ls输出的buffer列表了），你可以使用下面的命令切换文件（buffer后面的4表示切到4号文件也就是src/http/ngx_http.c）：
 
@@ -46,7 +59,7 @@
 
 或是：
 
-`:buffer src/http/ngx_http.c`
+`:buffer programming-with-vim.md`
 
 注意，
 

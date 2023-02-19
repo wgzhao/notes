@@ -1,3 +1,9 @@
+---
+title: Windows 下批量转换 word 文档为 pdf 的方法
+description: Windows 下如何利用 PowerShell 来批量将 Word 文档转为 pdf 格式的文档
+tags: ["word", "pdf", "powershell"]
+---
+
 # Windows 下批量转换 word 文档为 pdf 的方法
 
 方法为利用PowerShell的插件功能

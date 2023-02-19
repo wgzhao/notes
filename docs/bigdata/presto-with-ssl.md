@@ -1,3 +1,9 @@
+---
+title: Presto SSL 配置
+description: 这篇帖子主要讲述如何在 Presto 集群中启用 SSL 加密通讯的问题
+tags: ["presto", "trino", "security", "ssl"]
+---
+
 # Presto SSL 配置
 
 要启用Presto的认证和授权，前提是要配置Presto节点间的通讯为加密模式。

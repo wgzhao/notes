@@ -1,3 +1,9 @@
+---
+title: 在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+description: 这篇帖子描述了如何自动创建基于 RBAC 的授权用胡，可以访问 Kubernetes Dashboard
+tags: ["kubernetes", "dashboard", "rbac"]
+---
+
 # 在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
 
 Kuberenetes [Dashboard](https://github.com/kubernetes/dashboard) 默认情况下，创建了一个 Admin 角色的用户，属于超级管理员。
