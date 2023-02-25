@@ -54,7 +54,7 @@ extra:
   # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-analytics/
   version:
     provider: mike
-  
+
   # https://squidfunk.github.io/mkdocs-material/setup/setting-up-site-analytics/#cookie-consent
   consent:
     title: Cookie consent
@@ -63,7 +63,7 @@ extra:
       as to measure the effectiveness of our documentation and whether users
       find what they're searching for. With your consent, you're helping us to
       make our documentation better.
-  
+
   # https://squidfunk.github.io/mkdocs-material/setup/setting-up-the-footer
   social:
     - icon: fontawesome/brands/github-alt
@@ -84,7 +84,7 @@ markdown_extensions:
   - meta # attach arbitrary key-value pairs to a document
   - md_in_html # allow to write Markdown inside HTML elements
   - tables # create tables in Markdown
-  - toc:  # generate a table of contents from documents
+  - toc: # generate a table of contents from documents
       permalink: true
       toc_depth: 4 # header 1 to header 4
       # slugify: !!python/name:pymdownx.slugs.uslugify # convert title to html-compatible text
@@ -107,7 +107,7 @@ markdown_extensions:
   - pymdownx.highlight
   - pymdownx.inlinehilite
   - pymdownx.keys
-  - pymdownx.emoji: # add inlines bundled and custom icons and emojis 
+  - pymdownx.emoji: # add inlines bundled and custom icons and emojis
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg
   - pymdownx.superfences # define code blocks and nesting of code
@@ -128,12 +128,12 @@ markdown_extensions:
       user: wgzhao
       repo: notes
   - pymdownx.superfences:
-     custom_fences:
-       - name: mermaid
-         class: mermaid
-         format: !!python/name:pymdownx.superfences.fence_code_format
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.snippets: #embbed content from arbitrary files into a document
-      base_path: 
+      base_path:
         - docs/assets
       check_paths: true
   - pymdownx.tasklist: # define list of task with checkbox
@@ -142,42 +142,43 @@ markdown_extensions:
 # preview control
 use_directory_urls: true
 
-plugins: 
+plugins:
   - search:
+      separator: '[\s\-,:!=\[\]()"/]+|(?!\b)(?=[A-Z][a-z])|\.(?!\d)|&[lg]t;'
   - awesome-pages:
       # collapse_single_pages: true # replaced by navigation.indexes
   # - section-index # must be after awesome-pages, replaced by navigation.indexes
   - git-revision-date-localized:
-        enable_creation_date: true
-        fallback_to_build_date: true
-        type: iso_date
+      enable_creation_date: true
+      fallback_to_build_date: true
+      type: iso_date
   - encryptcontent:
-        hljs: false
-        arithmatex: false
-        mermaid2: false
-        password_button: true
-        remember_password: true
-        default_expire_dalay: 24
-        # reload_scripts:
-            # - "./assets/extra.js"
+      hljs: false
+      arithmatex: false
+      mermaid2: false
+      password_button: true
+      remember_password: true
+      default_expire_dalay: 24
+      # reload_scripts:
+      # - "./assets/extra.js"
   - exclude:
-        glob:
-          - '*/exclude/*'
-        regex:
-          - '.*\[exclude\].*'
+      glob:
+        - "*/exclude/*"
+      regex:
+        - '.*\[exclude\].*'
   # - pdf-with-js:
-        # enable: false # should enable only when need PDF files
-        # add_download_button: false
-        # display_header_footer: true
-        # header_template: >-
-            # <div style="font-size:8px; margin:auto; color:lightgray;">
-                # <span class="title"></span>
-            # </div>
-        # footer_template: >-
-            # <div style="font-size:8px; margin:auto; color:lightgray;">
-                # Page <span class="pageNumber"></span> of 
-                # <span class="totalPages"></span>
-            # </div>
+  # enable: false # should enable only when need PDF files
+  # add_download_button: false
+  # display_header_footer: true
+  # header_template: >-
+  # <div style="font-size:8px; margin:auto; color:lightgray;">
+  # <span class="title"></span>
+  # </div>
+  # footer_template: >-
+  # <div style="font-size:8px; margin:auto; color:lightgray;">
+  # Page <span class="pageNumber"></span> of
+  # <span class="totalPages"></span>
+  # </div>
   # - tags:
 
 #
