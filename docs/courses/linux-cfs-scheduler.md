@@ -41,7 +41,7 @@ CFS（Completely Fair Scheduler）是 Linux 内置（也是目前默认）的一
 
 * cgroup 有两个版本，分别称为 cgroup v1 和 cgroup v2。这两个版本**不兼容**，现在默认都是用的 v1；
 * 有了 `cgroup`，调度器就能通过 `cgroup` 伪文件系统来管理进程组占用的资源（我们这里关心的是CPU 资源）了；
-* 更多信息见 Documentation/admin-guide/cgroup-v1/cgroups.rst。
+* 更多信息见 [Documentation/admin-guide/cgroup-v1/cgroups.rst][1]。
 
 ### 1.2.2 前提：`CONFIG_CGROUP_SCHED`
 
@@ -84,7 +84,21 @@ CFS 自己也存在一些问题或限制：
 
   CFS **只关注 CPU 平均分配，并不保证 CPU 时间**（上下限）。 换句话说，CPU share/quota 只有相对意义，share 大的一定比 share 小的能分到更多 CPU，仅此而已。 进程越多，每个进程分到的 CPU 时间越少。 CPU 限额（上限）对**按 CPU 时间计费**的场景非常关键，例如公有云。
 
-  ![](../images/cfs-share-hierarchy.png)
+```mermaid
+%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
+graph TB
+rg(["Root group/<br>(no tasks directrly under root)<br/> CPU:100%<br/>shares: 1024"])
+prof["professor<br>CPU:50%<br>shares:1024"]
+stu["students<br>CPU:25%<br>shares:1024"]
+sys["system_tasks<br>CPU:25%<br>shares:1024"]
+e1["Electronics Students<br>CPU:30%<br/>shares:3072"]
+e2["Electronics Students<br>CPU:30%<br/>shares:3072"]
+e3["Computers Students<br>CPU:30%<br/>shares:3072"]
+e4["Other Students<br>CPU:30%<br/>shares:3072"]
+
+rg ---> prof & stu & sys
+stu ---> e1 & e2 & e3 & e
+```
 
   图片来自 google paper [5]。注意：严格来说，这里的相对时间还只是在 SCHED\_NORMAL 里的时间，不包括 SCHED\_RT 进程占掉的 CPU 时间。
 
@@ -300,15 +314,19 @@ This is even weaker than nice 19, but its not a true idle timer scheduler in ord
 
 `chrt` 可**查看或修改进程的调度属性**：
 
-    $ chrt --help
-    Show or change the real-time scheduling attributes of a process.
-    ...
+```shell
+$ chrt --help
+Show or change the real-time scheduling attributes of a process.
+...
+```
 
 查看调度属性：
 
-    $ chrt -p 219027
-    pid 219027's current scheduling policy: SCHED_OTHER
-    pid 219027's current scheduling priority: 0
+```shell
+$ chrt -p 219027
+pid 219027's current scheduling policy: SCHED_OTHER
+pid 219027's current scheduling priority: 0
+```
 
 ## 2.4 调度类（scheduling class）
 
@@ -1000,4 +1018,4 @@ $ dk run --rm -it --cpu-quota 25000 --cpu-period 100000 -v $(pwd):$(pwd) -w $(pw
 7. [Overly aggressive CFS](https://gist.github.com/bobrik/2030ff040fad360327a5fab7a09c4ff1#file-cfs-go), 2018
 8. [Process Scheduling In Linux](https://medium.com/geekculture/process-scheduling-in-linux-592028a5d545), 2021
 
-[« k8s 基于 cgroup 的资源限额（capacity enforcement）：模型设计与代码实现（2023）](http://arthurchiao.art/blog/k8s-cgroup-zh/)
+[1]: https://www.kernel.org/doc/Documentation/admin-guide/cgroup-v1/cgroups.rst
