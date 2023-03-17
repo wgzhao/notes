@@ -1,3 +1,8 @@
+---
+title: 详解 TCP 半连接队列与全连接队列
+tags: ["tcp"]
+---
+
 # 详解 TCP 半连接队列与全连接队列
 
 [Source](https://www.51cto.com/article/687595.html)
@@ -43,7 +48,7 @@ sequenceDiagram
 
 
 
-[![img](images/3d05f574867b70d1134e685e5f5ac137.jpg)](https://s3.51cto.com/oss/202110/27/3d05f574867b70d1134e685e5f5ac137.jpg)
+[![img](../images/3d05f574867b70d1134e685e5f5ac137.jpg)](https://s3.51cto.com/oss/202110/27/3d05f574867b70d1134e685e5f5ac137.jpg)
 
 在 TCP 三次握手的过程中，Linux 内核会维护两个队列，分别是：
 
