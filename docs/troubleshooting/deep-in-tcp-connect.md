@@ -592,7 +592,7 @@ $$
 ```mermaid
 graph TD
 %%cur_qlen 当前半连接队列长度, max_qlen 半连接队列最大长度%%
-c1{"cur_qlen > max_qlen"}
+c1{"cur_qlen >= max_qlen"}
 c2{"是否开启了<br/>tcp_syncookies"}
 c3{"当前全队列是否已满"}
 c4{"半连接队列没有重传<br/>SYN+ACK的连接请求>1"}
@@ -616,11 +616,14 @@ style drop fill:#fbcfcd,stroke-width:0px,color:white;
 style ack fill:#12e7d4,stroke-width:0px,color:white;
 ```
 
+图列说明：
 
+- `cur_qlen`: 当前半连接队列长度
+- `max_qlen`: 全连接队列最大长度
+- 
 
 上图是整理了多份资料后，整理出来的判断是否 Drop SYN 请求的流程图。
 
-注意：第一个判断条件 「当前半连接队列是否已超过半连接队列最大长度」在不同内核版本中的判断不一样，Linux 5.9.10 内核判断的是当前半连接队列长度是否 >= 全连接队列最大长度。
 
 相关内核代码：
 
@@ -633,27 +636,33 @@ static inline int inet_csk_reqsk_queue_is_full(const struct sock *sk)
 } 
 ```
 
+其中 `tcp(7)` 手册上是这样描述 `tcp_syn_cookies`
+
+>tcp_syncookies (integer; default: 1; since Linux 2.2)  
+>  Enable TCP syncookies.  The kernel must be compiled with CONFIG_SYN_COOKIES.   The  syn‐  
+>  cookies  feature  attempts  to protect a socket from a SYN flood attack.  This should be  
+>  used as a last resort, if at all.  This is a violation of the  TCP  protocol,  and  con‐  
+>  flicts  with  other  areas  of  TCP  such  as TCP extensions.  It can cause problems for  
+>  clients and relays.  It is not recommended as a  tuning  mechanism  for  heavily  loaded  
+>  servers  to  help with overloaded or misconfigured conditions.  For recommended alterna‐  
+>  tives see tcp_max_syn_backlog, tcp_synack_retries, and  tcp_abort_on_overflow.   Set  to  
+>  one of the following values:  
+>  0  Disable TCP syncookies  
+>  1  Send out syncookies when the syn backlog queue of a socket overflows    
+>  2  (since  Linux 3.12) Send out syncookies unconditionally.  This can be useful for net‐
+>     work testing.  
+
 我们假设如下参数，来计算下当 Client 端只发送 SYN 包，理论上 Server 端何时会 Drop SYN 请求：
 
-- 调用 listen 时传入的 backlog = 1024
-- `/proc/sys/net/core/somaxconn` 值为 1024
-- `/proc/sys/net/ipv4/tcp_max_syn_backlog` 值为 128
+| backlog | somaxconn | `tcp_max_syn_backlog` | `tcp_syncookies` | 半队列最大长度 | 触发 Drop SYN 临界值 |
+| ------- | --------- | --------------------- | ---------------- | -------------- | -------------------- |
+| 1024    | 1024      | 128                   | 0                | 256            | 96                   |
+| 1024    | 1024      | 128                   | 1                | 256            | 512/1024[^1]         |
+| 1024    | 1024      | 128                   | 2                | 256            | 永不                 |
 
-当 `/proc/sys/net/ipv4/tcp_syncookies` 值为 0 时
+[^1]: 由于开启了 `tcp_syncookies`, 当全连接队列未满时，永远不会 Drop 请求 (注意：经实验发现这个理论是错误的，实验发现只要半连接队列的大小 > 全连接队列最大长度就会触发 Drop SYN 请求);
+      当全连接队列满了后，即全连接队列大小到 1024 后，就会触发 Drop SYN 请求
 
-- 计算出的半连接队列最大长度为 256
-- 当半连接队列长度增长至 96 后，再新增 SYN 请求，就会触发 Drop SYN 请求
-
-当 `/proc/sys/net/ipv4/tcp_syncookies` 值为 1 时
-
-1.计算出的半连接队列最大长度为 256
-
-2.由于开启了 `tcp_syncookies`
-
-- 当全连接队列未满时，永远不会 Drop 请求 (注意：经实验发现这个理论是错误的，实验发现只要半连接队列的大小 > 全连接队列最大长度就会触发 Drop SYN 请求)
-- 当全连接队列满了后，即全连接队列大小到 1024 后，就会触发 Drop SYN 请求
-
-PS：`/proc/sys/net/ipv4/tcp_syncookies` 的取值还可以为 2，笔者没有详细实验。
 
 **回顾全连接队列实验结果**
 
@@ -688,8 +697,6 @@ $ sudo sysctl -w net.ipv4.tcp_syncookies=0
 启动服务端 Server 监听 8888 端口
 
 客户端 Client 发起 SYN Flood 攻击：
-
-复制
 
 ```shell
 $ sudo hping3 -S 192.168.31.76 -p 8888 --flood 
