@@ -110,8 +110,6 @@ ESTAB      0      0         [::ffff:33.9.95.134]:80                   [::
 
 相关内核代码：
 
-复制
-
 ```c
 // https://github.com/torvalds/linux/blob/master/net/ipv4/tcp_diag.c 
 static void tcp_diag_get_info(struct sock *sk, struct inet_diag_msg *r, 
@@ -162,8 +160,6 @@ TCP 全连接队列的最大长度由 $min(somaxconn, backlog)$ 控制，其中�
 - backlog 是 TCP 协议中 listen 函数的参数之一，即 `int listen(int sockfd, int backlog)` 函数中的 backlog 大小。在 Golang 中，listen 的 backlog 参数使用的是 `/proc/sys/net/core/somaxconn` 文件中的值。
 
 相关内核代码：
-
-复制
 
 ```c
 // https://github.com/torvalds/linux/blob/master/net/socket.c 
@@ -555,6 +551,7 @@ max\_qlen\_log &= max(3, log_2(qlen))  \\
 max\_queue\_length &= 2^{max\_qlen\_log} \\
 \end{align}
 $$
+
 可以看到，半连接队列的长度由三个参数指定：
 
 - 调用 listen 时，传入的 backlog
@@ -615,8 +612,8 @@ c2 -- 否 --> drop
 c4 -- 是 --> drop
 c6 -- 是 --> drop
 
-style drop fill:#fbcfcd,stroke-width:0px;
-style ack fill:#d2e7d4,stroke-width:0px;
+style drop fill:#fbcfcd,stroke-width:0px,color:white;
+style ack fill:#12e7d4,stroke-width:0px,color:white;
 ```
 
 
@@ -709,7 +706,7 @@ $ sudo netstat -nat | grep :8888 | grep 'SYN_RECV'  | wc -l
 98
 ```
 
-我这里实验结果（98）和预期（96）有相差，具体原因还没有找到，当半连接队列长度增长至 96 后，后续 SYN 请求就会触发 Drop。
+我这里实验结果（98）和预期（96）有相差，具体原因还没有找到，当半连接队列长度增长至 98 后，后续 SYN 请求就会触发 Drop。
 
 ### 实验二
 
@@ -894,3 +891,6 @@ Connection Reset 排查
 深入浅出 TCP 中的 SYN-Cookies
 
 - https://segmentfault.com/a/1190000019292140
+
+《TCP/IP 详解 卷一：协议》第十八章
+- https://flylib.com/books/en/3.223.1.193/1/

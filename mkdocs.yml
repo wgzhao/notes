@@ -39,6 +39,9 @@ theme:
     # - toc.integrate
     - header.autohide
     - announce.dismiss
+    - toc.integrate
+  font:
+    text: Roboto
   
 
 plugins: 
@@ -99,3 +102,6 @@ use_directory_urls: true
 
 extra_javascript:
   - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+
+extra_css:
+  - css/extra.css
