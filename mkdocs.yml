@@ -48,6 +48,28 @@ plugins:
   - search:
   - tags:
       tags_file: tags.md
+  - rss:
+      abstract_chars_count: -1  # -1 for full content
+      abstract_delimiter: <!-- more -->
+      categories:
+        - tags
+      comments_path: "#__comments"
+      date_from_meta:
+        as_creation: "date"
+        as_update: false
+        datetime_format: "%Y-%m-%d %H:%M"
+        default_timezone: Europe/Paris
+        default_time: "09:30"
+      enabled: true
+      feed_ttl: 1440
+      image: https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Feed-icon.svg/128px-Feed-icon.svg.png
+      length: 20
+      pretty_print: false
+      match_path: ".*"
+      url_parameters:
+        utm_source: "documentation"
+        utm_medium: "RSS"
+        utm_campaign: "feed-syndication"
 extra:
   social:
     - icon: fontawesome/brands/twitter
@@ -101,7 +123,7 @@ markdown_extensions:
 use_directory_urls: true
 
 extra_javascript:
-  - https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML
 
 extra_css:
   - css/extra.css
