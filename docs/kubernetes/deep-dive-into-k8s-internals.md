@@ -1,5 +1,5 @@
 ---
-title: deep-dive-into-k8s-internals
+title: 用奇怪的方式构建简单 k8s 集群
 tags: ["k8s", "etcd", "kubectl", "docker"]
 ---
 
