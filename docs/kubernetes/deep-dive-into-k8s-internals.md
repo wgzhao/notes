@@ -971,17 +971,232 @@ KUBE-NODEPORTS  all  --  anywhere             anywhere             /* kubernetes
 
 针对每个 Service ，都会创建一条规则。
 
-## 后续操作
+接下来，我们打算再增加一个节点到集群中
 
-接下来，我们打算在集群中再加入一个节点，同时会启用网络插件，看看这个过程又会遇到什么问题，以及怎么去解决。
+## 新增节点
 
+首先把前面节 的 `/opt/k8s` 目录拷贝到新节点
 
+### 运行容器引擎
+
+```shell
+# systemctl start docker
+```
+
+### 运行 kubelet
+
+先拷贝前面节点的 `$HOME/.kube/config` 文件到到节点
+
+```shell
+# scp node41:/root/.kube/config node42:/tmp/
+```
+
+修改配置文件，把 `server: https://127.0.0.1:6443` 换成 `server: https://10.90.23.41:6443`
+
+然后运行
+
+```bash
+# ./kubelet --cgroup-driver=systemd  --kubeconfig /tmp/config
+Flag --cgroup-driver has been deprecated, This parameter should be set via the config file specified by the Kubelet's --config flag. See https://kubernetes.io/docs/tasks/administer-cluster/kubelet-config-file/ for more information.
+I0321 20:12:36.308745   32224 server.go:446] "Kubelet version" kubeletVersion="v1.23.17"
+I0321 20:12:36.310418   32224 container_manager_linux.go:975] "CPUAccounting not enabled for process" pid=32224
+I0321 20:12:36.310432   32224 container_manager_linux.go:978] "MemoryAccounting not enabled for process" pid=32224
+....
+E0321 20:12:36.460003   32224 eviction_manager.go:254] "Eviction manager: failed to get summary stats" err="failed to get node info: node \"node42\" not found"
+```
+
+似乎成功了
+
+```shell
+#  kubectl get nodes
+NAME    STATUS   ROLES    AGE     VERSION
+node41   Ready    <none>   4h48m   v1.23.17
+node42   Ready    <none>   65s     v1.23.17
+```
+
+### 部署新的服务
+
+```shell
+# kubectl create deployment httpenv --image=jpetazzo/httpenv
+deployment.apps/httpenv created
+# kubectl scale deployment httpenv --replicas=5
+deployment.apps/httpenv scaled
+```
+
+看下 Pod 状态
+
+```shell
+# kubectl get pods
+NAME                      READY   STATUS    RESTARTS   AGE
+httpenv-858f759c7-jr77f   1/1     Running   0          2m22s
+httpenv-858f759c7-krtvs   1/1     Running   0          2m36s
+httpenv-858f759c7-q6v6b   1/1     Running   0          2m22s
+httpenv-858f759c7-scbm7   1/1     Running   0          2m22s
+httpenv-858f759c7-vkpgn   1/1     Running   0          2m22s
+web-58bd5fd67c-rrhg7      1/1     Running   0          4h30m
+```
+
+似乎一切都正常，但使用 `-owide` 再看下
+
+```shell
+# kubectl get pods  -o wide
+NAME                      READY   STATUS    RESTARTS   AGE     IP           NODE             
+httpenv-858f759c7-jr77f   1/1     Running   0          2m38s   172.17.0.2   node42   
+httpenv-858f759c7-krtvs   1/1     Running   0          2m52s   172.17.0.3   node42   
+httpenv-858f759c7-q6v6b   1/1     Running   0          2m38s   172.17.0.4   node42
+httpenv-858f759c7-scbm7   1/1     Running   0          2m38s   172.17.0.3   node41  
+httpenv-858f759c7-vkpgn   1/1     Running   0          2m38s   172.17.0.4   node41   
+web-58bd5fd67c-rrhg7      1/1     Running   0          4h30m   172.17.0.2   node41   
+```
+
+怎么 pod 的 IP 地址有重复的?
+
+这是因为我们没有启用网络插件，所以集群自身不解决网络分配问题，这些 IP 地址都是来自 Docker 自身的分配
+
+而 Docker 默认配置下，分配的 IP 会相同，所以两个节点的 IP 地址就重复了
+
+因此我们需要启用网络插件
+
+### 启用网络插件
+
+我们使用 `cni` 网络插件，使用网络插件需要规划子网，一般我们使用 `10.C.N.0/24` 子网模式，这里
+
+- C 表示集群数，可以从0开始，也可以从1开始
+- N 表示集群中节点序数,可以从0开始，也可以从1开始
+
+首先，我们停止两台机器的 kubelet 服务，然后增加第一个节点增加
+
+```shel
+--network-plugin=kubenet --pod-cidr 10.1.1.0/24
+```
+
+第二个节点增加
+
+```shel
+--network-plugin=kubenet --pod-cidr 10.1.2.0/24
+```
+
+参数来启动。
+
+启动之前你需要先安装 `kubernetes-cni` 包，我这里直接从其他服务器上拷贝过来的
+
+### 重新部署
+
+重启启用网络之后，需要重启创建 Deployment
+
+```bash
+# kubectl delete pods --all
+
+pod "httpenv-858f759c7-jr77f" deleted
+pod "httpenv-858f759c7-krtvs" deleted
+pod "httpenv-858f759c7-q6v6b" deleted
+pod "httpenv-858f759c7-scbm7" deleted
+pod "httpenv-858f759c7-vkpgn" deleted
+pod "web-58bd5fd67c-rrhg7" deleted
+```
+
+等上一会，我们再看
+
+```shell
+# kubectl get pods -o wide
+
+NAME                      READY   STATUS    RESTARTS   AGE   IP         NODE
+httpenv-858f759c7-89qlj   1/1     Running   0          44s   10.1.2.3   node42
+httpenv-858f759c7-dl5hj   1/1     Running   0          44s   10.1.1.3   node41
+httpenv-858f759c7-f9qpq   1/1     Running   0          44s   10.1.1.4   node41
+httpenv-858f759c7-nhkdk   1/1     Running   0          44s   10.1.2.2   node42
+httpenv-858f759c7-sswpt   1/1     Running   0          44s   10.1.2.4   node42
+web-58bd5fd67c-nlsjp      1/1     Running   0          44s   10.1.1.2   node41
+```
+
+这看上去一切正常
+
+### 暴露服务
+
+```bash
+# kubectl expose deployment httpenv --port=8888
+service/httpenv exposed
+# kubectl get svc httpenv
+NAME      TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
+httpenv   ClusterIP   10.0.0.250   <none>        8888/TCP   22s
+```
+
+尝试访问这个服务
+
+```bash
+# for i in {1..10}; do  curl -sS  --connect-timeout 1 http://10.250:8888 |jq '.HOSTNAME'; sleep 0.3;done
+
+"httpenv-858f759c7-f9qpq"
+"httpenv-858f759c7-f9qpq"
+curl: (28) Connection timed out after 1001 milliseconds
+curl: (28) Connection timed out after 1001 milliseconds
+curl: (28) Connection timed out after 1001 milliseconds
+"httpenv-858f759c7-f9qpq"
+"httpenv-858f759c7-dl5hj"
+"httpenv-858f759c7-dl5hj"
+curl: (28) Connection timed out after 1001 milliseconds
+curl: (28) Connection timed out after 1001 milliseconds
+```
+
+我们发现只有访问运行在 `node41` 节点的 Pod 可以有返回，运行在 `node42` 节点上的则直接超时了
+
+这是因为每个节点分配的子网，其他节点并没有对应的路由规则
+
+### 增加静态路由
+
+我们需要告诉每一个节点 `10.C.N.0/24` 是位于节点 N 上，我们需要增加类似下面这样的路由规则
+
+```shell
+ip route add 10.C.N.0/24 via W.X.Y.Z
+```
+
+这里的 `W.X.Y.Z` 就是节点 `N` 的内网 IP 地址。具体到我们的环境，需要分别在 `node41` 上增加如下路由规则：
+
+```shell
+ip route add 10.1.2.0/24 via 10.90.23.42
+```
+
+在节点 `node42` 上增加下面的规则
+
+```shell
+ip route add 10.1.1.0/24 via 10.90.23.41
+```
+
+然后我们再测试访问情况
+
+```shell
+# for i in {1..10}; do  curl -sS  --connect-timeout 1   http://10.250:8888 |jq '.HOSTNAME'; sleep 0.3;done
+
+"httpenv-858f759c7-89qlj"
+"httpenv-858f759c7-nhkdk"
+"httpenv-858f759c7-89qlj"
+"httpenv-858f759c7-nhkdk"
+"httpenv-858f759c7-dl5hj"
+"httpenv-858f759c7-89qlj"
+"httpenv-858f759c7-f9qpq"
+"httpenv-858f759c7-sswpt"
+"httpenv-858f759c7-nhkdk"
+"httpenv-858f759c7-nhkdk"
+```
+
+这看上去就正常了
+
+## 总结
+
+整个纯手工搭建 k8s 集群的步骤就到此结束，其他的扩展就是围绕我们上面一些需求扩展二来，比如当节点过多是，不可能人工给每一个节点去增加静态路由，因此需要有专门的路由组件来处理。
+
+当引入 TLS 后，整个部署过程其实复杂了不少，这还是借助了一些能简化工作量的工具。
+
+因此总来的来说，新版本的部署，使用官方推荐的 [kubeadm]() 也好，[KOps](https://kubernetes.io/docs/setup/production-environment/tools/kops/) 也好，[Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/) 甚至[minikube](https://kubernetes.io/docs/tutorials/kubernetes-basics/create-cluster/cluster-intro/ ) 都比这种方式要来的快得多。
+
+显然这种模式适合手头已经有呃集群，而且对集群有了一定的了解，想进一搞清楚各组建的关系，组件出现故障后，如何维护。那么通过这么一套方式下来，相信还是有不少收获的。
 
 参考资料
 
-1. https://kubernetes.io/docs/reference/kubectl/cheatsheet/
-2. https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
-3. https://stackoverflow.com/questions/42170380/how-to-add-users-to-kubernetes-kubectl
-4. https://medium.com/@DrewViles/install-cloudflares-pki-toolkit-and-generate-tls-certs-2e3fcedea8a0
-5. https://github.com/kelseyhightower/kubernetes-the-hard-way/
-6. https://s.itho.me/day/2017/k8s/1020-1100%20All%20The%20Troubles%20You%20Get%20Into%20When%20Setting%20Up%20a%20Production-ready%20Kubernetes%20Cluster.pdf
+1. https://lisa-2019-10.container.training/tutorial.yml.html
+2. https://kubernetes.io/docs/reference/kubectl/cheatsheet/
+3. https://kubernetes.io/docs/reference/command-line-tools-reference/kube-apiserver/
+4. https://stackoverflow.com/questions/42170380/how-to-add-users-to-kubernetes-kubectl
+5. https://medium.com/@DrewViles/install-cloudflares-pki-toolkit-and-generate-tls-certs-2e3fcedea8a0
+6. https://github.com/kelseyhightower/kubernetes-the-hard-way/
+7. https://s.itho.me/day/2017/k8s/1020-1100%20All%20The%20Troubles%20You%20Get%20Into%20When%20Setting%20Up%20a%20Production-ready%20Kubernetes%20Cluster.pdf
