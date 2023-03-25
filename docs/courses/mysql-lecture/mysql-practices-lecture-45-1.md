@@ -1,4 +1,5 @@
 ---
+
 title: 《MySQL 实战45讲》节选第一部分
 description: 这篇摘要内容节选自 “丁奇” 在极客时间的 《MySQL实战45讲》的内容，这是第一部分
 tags: ["mysql", "tuning"]
@@ -9,6 +10,16 @@ tags: ["mysql", "tuning"]
 [Source](http://learn.lianglianglee.com/%E6%9E%81%E5%AE%A2%E6%97%B6%E9%97%B4/MySQL%E5%AE%9E%E6%88%9845%E8%AE%B2.md "Permalink to MySQL实战45讲.md")
 
 以下内容节选自 “丁奇” 在极客时间的 《MySQL实战45讲》的内容，这是第一部分
+
+## 00环境说明
+
+这5篇内容的测试和验证分别在 MySQL 5.7.41 以及 MySQL 8.0.32 上进行。两个服务分别在两台配置相同的服务器上，信息如下：
+
+- 型号：Dell R640
+- CPU:  Intel(R) Xeon(R) Silver 4216 CPU @ 2.10GHz 32核
+- 内存：64G
+- OS: RHEL 7.6 x86_64
+- kernel: 5.19.11-1.el7.elrepo
 
 ## 01 基础架构：一条SQL查询语句是如何执行的？
 
@@ -99,9 +110,9 @@ mysql> show processlist;
 2 rows in set (0.00 sec)
 ```
 
-客户端如果太长时间没动静，连接器就会自动将它断开。这个时间是由参数 wait\_timeout 控制的，默认值是 8 小时。
+客户端如果太长时间没动静，连接器就会自动将它断开。这个时间是由参数 `wait_timeout` 控制的，默认值是 8 小时(28800)。
 
-如果在连接被断开之后，客户端再次发送请求的话，就会收到一个错误提醒： Lost connection to MySQL server during query。这时候如果你要继续，就需要重连，然后再执行请求了。
+如果在连接被断开之后，客户端再次发送请求的话，就会收到一个错误提醒： `Lost connection to MySQL server during query`。这时候如果你要继续，就需要重连，然后再执行请求了。
 
 数据库里面，长连接是指连接成功后，如果客户端持续有请求，则一直使用同一个连接。短连接则是指每次执行完很少的几次查询就断开连接，下次查询再重新建立一个。
 
@@ -126,13 +137,13 @@ MySQL 拿到一个查询请求后，会先到查询缓存看看，之前是不�
 
 查询缓存的失效非常频繁，只要有对一个表的更新，这个表上所有的查询缓存都会被清空。因此很可能你费劲地把结果存起来，还没使用呢，就被一个更新全清空了。对于更新压力大的数据库来说，查询缓存的命中率会非常低。除非你的业务就是有一张静态表，很长时间才会更新一次。比如，一个系统配置表，那这张表上的查询才适合使用查询缓存。
 
-好在 MySQL 也提供了这种“按需使用”的方式。你可以将参数 query\_cache\_type 设置成 DEMAND，这样对于默认的 SQL 语句都不使用查询缓存。而对于你确定要使用查询缓存的语句，可以用 SQL\_CACHE 显式指定，像下面这个语句一样：
+好在 MySQL 也提供了这种“按需使用”的方式。你可以将参数 `query_cache_type` 设置成 DEMAND(该参数在`5.7.41` 默认是 `OFF`)，这样对于默认的 SQL 语句都不使用查询缓存。而对于你确定要使用查询缓存的语句，可以用 SQL\_CACHE 显式指定，像下面这个语句一样：
 
 ```sql
 mysql> select SQL_CACHE * from T where ID=10；
 ```
 
-需要注意的是，MySQL 8.0 版本直接将查询缓存的整块功能删掉了，也就是说 8.0 开始彻底没有这个功能了。
+需要注意的是，MySQL 8.0 版本直接将查询缓存的整块功能删掉了，也就是说 8.0.3 开始彻底没有这个功能了。
 
 ### 分析器
 
@@ -193,15 +204,15 @@ ERROR 1142 (42000): SELECT command denied to user 'b'@'localhost' for table 'T'
 
 对于有索引的表，执行的逻辑也差不多。第一次调用的是“取满足条件的第一行”这个接口，之后循环取“满足条件的下一行”这个接口，这些接口都是引擎中已经定义好的。
 
-你会在数据库的慢查询日志中看到一个 rows\_examined 的字段，表示这个语句执行过程中扫描了多少行。这个值就是在执行器每次调用引擎获取数据行的时候累加的。
+你会在数据库的慢查询日志中看到一个 `rows_examined` 的字段，表示这个语句执行过程中扫描了多少行。这个值就是在执行器每次调用引擎获取数据行的时候累加的。
 
-在有些场景下，执行器调用一次，在引擎内部则扫描了多行，因此 **引擎扫描行数跟 rows_examined 并不是完全相同的**。我们后面会专门有一篇文章来讲存储引擎的内部机制，里面会有详细的说明。
+在有些场景下，执行器调用一次，在引擎内部则扫描了多行，因此 **引擎扫描行数跟 `rows_examined` 并不是完全相同的**。我们后面会专门有一篇文章来讲存储引擎的内部机制，里面会有详细的说明。
 
 ### 小结
 
 我给你留一个问题吧，如果表 T 中没有字段 k，而你执行了这个语句 `select * from T where k=1`, 那肯定是会报“不存在这个列”的错误： `Unknown column ‘k’ in ‘where clause`。你觉得这个错误是在我们上面提到的哪个阶段报出来的呢？
 
-
+执行器阶段会检查查询的列是否存在
 
 ## 02 日志系统：一条SQL更新语句是如何执行的？
 
@@ -250,29 +261,13 @@ mysql> update T set c=c+1 where ID=2;
 
 与此类似，InnoDB 的 redo log 是固定大小的，比如可以配置为一组 4 个文件，每个文件的大小是 1GB，那么这块“粉板”总共就可以记录 4GB 的操作。从头开始写，写到末尾就又回到开头循环写，如下面这个图所示。
 
-```mermaid
-graph LR
+![redo log cycle](../../images/mysql-lecture-45/1929130942-5db19244c8c03.png)
 
-	checkpoint --> ib_logfile_1
-	
-	wp["write pos"] --> ib_logfile_3
-	
-	subgraph "Logfile Group"
-    direction LR
-    ib_logfile_0
-    ib_logfile_1
-    ib_logfile_2
-    ib_logfile_3
 
-    ib_logfile_0:::nolink  --- ib_logfile_1 --- ib_logfile_2 --- ib_logfile_3
-    
-    linkStyle 2,3,4 nolink stroke:white,stroke-width:0px;
-	end
-```
 
 write pos 是当前记录的位置，一边写一边后移，写到第 3 号文件末尾后就回到 0 号文件开头。checkpoint 是当前要擦除的位置，也是往后推移并且循环的，擦除记录前要把记录更新到数据文件。
 
-write pos 和 checkpoint 之间的是“粉板”上还空着的部分，可以用来记录新的操作。如果 write pos 追上 checkpoint，表示“粉板”满了，这时候不能再执行新的更新，得停下来先擦掉一些记录，把 checkpoint 推进一下。
+write pos 和 checkpoint 之间的是“粉板”上还空着的部分(上图绿色背景部分），可以用来记录新的操作。如果 write pos 追上 checkpoint，表示“粉板”满了，这时候不能再执行新的更新，得停下来先擦掉一些记录，把 checkpoint 推进一下。
 
 有了 redo log，InnoDB 就可以保证即使数据库发生异常重启，之前提交的记录都不会丢失，这个能力称为**crash-safe**。
 
@@ -302,24 +297,20 @@ write pos 和 checkpoint 之间的是“粉板”上还空着的部分，可以�
 
 这里我给出这个 update 语句的执行流程图，图中浅色框表示是在 InnoDB 内部执行的，深色框表示是在执行器中执行的。
 
-
-
 ```mermaid
-flowchart TD
+flowchart TB
 	%% define node
 	
 	A["取ID=2这一行"]:::heavygreen --> B{"数据也在内存中？"}
 	B -->|Yes| C["返回数据行"]
 	C -->D["将这行的值加一"]:::heavygreen --> E["写入新行"]:::heavygreen --> F["新行更新到内存"]
 	F --> G["写入redolog<br/>处于prepare阶段"]
-	G --> H["写 binlog"]:::heavygreen --> I["提交事务<br/>处于 commit 状态"]
+	G --> H["写 binlog"]:::heavygreen --> I["提交事务<br/>写入redolog,处于 commit 状态"]
 	
 	B -->|No| M["磁盘中读入内存"] --> C
 	
 	classDef heavygreen fill:#558241
 ```
-
-
 
 你可能注意到了，最后三步看上去有点“绕”，将 redo log 的写入拆成了两个步骤：prepare 和 commit，这就是"两阶段提交"。
 
@@ -347,6 +338,12 @@ flowchart TD
 
 可以看到，如果不使用“两阶段提交”，那么数据库的状态就有可能和用它的日志恢复出来的库的状态不一致。
 
+用两阶段提交在分别写 redo log 或 binlog 后崩溃是怎么处理的呢？数据库崩溃重启后，会检查 redo log 里处于 prepare 状态的记录，然后根据 binlog 来判断是否要提交或回滚这个事务，具体步骤如下：
+
+- 如果Redo log里有prepare状态的记录，但binlog里没有对应的事务变更记录，说明事务还没有提交，那么就要回滚这个事务。
+- 如果Redo log里有prepare状态的记录，并且binlog里有对应的事务变更记录，说明事务已经提交，那么就要继续执行这个事务。
+- 如果Redo log里没有prepare状态的记录，说明没有未完成的事务，那么就不需要做任何操作。
+
 你可能会说，这个概率是不是很低，平时也没有什么动不动就需要恢复临时库的场景呀？
 
 其实不是的，不只是误操作后需要用这个过程来恢复数据。当你需要扩容的时候，也就是需要再多搭建一些备库来增加系统的读能力的时候，现在常见的做法也是用全量备份加上应用 binlog 来实现的，这个“不一致”就会导致你的线上出现主从数据库不一致的情况。
@@ -361,7 +358,7 @@ redo log 用于保证 crash-safe 能力。`innodb_flush_log_at_trx_commit` 这�
 
 sync\_binlog 这个参数设置成 1 的时候，表示每次事务的 binlog 都持久化到磁盘。这个参数我也建议你设置成 1，这样可以保证 MySQL 异常重启之后 binlog 不丢失。
 
-
+这两个参数在 MySQL 5.7 和 8.0 默认都是设置为 1
 
 ## 03 事务隔离：为什么你改了我还看不见？
 
@@ -434,10 +431,10 @@ flowchart LR
 
 在 autocommit 为 1 的情况下，用 begin 显式启动的事务，如果执行 commit 则提交事务。如果执行 commit work and chain，则是提交事务并自动启动下一个事务，这样也省去了再次执行 begin 语句的开销。同时带来的好处是从程序开发的角度明确地知道每个语句是否处于事务中。
 
-你可以在 information\_schema 库的 innodb\_trx 这个表中查询长事务，比如下面这个语句，用于查找持续时间超过 60s 的事务。
+你可以在 `information_schema` 库的 `innodb_trx` 这个表中查询长事务，比如下面这个语句，用于查找持续时间超过 60s 的事务。
 
 ```sql
-select * from information_schema.INNODB_TRX where TIME_TO_SEC(timediff(now(),trx_started))>60
+select * from information_schema.INNODB_TRX where TIME_TO_SEC(timediff(now(),trx_started))>60;
 ```
 
 ### 小结
@@ -471,6 +468,7 @@ index (k))engine=InnoDB;
 ```
 
 表中 R1~R5 的 (ID,k) 值分别为 (100,1)、(200,2)、(300,3)、(500,5) 和 (600,6)，两棵树的示例示意图如下。
+
 
 ![InnoDB 的索引组织结构](../../images/mysql-lecture-45/dcda101051f28502bd5c4402b292e38d.png)
 
@@ -697,7 +695,7 @@ select * from geek where c=N order by b limit 1;
 
 我给你的问题是，这位同事的解释对吗，为了这两个查询模式，这两个索引是否都是必须的？为什么呢？
 
-回答：索引` ca` 可以去掉，`cb` 需要保留
+回答：索引` ca` 可以去掉，`cb` 需要保留。这是因为 `c=N order by a` 条件中 `c=N` 可以走 索引 c，而 `order by a` 则可以走主键索引 ，因此 `ca` 就不需要。但因为 `order by b` 这个提交不符合最左原则，因此无法使用主键索引，需要用到 `cb` 索引。
 
 ## 06 全局锁和表锁 ：给表加个字段怎么有这么多阻碍？
 
@@ -726,11 +724,45 @@ select * from geek where c=N order by b limit 1;
 
 现在发起一个逻辑备份。假设备份期间，有一个用户，他购买了一门课程，业务逻辑里就要扣掉他的余额，然后往已购课程里面加上一门课。
 
-如果时间顺序上是先备份账户余额表 (u\_account)，然后用户购买，然后备份用户课程表 (u\_course)，会怎么样呢？你可以看一下这个图：
+如果时间顺序上是先备份账户余额表 (`u_account`)，然后用户购买，然后备份用户课程表 (`u_course`)，会怎么样呢？你可以看一下这个图：
 
-![img](../../images/mysql-lecture-45/cbfd4a0bbb1210792064bcea4e49b0cd.png)
+```mermaid
+graph TB
+bkaccount(["备份u_account"])
+bkcourse(["备份u_course"])
+userbuy(["用户购买课程"])
+subgraph db1["database"]
+direction TB
+ua["u_account: A | 200"]
+uc["u_course: A | NULL"]
+end
 
-图 1 业务和备份状态图
+subgraph db2["database"]
+direction TB
+ua2["u_account: A | 101"]
+uc2["u_course: A | 实战45讲"]
+end
+db1 --> bkaccount
+bkaccount --> userbuy
+userbuy --> db2 
+db2 --> bkcourse
+subgraph bkstatus["备份状态"]
+	direction TB
+  subgraph b1["第一次备份"]
+  direction TB
+  u_account["u_account: A | 200"]
+  u_course["u_course: 未备份"]
+  end
+  subgraph b2["第二次备份"]
+  direction TB
+  u_account1["u_account: A | 200"]
+  u_course2["u_course: A | 实战45讲"]
+  end 
+end
+
+bkaccount -.-> b1
+bkcourse -.-> b2
+```
 
 可以看到，这个备份结果里，用户 A 的数据状态是“账户余额没扣，但是用户课程表里面已经多了一门课”。如果后面用这个备份来恢复数据的话，用户 A 就发现，自己赚了。
 
@@ -744,11 +776,11 @@ select * from geek where c=N order by b limit 1;
 
 > 备注：如果你对事务隔离级别的概念不是很清晰的话，可以再回顾一下第 3 篇文章[《事务隔离：为什么你改了我还看不见？》]中的相关内容。
 
-官方自带的逻辑备份工具是 mysqldump。当 mysqldump 使用参数–single-transaction 的时候，导数据之前就会启动一个事务，来确保拿到一致性视图。而由于 MVCC 的支持，这个过程中数据是可以正常更新的。
+官方自带的逻辑备份工具是 mysqldump。当 mysqldump 使用参数 `–-single-transaction` 的时候，导数据之前就会启动一个事务，来确保拿到一致性视图。而由于 MVCC 的支持，这个过程中数据是可以正常更新的。
 
-你一定在疑惑，有了这个功能，为什么还需要 FTWRL 呢？\*\*一致性读是好，但前提是引擎要支持这个隔离级别。\*\*比如，对于 MyISAM 这种不支持事务的引擎，如果备份过程中有更新，总是只能取到最新的数据，那么就破坏了备份的一致性。这时，我们就需要使用 FTWRL 命令了。
+你一定在疑惑，有了这个功能，为什么还需要 FTWRL 呢？一致性读是好，但前提是引擎要支持这个隔离级别。比如，对于 MyISAM 这种不支持事务的引擎，如果备份过程中有更新，总是只能取到最新的数据，那么就破坏了备份的一致性。这时，我们就需要使用 FTWRL 命令了。
 
-所以，**single-transaction 方法只适用于所有的表使用事务引擎的库**。如果有的表使用了不支持事务的引擎，那么备份就只能通过 FTWRL 方法。这往往是 DBA 要求业务开发人员使用 InnoDB 替代 MyISAM 的原因之一。
+所以，**`--single-transaction` 方法只适用于所有的表使用事务引擎的库**。如果有的表使用了不支持事务的引擎，那么备份就只能通过 FTWRL 方法。这往往是 DBA 要求业务开发人员使用 InnoDB 替代 MyISAM 的原因之一。
 
 你也许会问，**既然要全库只读，为什么不使用 set global readonly=true 的方式呢**？确实 readonly 方式也可以让全库进入只读状态，但我还是会建议你用 FTWRL 方式，主要有两个原因：
 
@@ -763,9 +795,9 @@ select * from geek where c=N order by b limit 1;
 
 MySQL 里面表级别的锁有两种：一种是表锁，一种是元数据锁（meta data lock，MDL)。
 
-表锁的语法是 `lock tables … read/write`。与 FTWRL 类似，可以用 unlock tables 主动释放锁，也可以在客户端断开的时候自动释放。需要注意，lock tables 语法除了会限制别的线程的读写外，也限定了本线程接下来的操作对象。
+表锁的语法是 `lock tables … read/write`。与 FTWRL 类似，可以用 `unlock tables` 主动释放锁，也可以在客户端断开的时候自动释放。需要注意，`lock tables` 语法除了会限制别的线程的读写外，也限定了本线程接下来的操作对象。
 
-举个例子, 如果在某个线程 A 中执行 `lock tables t1 read, t2 write;` 这个语句，则其他线程写 t1、读写 t2 的语句都会被阻塞。同时，线程 A 在执行 unlock tables 之前，也只能执行读 t1、读写 t2 的操作。连写 t1 都不允许，自然也不能访问其他表。
+举个例子, 如果在某个线程 A 中执行 `lock tables t1 read, t2 write;` 这个语句，则其他线程写 t1、读写 t2 的语句都会被阻塞。同时，线程 A 在执行 `unlock tables` 之前，也只能执行读 t1、读写 t2 的操作。连写 t1 都不允许，自然也不能访问其他表。
 
 在还没有出现更细粒度的锁的时候，表锁是最常用的处理并发的方式。而对于 InnoDB 这种支持行锁的引擎，一般不使用 lock tables 命令来控制并发，毕竟锁住整个表的影响面还是太大。
 
@@ -776,50 +808,13 @@ MySQL 里面表级别的锁有两种：一种是表锁，一种是元数据锁�
 * 读锁之间不互斥，因此你可以有多个线程同时对一张表增删改查。
 * 读写锁之间、写锁之间是互斥的，用来保证变更表结构操作的安全性。因此，如果有两个线程要同时给一个表加字段，其中一个要等另一个执行完才能开始执行。
 
-虽然 MDL 锁是系统默认会加的，但却是你不能忽略的一个机制。比如下面这个例子，我经常看到有人掉到这个坑里：给一个小表加个字段，导致整个库挂了。
-
-你肯定知道，给一个表加字段，或者修改字段，或者加索引，需要扫描全表的数据。在对大表操作的时候，你肯定会特别小心，以免对线上服务造成影响。而实际上，即使是小表，操作不慎也会出问题。我们来看一下下面的操作序列，假设表 t 是一个小表。
-
-> 备注：这里的实验环境是 MySQL 5.6。
-
-| session A                  | session B                  | session C                  | session D                  |
-| -------------------------- | -------------------------- | -------------------------- | -------------------------- |
-| `begin;`                   |                            |                            |                            |
-| `select * from t limit 1;` |                            |                            |                            |
-|                            | `select * from t limit 1;` |                            |                            |
-|                            |                            | `select * from t limit 1;` |                            |
-|                            |                            |                            | `select * from t limit 1;` |
-
-我们可以看到 session A 先启动，这时候会对表 t 加一个 MDL 读锁。由于 session B 需要的也是 MDL 读锁，因此可以正常执行。
-
-之后 session C 会被 blocked，是因为 session A 的 MDL 读锁还没有释放，而 session C 需要 MDL 写锁，因此只能被阻塞。
-
-如果只有 session C 自己被阻塞还没什么关系，但是之后所有要在表 t 上新申请 MDL 读锁的请求也会被 session C 阻塞。前面我们说了，所有对表的增删改查操作都需要先申请 MDL 读锁，就都被锁住，等于这个表现在完全不可读写了。
-
-如果某个表上的查询语句频繁，而且客户端有重试机制，也就是说超时后会再起一个新 session 再请求的话，这个库的线程很快就会爆满。
-
-你现在应该知道了，事务中的 MDL 锁，在语句执行开始时申请，但是语句结束后并不会马上释放，而会等到整个事务提交后再释放。
-
-基于上面的分析，我们来讨论一个问题，**如何安全地给小表加字段？**
-
-首先我们要解决长事务，事务不提交，就会一直占着 MDL 锁。在 MySQL 的 information\_schema 库的 innodb\_trx 表中，你可以查到当前执行中的事务。如果你要做 DDL 变更的表刚好有长事务在执行，要考虑先暂停 DDL，或者 kill 掉这个长事务。
-
-但考虑一下这个场景。如果你要变更的表是一个热点表，虽然数据量不大，但是上面的请求很频繁，而你不得不加个字段，你该怎么做呢？
-
-这时候 kill 可能未必管用，因为新的请求马上就来了。比较理想的机制是，在 alter table 语句里面设定等待时间，如果在这个指定的等待时间里面能够拿到 MDL 写锁最好，拿不到也不要阻塞后面的业务语句，先放弃。之后开发人员或者 DBA 再通过重试命令重复这个过程。
-
-MariaDB 已经合并了 AliSQL 的这个功能，所以这两个开源分支目前都支持 DDL NOWAIT/WAIT n 这个语法。
-
-```sql
-ALTER TABLE tbl_name NOWAIT add column ...
-ALTER TABLE tbl_name WAIT N add column ... 
-```
+虽然 MDL 锁是系统默认会加的，但却是你不能忽略的一个机制，事务中的 MDL 锁，在语句执行开始时申请，但是语句结束后并不会马上释放，而会等到整个事务提交后再释放。
 
 ### 小结
 
 今天，我跟你介绍了 MySQL 的全局锁和表级锁。
 
-全局锁主要用在逻辑备份过程中。对于全部是 InnoDB 引擎的库，我建议你选择使用–single-transaction 参数，对应用会更友好。
+全局锁主要用在逻辑备份过程中。对于全部是 InnoDB 引擎的库，我建议你选择使用`-–single-transaction` 参数，对应用会更友好。
 
 表锁一般是在数据库引擎不支持行锁的时候才会被用到的。如果你发现你的应用程序里有 lock tables 这样的语句，你需要追查一下，比较可能的情况是：
 
@@ -840,15 +835,26 @@ MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所�
 
 当然，数据库中还有一些没那么一目了然的概念和设计，这些概念如果理解和使用不当，容易导致程序出现非预期行为，比如两阶段锁。
 
-#### 从两阶段锁说起
+### 从两阶段锁说起
 
 我先给你举个例子。在下面的操作序列中，事务 B 的 update 语句执行时会是什么现象呢？假设字段 id 是表 t 的主键。
 
-| 事务 A                                                       | 事务 B                                     |
-| ------------------------------------------------------------ | ------------------------------------------ |
-| begin;<br />update t set k=k+1 where id=1;<br />update t set = k+1 where id=2; |                                            |
-|                                                              | begin;<br />update t set k=k+2 where id=1; |
-| commit;                                                      |                                            |
+```mermaid
+sequenceDiagram
+    participant T1
+    participant A
+    participant T2
+    
+    T1->>A: begin
+    T1->>A: update t set k=k+1 where id=1
+    T2->>A: update t set k=k+1 where id=2
+    T2->>A: begin
+    T2->>A: update t set k=k+2 where id=1
+    T2-->>A: waiting lock
+    T1->>A: commit
+    T2->>A: execute
+
+```
 
 这个问题的结论取决于事务 A 在执行完两条 update 语句后，持有哪些锁，以及在什么时候释放。你可以验证一下：实际上事务 B 的 update 语句会被阻塞，直到事务 A 执行 commit 之后，事务 B 才能继续执行。
 
@@ -880,17 +886,24 @@ MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所�
 
 当并发系统中不同线程出现循环资源依赖，涉及的线程都在等待别的线程释放资源时，就会导致这几个线程都进入无限等待的状态，称为死锁。这里我用数据库中的行锁举个例子。
 
-| 事务 A                                     | 事务 B                         |
-| ------------------------------------------ | ------------------------------ |
-| begin;<br />update t set k=k+1 where id=1; | begin;                         |
-|                                            | update t set k=k+1 where id=2; |
-| update t set k=k+1 where id=2;             |                                |
-|                                            | update t set k=k+1 whre id=1;  |
+```mermaid
+sequenceDiagram
+    participant T1
+    participant A
+    participant T2
+    
+    T1->>A: begin
+    T2->>A: begin
+    T1->>A: update t set k=k+1 where id=1
+    T2->>A: update t set k=k+1 where id=2
+    T1->>A: update t set k=k+1 where id=2
+    Note over T1,T2: Deadlock!
+```
 
-这时候，事务 A 在等待事务 B 释放 id=2 的行锁，而事务 B 在等待事务 A 释放 id=1 的行锁。 事务 A 和事务 B 在互相等待对方的资源释放，就是进入了死锁状态。当出现死锁以后，有两种策略：
+这时候，事务 T1 在等待事务 T2 释放 id=2 的行锁，而事务 T2 在等待事务 T1 释放 id=1 的行锁。 事务 T1 和事务 T2 在互相等待对方的资源释放，就是进入了死锁状态。当出现死锁以后，有两种策略：
 
-* 一种策略是，直接进入等待，直到超时。这个超时时间可以通过参数 innodb\_lock\_wait\_timeout 来设置。
-* 另一种策略是，发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数 innodb\_deadlock\_detect 设置为 on，表示开启这个逻辑。
+* 一种策略是，直接进入等待，直到超时。这个超时时间可以通过参数 `innodb_lock_wait_timeout`来设置。
+* 另一种策略是，发起死锁检测，发现死锁后，主动回滚死锁链条中的某一个事务，让其他事务得以继续执行。将参数 `innodb_deadlock_detect` 设置为 on，表示开启这个逻辑。
 
 在 InnoDB 中，`innodb_lock_wait_timeout` 的默认值是 50s，意味着如果采用第一个策略，当出现死锁以后，第一个被锁住的线程要过 50s 才会超时退出，然后其他线程才有可能继续执行。对于在线服务来说，这个等待时间往往是无法接受的。
 
@@ -902,7 +915,7 @@ MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所�
 
 那如果是我们上面说到的所有事务都要更新同一行的场景呢？
 
-每个新来的被堵住的线程，都要判断会不会由于自己的加入导致了死锁，这是一个时间复杂度是 O(n) 的操作。假设有 1000 个并发线程要同时更新同一行，那么死锁检测操作就是 100 万这个量级的。虽然最终检测的结果是没有死锁，但是这期间要消耗大量的 CPU 资源。因此，你就会看到 CPU 利用率很高，但是每秒却执行不了几个事务。
+每个新来的被堵住的线程，都要判断会不会由于自己的加入导致了死锁，这是一个时间复杂度是 $O(n^2)$ 的操作。假设有 1000 个并发线程要同时更新同一行，那么死锁检测操作就是 100 万这个量级的。虽然最终检测的结果是没有死锁，但是这期间要消耗大量的 CPU 资源。因此，你就会看到 CPU 利用率很高，但是每秒却执行不了几个事务。
 
 根据上面的分析，我们来讨论一下，怎么解决由这种热点行更新导致的性能问题呢？问题的症结在于，死锁检测要耗费大量的 CPU 资源。
 
@@ -929,7 +942,7 @@ MySQL 的行锁是在引擎层由各个引擎自己实现的。但并不是所�
 最后，我给你留下一个问题吧。如果你要删除一个表里面的前 10000 行数据，有以下三种方法可以做到：
 
 * 第一种，直接执行 `delete from T limit 10000`
-* 第二种，在一个连接中循环执行 20 次 delete from T limit 500`
+* 第二种，在一个连接中循环执行 20 次 `delete from T limit 500`
 * 第三种，在 20 个连接中同时执行 `delete from T limit 500`
 
 你会选择哪一种方法呢？为什么呢？
@@ -956,19 +969,29 @@ mysql> CREATE TABLE `t` (
   `k` int(11) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
-insert into t(id, k) values(1,1),(2,2);
+insert into t(id, k) values(1,1),(2,2);	
 ```
 
-| 事务A                                             | 事务B                                                        | 事务C                           |
-| ------------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
-| start transaction with <br />consistent snapshot; |                                                              |                                 |
-|                                                   | start transaction with <br />consistent snapshot;            |                                 |
-|                                                   |                                                              | `update t set k=k+1 where id=1` |
-|                                                   | update set k=k+1 where id=1;<br />select k from t where id=1; |                                 |
-| select k from t where id=1;<br />commit;          |                                                              |                                 |
-|                                                   | commit;                                                      |                                 |
+```mermaid
+sequenceDiagram
 
-图 1 事务 A、B、C 的执行流程
+participant 事务A
+participant 事务B
+participant 事务C
+
+participant 表T
+
+事务A->>表T: start transaction with consistent snapshot
+事务B->>表T: start transaction with consistent snapshot
+事务C->>表T: update t set k=k+1 where id=1
+事务B->>表T: update set k=k+1 where id=1
+事务B->>+表T: select k from where id=1
+表T-->>-事务B: k=3
+事务A->>+表T: select from t where id=1
+表T-->>-事务B: k=1
+事务A->>表T: commit
+事务B->>表T: commit
+```
 
 这里，我们需要注意的是事务的启动时机。
 
@@ -991,14 +1014,14 @@ begin/start transaction 命令并不是一个事务的起点，在执行到它�
 
 ### 小结
 
-InnoDB 的行数据有多个版本，每个数据版本有自己的 row trx\_id，每个事务或者语句有自己的一致性视图。普通查询语句是一致性读，一致性读会根据 row trx\_id 和一致性视图确定数据版本的可见性。
+InnoDB 的行数据有多个版本，每个数据版本有自己的 `row trx_id`，每个事务或者语句有自己的一致性视图。普通查询语句是一致性读，一致性读会根据 `row trx_id` 和一致性视图确定数据版本的可见性。
 
 * 对于可重复读，查询只承认在事务启动前就已经提交完成的数据；
 * 对于读提交，查询只承认在语句启动前就已经提交完成的数据；
 
 而当前读，总是读取已经提交完成的最新版本。
 
-你也可以想一下，为什么表结构不支持“可重复读”？这是因为表结构没有对应的行数据，也没有 row trx\_id，因此只能遵循当前读的逻辑。
+你也可以想一下，为什么表结构不支持“可重复读”？这是因为表结构没有对应的行数据，也没有 `row trx_id`，因此只能遵循当前读的逻辑。
 
 当然，MySQL 8.0 已经可以把表结构放在 InnoDB 字典里了，也许以后会支持表结构的可重复读。
 
@@ -1012,17 +1035,15 @@ InnoDB 的行数据有多个版本，每个数据版本有自己的 row trx\_id�
 select name from CUser where id_card = 'xxxxxxxyyyyyyzzzzz';
 ```
 
-所以，你一定会考虑在 id\_card 字段上建索引。
+所以，你一定会考虑在 `id_card` 字段上建索引。
 
-由于身份证号字段比较大，我不建议你把身份证号当做主键，那么现在你有两个选择，要么给 id\_card 字段创建唯一索引，要么创建一个普通索引。如果业务代码已经保证了不会写入重复的身份证号，那么这两个选择逻辑上都是正确的。
+由于身份证号字段比较大，我不建议你把身份证号当做主键，那么现在你有两个选择，要么给 `id_card` 字段创建唯一索引，要么创建一个普通索引。如果业务代码已经保证了不会写入重复的身份证号，那么这两个选择逻辑上都是正确的。
 
 现在我要问你的是，从性能的角度考虑，你选择唯一索引还是普通索引呢？选择的依据是什么呢？
 
 简单起见，我们还是用第 4 篇文章[《深入浅出索引（上）》]中的例子来说明，假设字段 k 上的值都不重复。
 
-![img](../../images/mysql-lecture-45/1ed9536031d6698570ea175a7b7f9a46.png)
-
-图 1 InnoDB 的索引组织结构
+![img](../../images/mysql-lecture-45/dcda101051f28502bd5c4402b292e38d.png)
 
 接下来，我们就从这两种索引对查询语句和更新语句的性能影响来进行分析。
 
@@ -1061,9 +1082,9 @@ select name from CUser where id_card = 'xxxxxxxyyyyyyzzzzz';
 
 因此，唯一索引的更新就不能使用 change buffer，实际上也只有普通索引可以使用。
 
-change buffer 用的是 buffer pool 里的内存，因此不能无限增大。change buffer 的大小，可以通过参数 `innodb_change_buffer_max_size` 来动态设置。这个参数设置为 50 的时候，表示 change buffer 的大小最多只能占用 buffer pool 的 50%。
+change buffer 用的是 buffer pool 里的内存，因此不能无限增大。change buffer 的大小，可以通过参数 `innodb_change_buffer_max_size` 来动态设置(默认值为25)。这个参数设置为 50 的时候，表示 change buffer 的大小最多只能占用 buffer pool 的 50%。
 
-现在，你已经理解了 change buffer 的机制，那么我们再一起来看看**如果要在这张表中插入一个新记录 (4,400) 的话，InnoDB 的处理流程是怎样的。**
+现在，你已经理解了 change buffer 的机制，那么我们再一起来看看如果要在这张表中插入一个新记录 (4,400) 的话，InnoDB 的处理流程是怎样的。
 
 第一种情况是，**这个记录要更新的目标页在内存中**。这时，InnoDB 的处理流程如下：
 
@@ -1119,31 +1140,48 @@ mysql> insert into t(id,k) values(id1,k1),(id2,k2);
 
 这里，我们假设当前 k 索引树的状态，查找到位置后，k1 所在的数据页在内存 (InnoDB buffer pool) 中，k2 所在的数据页不在内存中。如图 2 所示是带 change buffer 的更新状态图。
 
-![img](../../images/mysql-lecture-45/980a2b786f0ea7adabef2e64fb4c4ca3.png)
+```mermaid
+graph TB
+subgraph buffer["InnoDB buffer pool"]
+	subgraph cb["change buffer"]
+		node1["add(id2,k2) to Page 2"]
+	end
+	p1["Page1<br/><table><tr><td>(a,b)</td><td><font color='red'>(id1,k1)</font></td><td>(c,d)</td></tr></table>"]
+end
+subgraph redolog["Redo log(ib_logfileX)"]
+ rn1["add(id1,k1) to Page 1"]
+ rn2["new change buffer item <br/>'add(id2,k2) to Page2'"]
+end
+subgraph tablespace["system table space(ibdata1)"]
+	subgraph cbtb["change buffer"]
+		n["add(id2,k2) to Page 2"]
+	end
+end
+subgraph data["data(t.ibd)"]
+	dn["<html><table><tr><td colspan='2'>Page 1</td><td>...</td><td colspan='2'>Page 2</td></tr>
+	   <tr><td>(a,b)</td><td>(c,d)</td><td>...</td><td>(e,f)</td><td>(g,h)</td></tr></table></html>"]
+end
+cb -->cbtb
+p1 -->dn
+```
 
-图 2 带 change buffer 的更新过程
+分析这条更新语句，你会发现它涉及了四个部分：内存、redo log（`ib_logfileX`）、 数据表空间（t.ibd）、系统表空间（ibdata1）。
 
-分析这条更新语句，你会发现它涉及了四个部分：内存、redo log（ib\_log\_fileX）、 数据表空间（t.ibd）、系统表空间（ibdata1）。
-
-这条更新语句做了如下的操作（按照图中的数字顺序）：
+这条更新语句做了如下的操作：
 
 1. Page 1 在内存中，直接更新内存；
 2. Page 2 没有在内存中，就在内存的 change buffer 区域，记录下“我要往 Page 2 插入一行”这个信息
-3. 将上述两个动作记入 redo log 中（图中 3 和 4）。
+3. 将上述两个动作记入 redo log 中。
 
 做完上面这些，事务就可以完成了。所以，你会看到，执行这条更新语句的成本很低，就是写了两处内存，然后写了一处磁盘（两次操作合在一起写了一次磁盘），而且还是顺序写的。
-
-同时，图中的两个虚线箭头，是后台操作，不影响更新的响应时间。
 
 那在这之后的读请求，要怎么处理呢？
 
 比如，我们现在要执行 `select * from t where k in (k1, k2)`。这里，我画了这两个读请求的流程图。
 
-如果读语句发生在更新语句后不久，内存中的数据都还在，那么此时的这两个读操作就与系统表空间（ibdata1）和 redo log（ib\_log\_fileX）无关了。所以，我在图中就没画出这两部分。
+如果读语句发生在更新语句后不久，内存中的数据都还在，那么此时的这两个读操作就与系统表空间（ibdata1）和 redo log（`ib_logfileX`）无关了。所以，我在图中就没画出这两部分。
 
 ![img](../../images/mysql-lecture-45/6dc743577af1dbcbb8550bddbfc5f98e.png)
-
-图 3 带 change buffer 的读过程
 
 从图中可以看到：
 

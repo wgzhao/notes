@@ -118,12 +118,14 @@ markdown_extensions:
   - pymdownx.tabbed
   - pymdownx.tasklist:
       custom_checkbox: true
+  - mkdocs_graphviz
 
 # preview control
 use_directory_urls: true
 
 extra_javascript:
   - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML
+  - https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js
 
 extra_css:
   - css/extra.css
