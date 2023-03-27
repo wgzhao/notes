@@ -58,7 +58,7 @@ mysql> select * from t where a between 10000 and 20000;
 
 你一定会说，这个语句还用分析吗，很简单呀，a 上有索引，肯定是要使用索引 a 的。
 
-你说得没错，图 1 显示的就是使用 explain 命令看到的这条语句的执行情况。
+你说得没错，下面显示的就是使用 explain 命令看到的这条语句的执行情况。
 
 ```sql
 mysql> explain select * from t where a between 10000 and 20000;
@@ -74,12 +74,23 @@ mysql> explain select * from t where a between 10000 and 20000;
 
 不过别急，这个案例不会这么简单。在我们已经准备好的包含了 10 万行数据的表上，我们再做如下操作。
 
-| session A                                     | session B                                                   |
-| --------------------------------------------- | ----------------------------------------------------------- |
-| `start transaction with consistent snapshot;` |                                                             |
-|                                               | `delete from t; call idata();`                              |
-|                                               | `explain select * from t where a between 10000 and 20000; ` |
-| `commit;`                                     |                                                             |
+```mermaid
+%%{init: {"theme":"gray"}}%%
+sequenceDiagram
+participant Session A
+participant Session B
+participant Table
+
+Session A ->>Table: start transaction with consistent snapshot
+Session B ->>Table: delete from t;
+Session B ->>Table: call ibdata();
+
+Session B ->>Table: explain select * from t where a between 10000 and 20000
+Session A ->>Table: commit
+
+```
+
+
 
 这里，session A 的操作你已经很熟悉了，它就是开启了一个事务。随后，session B 把数据都删除后，又调用了 idata 这个存储过程，插入了 10 万行数据。
 
@@ -206,7 +217,7 @@ rows 这个字段表示的是预计扫描行数。
 
 所以冤有头债有主，MySQL 选错索引，这件事儿还得归咎到没能准确地判断出扫描行数。至于为什么会得到错误的扫描行数，这个原因就作为课后问题，留给你去分析了。
 
-既然是统计信息不对，那就修正。analyze table t 命令，可以用来重新统计索引信息。我们来看一下执行效果。
+既然是统计信息不对，那就修正。`analyze table t` 命令，可以用来重新统计索引信息。我们来看一下执行效果。
 
 ```sql
 mysql> analyze table t;
@@ -235,7 +246,8 @@ mysql> explain select * from t where a between 10000 and 20000;
 依然是基于这个表 t，我们看看另外一个语句：
 
 ```sql
-mysql> select * from t where (a between 1 and 1000)  and (b between 50000 and 100000) order by b limit 1;
+select * from t where (a between 1 and 1000)  
+and (b between 50000 and 100000) order by b limit 1;
 ```
 
 从条件上看，这个查询没有符合条件的记录，因此会返回空集合。
@@ -331,7 +343,7 @@ mysql> explain select * from t where a between 1 and 1000 and b between 50000 an
 
 当然，这种修改并不是通用的优化手段，只是刚好在这个语句里面有 limit 1，因此如果有满足条件的记录， order by b limit 1 和 order by b,a limit 1 都会返回 b 是最小的那一行，逻辑上一致，才可以这么做。
 
-如果你觉得修改语义这件事儿不太好，这里还有一种改法，图 11 是执行效果。
+如果你觉得修改语义这件事儿不太好，这里还有一种改法，下面是执行效果。
 
 ```sql
 mysql> select * from  (select * from t where (a between 1 and 1000)  
@@ -396,7 +408,7 @@ mysql> select f1, f2 from SUser where email='xxx';
 比如，这两个在 email 字段上创建索引的语句：
 
 ```sql
-mysql> alter table SUser add index index1(email); //或
+mysql> alter table SUser add index index1(email); -- 或
 mysql> alter table SUser add index index2(email(6));
 ```
 
@@ -627,7 +639,10 @@ InnoDB 的策略是尽量使用内存，因此对于一个长时间运行的库�
 这就要用到 `innodb_io_capacity` 这个参数了，它会告诉 InnoDB 你的磁盘能力。这个值我建议你设置成磁盘的 IOPS。磁盘的 IOPS 可以通过 fio 这个工具来测试，下面的语句是我用来测试磁盘随机读写的命令：
 
 ```sql
- fio -filename=$filename -direct=1 -iodepth 1 -thread -rw=randrw -ioengine=psync -bs=16k -size=500M -numjobs=10 -runtime=10 -group_reporting -name=mytest 
+fio -filename=mytest.img -direct=1 -iodepth 1 \
+  -thread -rw=randrw -ioengine=psync -bs=16k \
+  -size=500M -numjobs=10 -runtime=10 \
+  -group_reporting -name=mytest 
 ```
 
 其实，因为没能正确地设置 `innodb_io_capacity` 参数，而导致的性能问题也比比皆是。之前，就曾有其他公司的开发负责人找我看一个库的性能问题，说 MySQL 的写入速度很慢，TPS 很低，但是数据库主机的 IO 压力并不大。经过一番排查，发现罪魁祸首就是这个参数的设置出了问题。
@@ -644,7 +659,7 @@ InnoDB 的策略是尽量使用内存，因此对于一个长时间运行的库�
 
 InnoDB 会根据这两个因素先单独算出两个数字。
 
-参数 `innodb_max_dirty_pages_pct` 是脏页比例上限，默认值是 75%。InnoDB 会根据当前的脏页比例（假设为 M），算出一个范围在 0 到 100 之间的数字，计算这个数字的伪代码类似这样：
+参数 `innodb_max_dirty_pages_pct` 是脏页比例上限，MySQL 5.7 默认值是 75%, 8.0 则变成了 90%。InnoDB 会根据当前的脏页比例（假设为 M），算出一个范围在 0 到 100 之间的数字，计算这个数字的伪代码类似这样：
 
 ```c
 F1(M)
@@ -677,8 +692,6 @@ graph TB
 	over .-> begin
 ```
 
-
-
 图 3 InnoDB 刷脏页速度策略
 
 现在你知道了，InnoDB 会在后台刷脏页，而刷脏页的过程是要将内存页写入磁盘。所以，无论是你的查询语句在需要内存的时候可能要求淘汰一个脏页，还是由于刷脏页的逻辑会占用 IO 资源并可能影响到了你的更新语句，都可能是造成你从业务端感知到 MySQL“抖”了一下的原因。
@@ -688,11 +701,14 @@ graph TB
 其中，脏页比例是通过 `Innodb_buffer_pool_pages_dirty/Innodb_buffer_pool_pages_total` 得到的，具体的命令参考下面的代码：
 
 ```sql
-mysql> use information_schema;
 mysql> set global show_compatibility_56=1; -- turn on if version > 5.7.6
-mysql> select VARIABLE_VALUE into @a from GLOBAL_STATUS where VARIABLE_NAME = 'Innodb_buffer_pool_pages_dirty';
-mysql> select VARIABLE_VALUE into @b from GLOBAL_STATUS where VARIABLE_NAME = 'Innodb_buffer_pool_pages_total';
-mysql> select @a/@b;
+mysql> SELECT VARIABLE_VALUE / (
+SELECT VARIABLE_VALUE * 1.0
+FROM information_schema.GLOBAL_STATUS
+WHERE VARIABLE_NAME = 'Innodb_buffer_pool_pages_total'
+) AS ratio
+FROM information_schema.GLOBAL_STATUS
+WHERE VARIABLE_NAME = 'Innodb_buffer_pool_pages_dirty';
 ```
 
 接下来，我们再看一个有趣的策略。
@@ -749,8 +765,6 @@ mysql> select @a/@b;
 我们先再来看一下 InnoDB 中一个索引的示意图。在前面第4和第5篇文章中，我和你介绍索引时曾经提到过，InnoDB 里的数据都是用 B+ 树的结构组织的。
 
 ![img](../../images/mysql-lecture-45/f0b1e4ac610bcb5c5922d0b18563f3c8.png)
-
-图 1 B+ 树索引示意图
 
 假设，我们要删掉 R4 这个记录，InnoDB 引擎只会把 R4 这个记录标记为删除。如果之后要再插入一个 ID 在 300 和 600 之间的记录时，可能会复用这个位置。但是，磁盘文件的大小并不会缩小。
 
