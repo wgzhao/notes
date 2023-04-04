@@ -1357,13 +1357,13 @@ Extra 这个字段中的“Using filesort”表示的就是需要排序，MySQL 
 /* 打开 optimizer_trace，只对本线程有效 */
 SET optimizer_trace='enabled=on';  
 /* @a 保存 Innodb_rows_read 的初始值 */
-select VARIABLE_VALUE into @a from  performance_schema.SESION_STATUS where variable_name = 'Innodb_rows_read'; 
+select variable_value into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read'; 
 /* 执行语句 */
 select city, name,age from t where city='杭州' order by name limit 1000;  
 /* 查看 OPTIMIZER_TRACE 输出 */
-SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G 
+SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G; 
 /* @b 保存 Innodb_rows_read 的当前值 */
-select VARIABLE_VALUE into @b from performance_schema.session_status where variable_name = 'Innodb_rows_read'; 
+select variable_value into @b from performance_schema.session_status where variable_name = 'Innodb_rows_read'; 
 /* 计算 Innodb_rows_read 差值 */
 select @b-@a;
 ```
@@ -1601,13 +1601,13 @@ mysql> select * from t where city in ('杭州',"苏州") order by name limit 100
 如果把这条 SQL 语句里 `limit 100` 改成 `limit 10000,100` 的话，处理方式其实也差不多，即：要把上面的两条语句改成写：
 
 ```sql
-select * from t where city=" 杭州 " order by name limit 10100; 
+select * from t where city='杭州' order by name limit 10100; 
 ```
 
 和
 
 ```sql
- select * from t where city=" 苏州 " order by name limit 10100。
+ select * from t where city='苏州' order by name limit 10100。
 ```
 
 这时候数据量较大，可以同时起两个连接一行行读结果，用归并排序算法拿到这两个结果集里，按顺序取第 `10001~10100` 的 name 值，就是需要的结果了。
@@ -1617,13 +1617,13 @@ select * from t where city=" 杭州 " order by name limit 10100;
 所以，如果数据的单行比较大的话，可以考虑把这两条 SQL 语句改成下面这种写法：
 
 ```sql
-select id,name from t where city=" 杭州 " order by name limit 10100; 
+select id,name from t where city='杭州' order by name limit 10100; 
 ```
 
 和
 
 ```sql
-select id,name from t where city=" 苏州 " order by name limit 10100。
+select id,name from t where city='苏州' order by name limit 10100。
 ```
 
 然后，再用归并排序的方法取得按 name 顺序第 `10001~10100` 的 name、id 的值，然后拿着这 100 个 id 到数据库中去查出所有记录。
@@ -1746,7 +1746,7 @@ select word from words order by rand() limit 3;
 
 其实不是的。`tmp_table_size` 这个配置限制了内存临时表的大小，默认值是 16M。如果临时表大小超过了 `tmp_table_size`，那么内存临时表就会转成磁盘临时表。
 
-磁盘临时表使用的引擎默认是 InnoDB，是由参数 `internal_tmp_disk_storage_engine` 控制的。
+磁盘临时表使用的引擎默认是 InnoDB，是由参数 `internal_tmp_disk_storage_engine` (MySQL 8.0 已没有此参数，引入了新的临时表引擎 `Temporary MyISAM` )控制的。
 
 当使用磁盘临时表的时候，对应的就是一个没有显式索引的 InnoDB 表的排序过程。
 
@@ -1801,12 +1801,9 @@ SELECT * FROM `information_schema`.`OPTIMIZER_TRACE`\G
 
 而优先队列算法，就可以精确地只得到三个最小值，执行流程如下：
 
-1. 对于这 10000 个准备排序的 `(R,rowid)`，先取前三行，构造成一个堆；
-
-（对数据结构印象模糊的同学，可以先设想成这是一个由三个元素组成的数组）
-
-1. 取下一个行 (R’,rowid’)，跟当前堆里面最大的 R 比较，如果 R’小于 R，把这个 `(R,rowid)` 从堆中去掉，换成 `(R’,rowid’)`；
-2. 重复第 2 步，直到第 10000 个 `(R’,rowid’)` 完成比较。
+1. 对于这 10000 个准备排序的 `(R,rowid)`，先取前三行，构造成一个堆；（对数据结构印象模糊的同学，可以先设想成这是一个由三个元素组成的数组）
+1. 取下一个行 `(R’,rowid’)`，跟当前堆里面最大的 R 比较，如果 R’ 小于 R，把这个 `(R,rowid)` 从堆中去掉，换成 `(R’,rowid’)`；
+1. 重复第 2 步，直到第 10000 个 `(R’,rowid’)` 完成比较。
 
 这里我简单画了一个优先队列排序过程的示意图。
 
@@ -1843,9 +1840,9 @@ select city,name,age from t where city='杭州' order by name limit 1000  ;
 我们把这个算法，暂时称作随机算法 1。这里，我直接给你贴一下执行语句的序列:
 
 ```sql
-mysql> select max(id),min(id) into @M,@N from t ;
-mysql> set @X= floor((@M-@N+1)*rand() + @N);
-mysql> select * from t where id >= @X limit 1;
+select max(id),min(id) into @M,@N from t ;
+set @X= floor((@M-@N+1)*rand() + @N);
+select * from t where id >= @X limit 1;
 ```
 
 这个方法效率很高，因为取 `max(id)` 和 `min(id)` 都是不需要扫描索引的，而第三步的 select 也可以用索引快速定位，可以认为就只扫描了 3 行。但实际上，这个算法本身并不严格满足题目的随机要求，因为 ID 中间可能有空洞，因此选择不同行的概率不一样，不是真正的随机。
@@ -1863,12 +1860,12 @@ mysql> select * from t where id >= @X limit 1;
 我们把这个算法，称为随机算法 2。下面这段代码，就是上面流程的执行语句的序列。
 
 ```sql
-mysql> select count(*) into @C from t;
-mysql> set @Y = floor(@C * rand());
-mysql> set @sql = concat("select * from t limit ", @Y, ",1");
-mysql> prepare stmt from @sql;
-mysql> execute stmt;
-mysql> DEALLOCATE prepare stmt;
+select count(*) into @C from t;
+set @Y = floor(@C * rand());
+set @sql = concat("select * from t limit ", @Y, ",1");
+prepare stmt from @sql;
+execute stmt;
+DEALLOCATE prepare stmt;
 ```
 
 由于 limit 后面的参数不能直接跟变量，所以我在上面的代码中使用了 prepare+execute 的方法。你也可以把拼接 SQL 语句的方法写在应用程序中，会更简单些。
@@ -1888,13 +1885,14 @@ MySQL 处理 limit Y,1 的做法就是按顺序一个一个地读出来，丢掉
 我们把这个算法，称作随机算法 3。下面这段代码，就是上面流程的执行语句的序列。
 
 ```sql
-mysql> select count(*) into @C from t;
-mysql> set @Y1 = floor(@C * rand());
-mysql> set @Y2 = floor(@C * rand());
-mysql> set @Y3 = floor(@C * rand());
-mysql> select * from t limit @Y1，1； -- 在应用代码里面取 Y1、Y2、Y3 值，拼出 SQL 后执行
-mysql> select * from t limit @Y2，1；
-mysql> select * from t limit @Y3，1；
+select count(*) into @C from t;
+set @Y1 = floor(@C * rand());
+set @Y2 = floor(@C * rand());
+set @Y3 = floor(@C * rand());
+-- 在应用代码里面取 Y1、Y2、Y3 值，拼出 SQL 后执行
+select * from t limit @Y1，1;
+select * from t limit @Y2，1;
+select * from t limit @Y3，1;
 ```
 
 ### 小结
@@ -1916,7 +1914,7 @@ mysql> select * from t limit @Y3，1；
 假设你现在维护了一个交易系统，其中交易记录表 tradelog 包含交易流水号（tradeid）、交易员 id（operator）、交易时间（`t_modified`）等字段。为了便于描述，我们先忽略其他字段。这个表的建表语句如下：
 
 ```sql
-mysql> CREATE TABLE `tradelog` (
+CREATE TABLE `tradelog` (
   `id` int(11) NOT NULL,
   `tradeid` varchar(32) DEFAULT NULL,
   `operator` int(11) DEFAULT NULL,
@@ -1925,6 +1923,33 @@ mysql> CREATE TABLE `tradelog` (
   KEY `tradeid` (`tradeid`),
   KEY `t_modified` (`t_modified`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 填充数据
+DELIMITER $$
+
+CREATE PROCEDURE `populate_tradelog`()
+BEGIN
+    DECLARE i INT DEFAULT 1;
+    DECLARE tradeid VARCHAR(32);
+    DECLARE operator INT;
+    DECLARE t_modified DATETIME;
+    
+    WHILE i <= 100000 DO
+        SET tradeid = CONCAT('TRADEID-', i);
+        SET operator = FLOOR(RAND() * 1000);
+        SET t_modified = DATE_ADD(NOW(), INTERVAL -FLOOR(RAND() * 365) DAY);
+        
+        INSERT INTO tradelog (id, tradeid, operator, t_modified)
+        VALUES (i, tradeid, operator, t_modified);
+        
+        SET i = i + 1;
+    END WHILE;
+END$$
+
+DELIMITER ;
+
+-- populate
+CALL populate_tradelog();
 ```
 
 假设，现在已经记录了从 2016 年初到 2018 年底的所有数据，运营部门有一个需求是，要统计发生在所有年份中 7 月份的交易记录总数。这个逻辑看上去并不复杂，你的 SQL 语句可能会这么写：
@@ -2004,7 +2029,7 @@ mysql> select * from tradelog where tradeid=110717;
 
 先来看第一个问题，你可能会说，数据库里面类型这么多，这种数据类型转换规则更多，我记不住，应该怎么办呢？
 
-这里有一个简单的方法，看 `select “10” > 9` 的结果：
+这里有一个简单的方法，看 `select '10' > 9` 的结果：
 
 1. 如果规则是“将字符串转成数字”，那么就是做数字比较，结果应该是 1；
 2. 如果规则是“将数字转成字符串”，那么就是做字符串比较，结果应该是 0。
@@ -2039,7 +2064,9 @@ mysql> select * from tradelog where  CAST(tradid AS signed int) = 110717;
 
 现在，我留给你一个小问题，id 的类型是 int，如果执行下面这个语句，是否会导致全表扫描呢？
 
-    select * from tradelog where id="83126";
+```sql
+select * from tradelog where id='83126';
+```
 
 你可以先自己分析一下，再到数据库里面去验证确认。
 
@@ -2058,26 +2085,24 @@ mysql> CREATE TABLE `trade_detail` (
   PRIMARY KEY (`id`),
   KEY `tradeid` (`tradeid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8; 
-insert into tradelog values(1, 'aaaaaaaa', 1000, now());
-insert into tradelog values(2, 'aaaaaaab', 1000, now());
-insert into tradelog values(3, 'aaaaaaac', 1000, now()); 
-insert into trade_detail values(1, 'aaaaaaaa', 1, 'add');
-insert into trade_detail values(2, 'aaaaaaaa', 2, 'update');
-insert into trade_detail values(3, 'aaaaaaaa', 3, 'commit');
-insert into trade_detail values(4, 'aaaaaaab', 1, 'add');
-insert into trade_detail values(5, 'aaaaaaab', 2, 'update');
-insert into trade_detail values(6, 'aaaaaaab', 3, 'update again');
-insert into trade_detail values(7, 'aaaaaaab', 4, 'commit');
-insert into trade_detail values(8, 'aaaaaaac', 1, 'add');
-insert into trade_detail values(9, 'aaaaaaac', 2, 'update');
-insert into trade_detail values(10, 'aaaaaaac', 3, 'update again');
-insert into trade_detail values(11, 'aaaaaaac', 4, 'commit');
+
+insert into trade_detail values(1, 'TRADEID-1', 1, 'add');
+insert into trade_detail values(2, 'TRADEID-1', 2, 'update');
+insert into trade_detail values(3, 'TRADEID-1', 3, 'commit');
+insert into trade_detail values(4, 'TRADEID-2', 1, 'add');
+insert into trade_detail values(5, 'TRADEID-2', 2, 'update');
+insert into trade_detail values(6, 'TRADEID-2', 3, 'update again');
+insert into trade_detail values(7, 'TRADEID-2', 4, 'commit');
+insert into trade_detail values(8, 'TRADEID-3', 1, 'add');
+insert into trade_detail values(9, 'TRADEID-3', 2, 'update');
+insert into trade_detail values(10, 'TRADEID-3', 3, 'update again');
+insert into trade_detail values(11, 'TRADEID-3', 4, 'commit');
 ```
 
 这时候，如果要查询 `id=2` 的交易的所有操作步骤信息，SQL 语句可以这么写：
 
 ```sql
-mysql> select d.* from tradelog t, trade_detail d where d.tradeid=t.tradeid and t.id=2; /* 语句 Q1*/
+select d.* from tradelog t, trade_detail d where d.tradeid=t.tradeid and t.id=2; /* 语句 Q1*/
 ```
 
  explain 结果
