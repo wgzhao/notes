@@ -615,7 +615,7 @@ mysql> show processlist;
 +----+-----------------+-----------+------+---------+-------+------------------------+------------------+
 ```
 
-图中 id=20 和 id=20 的两个会话都是 Sleep 状态。而要看事务具体状态的话，你可以查 `information_schema` 库的 `innodb_trx` 表。
+图中 id=20 和 id=22 的两个会话都是 Sleep 状态。而要看事务具体状态的话，你可以查 `information_schema` 库的 `innodb_trx` 表。
 
 ```sql
 mysql> select * from information_schema.innodb_trx \G;
@@ -876,7 +876,7 @@ InnoDB 有一个后台线程，每隔 1 秒，就会把 redo log buffer 中的�
 实际上，除了后台线程每秒一次的轮询操作外，还有两种场景会让一个没有提交的事务的 redo log 写入到磁盘中。
 
 1. **一种是，redo log buffer 占用的空间即将达到 innodb_log_buffer_size 一半的时候，后台线程会主动写盘。**注意，由于这个事务并没有提交，所以这个写盘动作只是 write，而没有调用 fsync，也就是只留在了文件系统的 page cache。
-2. **另一种是，并行的事务提交的时候，顺带将这个事务的 redo log buffer 持久化到磁盘。**假设一个事务 A 执行到一半，已经写了一些 redo log 到 buffer 中，这时候有另外一个线程的事务 B 提交，如果 innodb_flush_log_at_trx_commit 设置的是 1，那么按照这个参数的逻辑，事务 B 要把 redo log buffer 里的日志全部持久化到磁盘。这时候，就会带上事务 A 在 redo log buffer 里的日志一起持久化到磁盘。
+2. **另一种是，并行的事务提交的时候，顺带将这个事务的 redo log buffer 持久化到磁盘。**假设一个事务 A 执行到一半，已经写了一些 redo log 到 buffer 中，这时候有另外一个线程的事务 B 提交，如果 `innodb_flush_log_at_trx_commit` 设置的是 1，那么按照这个参数的逻辑，事务 B 要把 redo log buffer 里的日志全部持久化到磁盘。这时候，就会带上事务 A 在 redo log buffer 里的日志一起持久化到磁盘。
 
 这里需要说明的是，我们介绍两阶段提交的时候说过，时序上 redo log 先 prepare， 再写 binlog，最后再把 redo log commit。
 
@@ -1011,8 +1011,6 @@ graph TB
 1. 如果客户端收到事务成功的消息，事务就一定持久化了；
 2. 如果客户端收到事务失败（比如主键冲突、回滚等）的消息，事务就一定失败了；
 3. 如果客户端收到“执行异常”的消息，应用需要重连后通过查询当前状态来继续后续的逻辑。此时数据库只需要保证内部（数据和日志之间，主库和备库之间）一致就可以了。
-
-
 
 ## 24 MySQL是怎么保证主备一致的？
 
@@ -1216,8 +1214,6 @@ GhraYyABAAAAMAAAAPW7nAMAAJoAAAAAAAEAAgAD/wADAAAAAwAAAFvnAICiV/K+
 COMMIT/*!*/;
 SET @@SESSION.GTID_NEXT= 'AUTOMATIC' /* added by mysqlbinlog */ /*!*/;
 ```
-
-
 
 从这个图中，我们可以看到以下几个信息：
 
