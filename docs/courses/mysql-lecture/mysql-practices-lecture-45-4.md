@@ -59,9 +59,8 @@ select * from t where id>9 and id<12 order by id desc for update;
 
 如图 1 所示，是这个表的索引 id 的示意图。
 
-![img](../../images/mysql-lecture-45/ac1aa07860c565b907b32c5f75c4f2bb.png)
-
-图 1 索引 id 示意图
+| (0,0,0) | (5,5,5) | (10,10,10) | (15,15,15) | (20,20,20) | (25,25,25) |
+| ------- | ------- | ---------- | ---------- | ---------- | ---------- |
 
 1. 首先这个查询语句的语义是 order by id desc，要拿到满足条件的所有行，优化器必须先找到“第一个 id\<12 的值”。
 2. 这个过程是通过索引树的搜索过程得到的，在引擎内部，其实是要找到 id=12 的这个值，只是最终没找到，但找到了 (10,15) 这个间隙。
@@ -123,7 +122,7 @@ select id from t where c in(5,20,10) order by c desc for update;
 
 ### 怎么看死锁？
 
-图 3 是在出现死锁后，执行 `show engine innodb status` 命令得到的部分输出。这个命令会输出很多信息，有一节 `LATESTDETECTED DEADLOCK`，就是记录的最后一次死锁信息。
+以下 是在出现死锁后，执行 `show engine innodb status` 命令得到的部分输出。这个命令会输出很多信息，有一节 `LATESTDETECTED DEADLOCK`，就是记录的最后一次死锁信息。
 
 ```sql
 2019-01-09 19:21:11 0x7feb98d47700
@@ -196,34 +195,38 @@ Record lock, heap no 3 PHYSICAL RECORD: _fields 2; compact format; info bits 0
 
 看完死锁，我们再来看一个锁等待的例子。
 
-| session A                                                    | session B                                                    |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| begin;<br />select * from t where id>10 and id <=15 for update; |                                                              |
-|                                                              | delete from t where id=10;<br />(Query OK)<br /><br />insert into t values(10,10,10);<br />(blocked) |
+```mermaid
+sequenceDiagram
+participant SessionA
+participant Table
+participant SessionB
+SessionA ->> Table: begin
+SessionA ->> Table: select * from t where id>10 and id<=15 for update
+SessionB ->>+ Table: delete from t where id=10
+Table -->>-SessionB: Query OK
+SessionB ->>+ Table: insert into t values(10,10,10)
+Table -->>- SessionB: (blocked)
+```
 
 可以看到，由于 session A 并没有锁住 c=10 这个记录，所以 session B 删除 id=10 这一行是可以的。但是之后，session B 再想 insert id=10 这一行回去就不行了。
 
 现在我们一起看一下此时 `show engine innodb status` 的结果，看看能不能给我们一些提示。锁信息是在这个命令输出结果的 TRANSACTIONS 这一节。
 
 ```sql
----TRANSACTION 588638, ACTIVE 12 sec inserting
+---TRANSACTION 1311, ACTIVE 4 sec inserting
 mysql tables in use 1, locked 1
-LOCK WAIT 2 lock struct(s), heap size 1136, 1 row lock(s)
-MySQL thread id 29, OS thread handle 123145585180672, query id 630604 localhost root update
-insert into t values(10,10,10)
-------- TRX HAS BEEN WAITING 12 SEC FOR THIS LOCK TO BE GRANTED:
-RECORD LOCKS space id 496 page no 4 n bits 80 index PRIMARY of table `test`.`t` trx id 588638 lock_mode X locks gap before rec insert intention waiting
-Record lock, heap no 5 PHYSICAL RECORD: n_fields 5; compact format; info bits 0
- 0: len 4; hex 8000000f; asc     ;;
- 1: len 6; hex 00000008fb53; asc      S;;
- 2: len 7; hex 82000002010137; asc       7;;
- 3: len 4; hex 8000000f; asc     ;;
- 4: len 4; hex 8000000f; asc     ;;
+LOCK WAIT 2 lock struct (s), heap size 1136, 1 row lock(s)
+MySQL thread id 11, OS thread handle 140504341464832, query id 20700 localhost 127.0.0.1 root update 
+insert into t values (10, 10, 10)
+------ TX HAS BEEN WAITING 4 SEC FOR THIS LOCK TO BE GRANTED:
+RECORD LOCKS space id 24 page no 3 n bits 80 index PRIMARY of table 'test'. 't' trx id 1311 lock_mode X locks gap before rec insert intention waiting
+Record lock, heap no 5 PHYSICAL RECORD: _fields 5; compact format; info bits o
+0: len 4; hex 0000000f; asc     ;;
+1: 1en 6: hex 000000000513; asc     ;;
+2: len 7; hey b0000001250134; asc    % 4;;
+3: len 4: hey 0000000f; asc     ;;
+4: len 4: hey 0000000f; asc     ;;
 ```
-
-![img](../../images/mysql-lecture-45/c3744fb7b61df2a5b45b8eb1f2a853a6.png)
-
-图 5 锁等待信息
 
 我们来看几个关键信息。
 
@@ -251,10 +254,19 @@ Record lock, heap no 5 PHYSICAL RECORD: n_fields 5; compact format; info bits 0
 
 再来看一个 update 语句的案例。
 
-| session A                                                   | session B                                                    |
-| ----------------------------------------------------------- | ------------------------------------------------------------ |
-| begin;<br />select c from t where c > 5 lock in share mode; |                                                              |
-|                                                             | update t set c = 1 where c = 5;<br />(Query OK)<br /><br />update t set c = 5 where c = 1;<br />(blocked) |
+```mermaid
+sequenceDiagram
+participant SessionA
+participant Table
+participant SessionB
+
+SessionA ->> Table: begin
+SessionA ->> Table: select c from t where c > 5 lock in share mode
+SessionB ->>+ Table: update t set c = 1 where c = 5
+Table -->>- SessionB: Query OK
+SessionB ->>+ Table: update t set c = 5 where c = 1
+Table -->>- SessionB: blocked
+```
 
 你可以自己分析一下，session A 的加锁范围是索引 c 上的 `(5,10]、(10,15]、(15,20]、(20,25]` 和 `(25,supremum]`。
 
@@ -545,20 +557,50 @@ Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
 
 首先，执行 set global innodb_thread_concurrency=2，将 InnoDB 的并发线程上限数设置为 2；然后，执行下面的序列：
 
-![img](../../images/mysql-lecture-45/32e4341409fabfe271db3dd4c4df696e.png)
+```mermaid
+sequenceDiagram
+participant SessionA
+participant SessionB
+participant SessionC
+participant SessionD
+participant SessionE
+participant Table
+par 
+SessionA ->>Table: select sleep(100) from t;
+and 
+SessionB ->> Table: select sleep(100) from t;
+end
+SessionC ->>+ Table: select * from t
+Table -->>- SessionC: blocked
 
-图 2 kill query 无效的例子
+SessionD ->> Table: kill query SessionC
+par
+SessionE ->> Table: kill SessionC
+and 
+Table -->> SessionC: ERROR 2013(HY000): Lost connection to MySQL server during query
+end
+```
 
 可以看到：
 
 1. sesssion C 执行的时候被堵住了；
+
 2. 但是 session D 执行的 kill query C 命令却没什么效果，
+
 3. 直到 session E 执行了 kill connection 命令，才断开了 session C 的连接，提示“Lost connection to MySQL server during query”，
+
 4. 但是这时候，如果在 session E 中执行 show processlist，你就能看到下面这个图。
 
-![img](../../images/mysql-lecture-45/915c20e4c11b104d7bcf9d3457304c53.png)
-
-图 3 kill connection 之后的效果
+   ```sql
+   mysql> show processlist;
+   +----+------+-----------------+------+---------+------+--------------+---------------------------+
+   | Id | User | Host            | db   | Command | Time | State        | Info                      |
+   +----+------+-----------------+------+---------+------+--------------+---------------------------+
+   |  4 | root | localhost:50934 | test | Query  |    30 | User sleep   | select sleep(100) from t  |
+   |  5 | root | localhost:50956 | test | Query  |    26 | User sleep   | select sleep(100) from t  |
+   | 12 | root | localhost:53288 | test | Query  |    24 | Sending data | select * from t           |
+   +----+------+-----------------+------+---------+------+--------------+---------------------------+
+   ```
 
 这时候，id=12 这个线程的 Commnad 列显示的是 Killed。也就是说，客户端虽然断开了连接，但实际上服务端上这条语句还在执行过程中。
 
@@ -615,8 +657,6 @@ Record lock, heap no 1 PHYSICAL RECORD: n_fields 1; compact format; info bits 0
 
 做完这些操作后，其实你已经没有办法再对它做什么了，只能等待流程自己完成。
 
-
-
 ## 33 我查这么多数据，会不会把数据库内存打爆？
 
 我经常会被问到这样一个问题：我的主机内存只有 100G，现在要对一个 200G 的大表做全表扫描，会不会把数据库主机的内存用光了？
@@ -646,9 +686,21 @@ mysql -h$host -P$port -u$user -p$pwd -e "select * from db1.t" > $target_file
 
 这个过程对应的流程图如下所示。
 
-![img](../../images/mysql-lecture-45/a027c300d7dde8cea4fad8f34b670ebd.jpg)
-
-图 1 查询结果发送流程
+```mermaid
+%%{init: {"theme": "dark"}}%%
+graph LR
+subgraph client
+node1["socket receive buffer"]
+end
+subgraph server
+  subgraph MySQL
+    direction TB
+    data --> net_buffer
+  end
+  net_buffer --> node2["socket send buffer"]
+end
+server --> client
+```
 
 从这个流程中，你可以看到：
 
@@ -781,8 +833,6 @@ InnoDB 管理 Buffer Pool 的 LRU 算法，是用链表来实现的。
 而对于 InnoDB 引擎内部，由于有淘汰策略，大查询也不会导致内存暴涨。并且，由于 InnoDB 对 LRU 算法做了改进，冷数据的全表扫描，对 Buffer Pool 的影响也能做到可控。
 
 当然，我们前面文章有说过，全表扫描还是比较耗费 IO 资源的，所以业务高峰期还是不能直接在线上主库执行全表扫描的。
-
-
 
 ## 34 到底可不可以使用join？
 
@@ -1056,8 +1106,6 @@ select t1.b,t2.* from  t2  straight_join t1 on (t1.b=t2.b) where t2.id<=100;
 最后，又到了今天的问题时间。
 
 我们在上文说到，使用 Block Nested-Loop Join 算法，可能会因为 `join_buffer` 不够大，需要对被驱动表做多次全表扫描。
-
-
 
 ## 35 join语句怎么优化？
 
@@ -1375,13 +1423,29 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
 
 为了便于理解，我们来看下下面这个操作序列：
 
-| session A                                                    | session B                                                    |
-| ------------------------------------------------------------ | ------------------------------------------------------------ |
-| create temporary table t(c int) engine=myisam;               |                                                              |
-|                                                              | show create table t;<br />(Table 't' doesn't exists)         |
-| create table t(id int primary key) engine=innodb;<br />show create table t;<br /><br />show tables;<br />// 只显示普通表 |                                                              |
-|                                                              | insert into t values(1);<br />select * from t;<br />// return 1 |
-| select * from t;<br />//Empty set                            |                                                              |
+```mermaid
+sequenceDiagram
+participant SessionA
+participant Table
+participant SessionB
+
+SessionA ->> Table: create temporary table t(c int) engine=myisam;
+
+SessionB ->>+ Table: show create table t
+Table -->>- SessionB: Table 't' doesn't exists
+
+SessionA ->> Table: create table t (id int primary key) engine=innodb
+SessionA ->> Table: show create table t;
+Table -->> SessionA: return 't' defination
+SessionA ->> Table: show tables 
+Table -->> SessionA: return all normal tables
+
+SessionB ->>+ Table: insert into t values(1)
+Table -->>- SessionB: return 1
+
+SessionA ->>+ Table: select * from t
+Table -->>- SessionA: return empty
+```
 
 可以看到，临时表在使用上有以下几个特点：
 

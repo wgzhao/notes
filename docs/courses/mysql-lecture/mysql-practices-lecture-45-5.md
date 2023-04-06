@@ -282,7 +282,10 @@ mysql> load data infile '/server_tmp/t.csv' into table db2.t;
 1. 主库执行完成后，将 `/server_tmp/t.csv` 文件的内容直接写到 binlog 文件中。
 2. 往 binlog 文件中写入语句 `load data local infile '/tmp/SQL_LOAD_MB-1-0' INTO TABLE db2.t`。
 3. 把这个 binlog 日志传到备库。
-4. 备库的 apply 线程在执行这个事务日志时： a. 先将 binlog 中 t.csv 文件的内容读出来，写入到本地临时目录 `/tmp/SQL_LOAD_MB-1-0 `中； b. 再执行 load data 语句，往备库的 db2.t 表中插入跟主库相同的数据。
+4. 备库的 apply 线程在执行这个事务日志时： 
+   1. 先将 binlog 中 t.csv 文件的内容读出来，写入到本地临时目录 `/tmp/SQL_LOAD_MB-1-0 `中； 
+   2.  再执行 load data 语句，往备库的 db2.t 表中插入跟主库相同的数据。
+
 
 注意，这里备库执行的 load data 语句里面，多了一个 `local`。它的意思是“将执行这条命令的客户端所在机器的本地文件 `/tmp/SQL_LOAD_MB-1-0` 的内容，加载到目标表 db2.t 中”。
 
