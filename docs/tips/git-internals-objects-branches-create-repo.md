@@ -1,3 +1,8 @@
+---
+title: Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+description: 本文形象地解释了git 的三种对象意义，以及如何使用低级命令来初始化和提交内容
+tags: ["git"]
+---
 # Git 内部原理图解——对象、分支以及如何从零开始建仓库
 
 文本来自 [这里](https://www.freecodecamp.org/chinese/news/git-internals-objects-branches-create-repo/)，英文原文来自 [这里](https://www.freecodecamp.org/news/git-internals-objects-branches-create-repo/)
@@ -5,7 +10,6 @@
 我在学习和实践的过程中对原文略有修改。
 
 以下实验均在 MacOS 13.5 以及  git `2.39.2` 版本下进行。
-
 
 我们中的许多人每天都在使用 `git`，但是有多少人知道它的内部是怎么运作的呢？
 
