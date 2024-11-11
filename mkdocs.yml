@@ -23,13 +23,13 @@ theme:
         icon: material/toggle-switch
         name: Switch to light mode
   features:
-    - navigation.instant # clicks on all internal links will be intercepted 
+    - navigation.instant # clicks on all internal links will be intercepted
     - navigation.indexes
     - navigation.expand
     - content.code.annotate
     - content.tabs.link
     - navigation.top
-    - navigation.tabs 
+    - navigation.tabs
     - navigation.tabs.sticky
     - navigation.sections
     - navigation.tracking # the URL in the address bar is automatically updated with the active anchor as highlighted in the table of contents
@@ -42,9 +42,9 @@ theme:
     - toc.integrate
   font:
     text: Roboto
-  
 
-plugins: 
+
+plugins:
   - search:
   - tags:
       tags_file: tags.md
@@ -56,7 +56,7 @@ plugins:
       comments_path: "#__comments"
       date_from_meta:
         as_creation: "date"
-        as_update: false
+        as_update: "false"
         datetime_format: "%Y-%m-%d %H:%M"
         default_timezone: Asia/Chongqing
         default_time: "09:30"
@@ -112,7 +112,7 @@ markdown_extensions:
          class: mermaid
          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.snippets:
-      base_path: 
+      base_path:
         - docs/assets
       check_paths: false
   - pymdownx.tabbed
