@@ -1,0 +1,5606 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="how to setup free IPA in hortonwork HDP cluster">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/bigdata/ipa-setup/">
+      
+      
+        <link rel="prev" href="../integrating-phoenix-with-kerberos/">
+      
+      
+        <link rel="next" href="../kerberos-setup/">
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS 订阅" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="已更新内容的 RSS 订阅" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+    
+    
+      
+        <title>free IPA setup - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#free-ipa-setup" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              free IPA setup
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="分享" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../ambari-cli/" class="md-tabs__link">
+          
+  
+    
+  
+  Bigdata
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../courses/commands-in-sbin/" class="md-tabs__link">
+          
+  
+    
+  
+  Courses
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../database/maridb-ax-setup/" class="md-tabs__link">
+          
+  
+    
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-tabs__link">
+          
+  
+    
+  
+  Kubernetes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../misc/Latex%20Math%20Symbols/" class="md-tabs__link">
+          
+  
+    
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-tabs__link">
+          
+  
+    
+  
+  Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tips/bash-tips/" class="md-tabs__link">
+          
+  
+    
+  
+  Tips
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-tabs__link">
+          
+  
+    
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Bigdata
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Bigdata
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ambari-cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Ambari API 来操作 Hadoop 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../flink-cdc-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flink SQL CDC 实践以及一致性分析
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrating-hive-with-spark/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating Apache Hive with Apache Spark
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrating-phoenix-with-kerberos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoenix 集成 HBase 并支持 Kerberos 认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#instuctions-for-ipa-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      Instuctions for IPA Lab
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Instuctions for IPA Lab">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pre-reqs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pre-reqs
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../kerberos-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MIT Kerberos  安装及维护手册
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    马蜂窝数据仓库设计与实践
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../presto-with-ssl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Presto SSL 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../zookeeper-optimize/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    zookeeper集群应对万级并发的调优
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Courses
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Courses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/commands-in-sbin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux 命令学习
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/linux-cfs-scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux CFS 调度器：原理、设计与内核实现
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/pg9_high_performance_notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《PostgreSQL 9 High Performance》读书笔记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Mysql lecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Mysql lecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第一部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第二部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第三部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第四部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第五部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Time series analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Time series analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/01-basic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基础篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/02-primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    初级篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/03-advance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    进阶篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/04-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    应用篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/05-complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    补完篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/maridb-ax-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MariaDB AX 安装测试简记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/mysql-cluster-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MySQL Cluster 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-11g-imp-and-exp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 11g 导入导出基本操作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-silent-installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 静默安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/percona-cluster-with-haproxy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HAProxy + Percona XtraDB Cluster 部署
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/setup-a-clickhouse-cluster-on-one-node/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在一个节点上部署 ClickHouse 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/why-mysql8-slower-than-mysql57/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Kubernetes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Kubernetes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    外部机器如何直接直接访问 kubernetes 集群内服务
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/calico-node-troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calico Node 无法启动的排查
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/collect-k8s-log-with-filebeat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基于 ELK 的 日志收集与自动索引创建
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/coredns-support-hosts-file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoreDNS 支持解析宿主机的 hosts 文件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/deep-dive-into-k8s-internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用奇怪的方式构建简单 k8s 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/kubernetes-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 kubeadm 安装 kubernetes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/take-flannel-to-calico/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrate kubernetes cluster from Flannel to Calico
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Misc
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Misc
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/Latex%20Math%20Symbols/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用于 LateX 的数学符号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/git-from-zero-to-hero/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git从入门到应付日常工作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/gitlab-ci-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    gitlab-ci.yml 详解
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/osint-introduce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    超级情报手机工具库：开源验证和调查工具及使用方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Programming
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Programming
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Python 和 Flask 设计 RESTful API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/programming-with-vim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    无插件Vim编程技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/pure-bash-bible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pure Bash Bible
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/understanding-awk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tips
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Tips
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/bash-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BASH 的一些技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/batch-convert-word-to-pdf/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows 下批量转换 word 文档为 pdf 的方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/change-keyboard-layout-in-ubuntu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ubuntu 下修改键盘映射
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/git-internals-objects-branches-create-repo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/git-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    git 不常见的操作技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/how-to-create-dummy-rpm-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速创建一个虚假 RPM 包
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-change-git-author/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to change git author name and email
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-delete-old-images-from-nexus-registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    如何删除 nexus 私服上的 Docker 镜像
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-save-tmux-session/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to save tmux session
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/learn-seaborn-with-10min/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    十分钟掌握 Seaborn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/matplotlib-support-chinese/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Python 中 matplotlib 图支持中文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/move-running-process-into-tmux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    把一个运行的进程放到 tmux 会话中
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/rpm-tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rpm 包管理基本技能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/sed-one-line-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/setup-gitlab-ci-for-android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Gitlab CI For Android
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/ssh-three-key-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssh的三板斧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/ssh-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/wechat-contacts-backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    微信通讯录备份
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Troubleshooting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TCPDump Capture HTTP GET/POST requests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/deep-in-tcp-connect/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    详解 TCP 半连接队列与全连接队列
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/docker-run-no-space-left/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker 运行容器报磁盘空间不足的错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/fix-ora-00227/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    修复 Oracle ORA-00227 错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Oracle JDK 1.6 TLSv1.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+        <a href="../../tags/#tag:hadoop" class="md-tag">hadoop</a>
+      
+    
+      
+      
+      
+        <a href="../../tags/#tag:hdp" class="md-tag">hdp</a>
+      
+    
+      
+      
+      
+        <a href="../../tags/#tag:ipa" class="md-tag">ipa</a>
+      
+    
+      
+      
+      
+        <a href="../../tags/#tag:kerberos" class="md-tag">kerberos</a>
+      
+    
+  </nav>
+
+
+
+<h1 id="free-ipa-setup">free IPA setup<a class="headerlink" href="#free-ipa-setup" title="Permanent link">&para;</a></h1>
+<h2 id="instuctions-for-ipa-lab">Instuctions for IPA Lab<a class="headerlink" href="#instuctions-for-ipa-lab" title="Permanent link">&para;</a></h2>
+<h3 id="pre-reqs">Pre-reqs<a class="headerlink" href="#pre-reqs" title="Permanent link">&para;</a></h3>
+<ul>
+<li>HDP 3.x / Ambari 2.7.1 cluster<br></li>
+<li>Access to an IPA server that has been setup as descibed in <a href="https://docs.hortonworks.com/HDPDocuments/HDP3/HDP-3.0.1/authentication-with-kerberos/content/kerberos_optional_use_an_existing_ipa.html">Hortonworks documentation</a>. See sample <a href="https://github.com/HortonworksUniversity/Security_Labs/blob/master/extras/ipa.md">script</a> to set up</li>
+</ul>
+<p><strong>Lab Topics</strong><br>
+0. Accessing your Cluster
+1. <a href="#section-1">Register cluster nodes as IPA Clients</a>
+2. <a href="#section-2">Secure Ambari via ambari-server setup-security</a>
+3. <a href="#section-3">Enable Kerberos for cluster services</a>
+4. <a href="#section-4">Enable LDAP for ambari</a></p>
+<h1 id="lab-1">Lab 1<a class="headerlink" href="#lab-1" title="Permanent link">&para;</a></h1>
+<h2 id="accessing-your-cluster">Accessing your Cluster<a class="headerlink" href="#accessing-your-cluster" title="Permanent link">&para;</a></h2>
+<p>Credentials will be provided for these services by the instructor:</p>
+<ul>
+<li>SSH</li>
+<li>Ambari</li>
+</ul>
+<h2 id="use-your-cluster">Use your Cluster<a class="headerlink" href="#use-your-cluster" title="Permanent link">&para;</a></h2>
+<h3 id="to-connect-using-putty-from-windows-laptop">To connect using Putty from Windows laptop<a class="headerlink" href="#to-connect-using-putty-from-windows-laptop" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Right click to download <a href="https://github.com/HortonworksUniversity/Security_Labs/raw/master/training-keypair.ppk">this ppk key</a> &gt; Save link as &gt; save to Downloads folder</li>
+<li>Use putty to connect to your node using the ppk key:</li>
+<li>
+<p>Connection &gt; SSH &gt; Auth &gt; Private key for authentication &gt; Browse... &gt; Select training-keypair.ppk
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/putty.png" /></p>
+</li>
+<li>
+<p>Make sure to click "Save" on the session page before logging in</p>
+</li>
+<li>When connecting, it will prompt you for username. Enter <code>centos</code></li>
+</ul>
+<h3 id="to-connect-from-linuxmacosx-laptop">To connect from Linux/MacOSX laptop<a class="headerlink" href="#to-connect-from-linuxmacosx-laptop" title="Permanent link">&para;</a></h3>
+<ul>
+<li>SSH into Ambari node of your cluster using below steps:</li>
+<li>Right click to download <a href="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/training-keypair.pem">this pem key</a>  &gt; Save link as &gt; save to Downloads folder</li>
+<li>Copy pem key to ~/.ssh dir and correct permissions
+  <div class="highlight"><pre><span></span><code>cp ~/Downloads/training-keypair.pem ~/.ssh/
+chmod 400 ~/.ssh/training-keypair.pem
+</code></pre></div></li>
+<li>Login to the Ambari node of the cluster you have been assigned by replacing IP_ADDRESS_OF_AMBARI_NODE below with Ambari node IP Address (your instructor will provide this) <br />
+  <div class="highlight"><pre><span></span><code>ssh -i  ~/.ssh/training-keypair.pem centos@IP_ADDRESS_OF_AMBARI_NODE
+</code></pre></div></li>
+<li>
+<p>To change user to root you can:
+  <div class="highlight"><pre><span></span><code>sudo su -
+</code></pre></div></p>
+</li>
+<li>
+<p>Similarly login via SSH to each of the other nodes in your cluster as you will need to run commands on each node in a future lab</p>
+</li>
+<li>
+<p>Tip: Since in the next labs you will be required to run <em>the same set of commands</em> on each of the cluster hosts, now would be a good time to setup your favorite tool to do so: examples <a href="https://www.reddit.com/r/sysadmin/comments/3d8aou/running_linux_commands_on_multiple_servers/">here</a></p>
+</li>
+<li>On OSX, an easy way to do this is to use <a href="https://www.iterm2.com/">iTerm</a>: open multiple tabs/splits and then use 'Broadcast input' feature (under Shell -&gt; Broadcast input)</li>
+<li>If you are not already familiar with such a tool, you can also just run the commands on the cluster, one host at a time</li>
+</ul>
+<h4 id="login-to-ambari">Login to Ambari<a class="headerlink" href="#login-to-ambari" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>Login to Ambari web UI by opening <a href="http://AMBARI_PUBLIC_IP:8080">http://AMBARI_PUBLIC_IP:8080</a> and log in with <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/admin/BadPass/issues/1" title="GitHub Issue: admin/BadPass #1">admin/BadPass#1</a></p>
+</li>
+<li>
+<p>You will see a list of Hadoop components running on your cluster on the left side of the page</p>
+</li>
+<li>They should all show green (ie started) status. If not, start them by Ambari via 'Service Actions' menu for that service</li>
+</ul>
+<h4 id="finding-internalexternal-hosts">Finding internal/external hosts<a class="headerlink" href="#finding-internalexternal-hosts" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>Following are useful techniques you can use in future labs to find your cluster specific details:</p>
+</li>
+<li>
+<p>From SSH terminal, how can I find the cluster name?
+  <div class="highlight"><pre><span></span><code>#run on ambari node to fetch cluster name via Ambari API
+PASSWORD=BadPass#1
+output=`curl -u admin:$PASSWORD -i -H &#39;X-Requested-By: ambari&#39;  http://localhost:8080/api/v1/clusters`
+cluster=`echo $output | sed -n &#39;s/.*&quot;cluster_name&quot; : &quot;\([^\&quot;]*\)&quot;.*/\1/p&#39;`
+echo $cluster
+</code></pre></div></p>
+</li>
+<li>
+<p>From SSH terminal, how can I find internal hostname (aka FQDN) of the node I'm logged into?
+  <div class="highlight"><pre><span></span><code>$ hostname -f
+ip-172-30-0-186.us-west-2.compute.internal  
+</code></pre></div></p>
+</li>
+<li>
+<p>From Ambari how do I check the cluster name?</p>
+<ul>
+<li>It is displayed on the top left of the Ambari dashboard, next to the Ambari logo. If the name appears truncated, you can hover over it to produce a helptext dialog with the full name
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/hdp3/hdp3-clustername.png" /></li>
+</ul>
+</li>
+<li>
+<p>From Ambari how can I find external hostname of node where a component (e.g. Resource Manager or Hive) is installed?</p>
+<ul>
+<li>Click the parent service (e.g. YARN) and <em>hover over</em> the name of the component. The external hostname will appear.
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/hdp3/hdp3-hostname.png" /></li>
+</ul>
+</li>
+<li>
+<p>From Ambari how can I find internal hostname of node where a component (e.g. Resource Manager or Hive) is installed?</p>
+<ul>
+<li>Click the parent service (e.g. YARN) and <em>click on</em> the name of the component. It will take you to hosts page of that node and display the internal hostname on the top.
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/hdp3/hdp3-internalhostname.png" />  </li>
+</ul>
+</li>
+<li>
+<p>In future labs you may need to provide private or public hostname of nodes running a particular component (e.g. YARN RM or Mysql or HiveServer)</p>
+</li>
+</ul>
+<h4 id="import-sample-data-into-hive">Import sample data into Hive<a class="headerlink" href="#import-sample-data-into-hive" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Run below <em>on the node where HiveServer2 is installed</em> to download data and import it into a Hive table for later labs</li>
+<li>You can either find the node using Ambari as outlined in Lab 1</li>
+<li>Download and import data
+  <div class="highlight"><pre><span></span><code>cd /tmp
+wget https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/labdata/sample_07.csv
+wget https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/labdata/sample_08.csv
+</code></pre></div></li>
+<li>Create user dir for admin, sales1 and hr1
+  <div class="highlight"><pre><span></span><code> sudo -u hdfs hdfs dfs  -mkdir /user/admin
+ sudo -u hdfs hdfs dfs  -chown admin:hadoop /user/admin
+
+ sudo -u hdfs hdfs dfs  -mkdir /user/sales1
+ sudo -u hdfs hdfs dfs  -chown sales1:hadoop /user/sales1
+
+ sudo -u hdfs hdfs dfs  -mkdir /user/hr1
+ sudo -u hdfs hdfs dfs  -chown hr1:hadoop /user/hr1   
+</code></pre></div></li>
+<li>Copy csv's into HDFS
+  <div class="highlight"><pre><span></span><code>sudo -u hdfs hdfs dfs -mkdir -p /hive_data/salary
+sudo -u hdfs hdfs dfs -put /tmp/sample*  /hive_data/salary
+sudo -u hdfs hdfs dfs -chown -R hive:hive /hive_data/
+</code></pre></div></li>
+<li>
+<p>Now create Hive table in default database by </p>
+<ul>
+<li>Start beeline shell from the node where Hive is installed: 
+<div class="highlight"><pre><span></span><code>beeline -n hive -u &quot;jdbc:hive2://localhost:10000/default&quot;
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>At beeline prompt, run below:</p>
+</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code>CREATE EXTERNAL TABLE sample_07 (
+code string ,
+description string ,  
+total_emp int ,  
+salary int )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY &#39;\t&#39; STORED AS TextFile
+LOCATION &#39;/hive_data/salary&#39;;
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>CREATE EXTERNAL TABLE sample_08 (
+code string ,
+description string ,  
+total_emp int ,  
+salary int )
+ROW FORMAT DELIMITED FIELDS TERMINATED BY &#39;\t&#39; STORED AS TextFile
+LOCATION &#39;/hive_data/salary&#39;;
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>!q
+</code></pre></div></p>
+<ul>
+<li>Notice that in the JDBC connect string for connecting to an unsecured Hive while its running in default (ie binary) transport mode :</li>
+<li>port is 10000</li>
+<li>
+<p>no kerberos principal was needed </p>
+</li>
+<li>
+<p>This will change after we:</p>
+</li>
+<li>enable kerberos</li>
+<li>configure Hive for http transport mode (to go through Knox)</li>
+</ul>
+<h3 id="why-is-security-needed">Why is security needed?<a class="headerlink" href="#why-is-security-needed" title="Permanent link">&para;</a></h3>
+<h5 id="hdfs-access-on-unsecured-cluster">HDFS access on unsecured cluster<a class="headerlink" href="#hdfs-access-on-unsecured-cluster" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p>On your unsecured cluster try to access a restricted dir in HDFS
+<div class="highlight"><pre><span></span><code>hdfs dfs -ls /tmp/hive   
+## this should fail with Permission Denied
+</code></pre></div></p>
+</li>
+<li>
+<p>Now try again after setting HADOOP_USER_NAME env var
+<div class="highlight"><pre><span></span><code>export HADOOP_USER_NAME=hdfs
+hdfs dfs -ls /tmp/hive   
+## this shows the file listing!
+</code></pre></div></p>
+</li>
+<li>Unset the env var and it will fail again
+<div class="highlight"><pre><span></span><code>unset HADOOP_USER_NAME
+hdfs dfs -ls /tmp/hive  
+</code></pre></div></li>
+</ul>
+<h5 id="webhdfs-access-on-unsecured-cluster">WebHDFS access on unsecured cluster<a class="headerlink" href="#webhdfs-access-on-unsecured-cluster" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p>From <em>node running NameNode</em>, make a WebHDFS request using below command:
+<div class="highlight"><pre><span></span><code>curl -sk -L &quot;http://$(hostname -f):50070/webhdfs/v1/user/?op=LISTSTATUS&quot;
+</code></pre></div></p>
+</li>
+<li>
+<p>In the absence of Knox, notice it goes over HTTP (not HTTPS) on port 50070 and no credentials were needed</p>
+</li>
+</ul>
+<h5 id="web-ui-access-on-unsecured-cluster">Web UI access on unsecured cluster<a class="headerlink" href="#web-ui-access-on-unsecured-cluster" title="Permanent link">&para;</a></h5>
+<ul>
+<li>From Ambari notice you can open the WebUIs without any authentication</li>
+<li>HDFS &gt; Quicklinks &gt; NameNode UI</li>
+<li>Mapreduce &gt; Quicklinks &gt; JobHistory UI</li>
+<li>
+<p>YARN &gt; Quicklinks &gt; ResourceManager UI</p>
+</li>
+<li>
+<p>This should tell you why kerberos (and other security) is needed on Hadoop :)</p>
+</li>
+</ul>
+<hr />
+<h1 id="lab-2">Lab 2<a class="headerlink" href="#lab-2" title="Permanent link">&para;</a></h1>
+<h3 id="review-use-case">Review use case<a class="headerlink" href="#review-use-case" title="Permanent link">&para;</a></h3>
+<p>Use case: Customer has an existing cluster which they would like you to secure for them</p>
+<ul>
+<li>Current setup:</li>
+<li>The customer has multiple organizational groups (i.e. sales, hr, legal) which contain business users (sales1, hr1, legal1 etc) and hadoopadmin</li>
+<li>These groups and users are defined in Active Directory (AD) under its own Organizational Unit (OU) called CorpUsers </li>
+<li>There are empty OUs created in AD to store hadoop principals/hadoop nodes (HadoopServices, HadoopNodes)</li>
+<li>Hadoopadmin user has administrative credentials with delegated control of "Create, delete, and manage user accounts" on above OUs</li>
+<li>
+<p>Hadoop cluster running HDP has already been setup using Ambari (including HDFS, YARN, Hive, Hbase, Solr, Zookeeper)</p>
+</li>
+<li>
+<p>Goals:</p>
+</li>
+<li>Integrate Ambari with AD - so that hadoopadmin can administer the cluster</li>
+<li>Integrate Hadoop nodes OS with AD - so business users are recognized and can submit Hadoop jobs</li>
+<li>Enable kerberos - to secured the cluster and enable authentication</li>
+<li>Install Ranger and enable Hadoop plugins - to allow admin to setup authorization policies and review audits across Hadoop components</li>
+<li>Install Ranger KMS and enable HDFS encryption - to be able to create encryption zones</li>
+<li>Encrypt Hive backing dirs - to protect hive tables</li>
+<li>Configure Ranger policies to:<ul>
+<li>Protect /sales HDFS dir - so only sales group has access to it</li>
+<li>Protect sales hive table - so only sales group has access to it</li>
+<li>Fine grained access: sales users should only have access to code, description columns in default.sample_07, but only for rows where total_emp&lt;5000. Also total_emp column should be masked</li>
+<li>Protect sales HBase table - so only sales group has access to it</li>
+</ul>
+</li>
+<li>Install Knox and integrate with AD - for perimeter security and give clients access to APIs w/o dealing with kerberos</li>
+<li>Enable Ambari views to work on secured cluster</li>
+</ul>
+<p>We will run through a series of labs and step by step, achieve all of the above goals</p>
+<h2 id="1-register-cluster-nodes-as-ipa-clients"><a name="section-1"></a>1. Register cluster nodes as IPA clients<a class="headerlink" href="#1-register-cluster-nodes-as-ipa-clients" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Run below on <em>all nodes of HDP cluster</em> (replace $INTERNAL_IP_OF_IPA)</li>
+</ul>
+<div class="highlight"><pre><span></span><code>echo &quot;$INTERNAL_IP_OF_IPA ipa.us-west-2.compute.internal ipa&quot; &gt;&gt; /etc/hosts
+</code></pre></div>
+<ul>
+<li>
+<p>Install yum packages
+<div class="highlight"><pre><span></span><code>sudo yum install -y ipa-client
+</code></pre></div></p>
+</li>
+<li>
+<p>Update /etc/resolve.conf (replace INTERNAL_IP_OF_IPA)
+<div class="highlight"><pre><span></span><code>mv /etc/resolv.conf /etc/resolv.conf.bak 
+echo &quot;search us-west-2.compute.internal&quot; &gt; /etc/resolv.conf
+echo &quot;nameserver $INTERNAL_IP_OF_IPA&quot; &gt;&gt; /etc/resolv.conf
+</code></pre></div></p>
+</li>
+<li>Install IPA client</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code>  sudo ipa-client-install \
+  --server=ipa.us-west-2.compute.internal \
+  --realm=US-WEST-2.COMPUTE.INTERNAL \
+  --domain=us-west-2.compute.internal \
+  --mkhomedir \
+  --principal=admin -w BadPass#1 \
+  --unattended
+</code></pre></div>
+Note: restarting dbus seems to be required sometimes <code>service dbus restart</code></p>
+<ul>
+<li>
+<p>Make sure you don't see below message from the output of previous command
+<div class="highlight"><pre><span></span><code>Missing A/AAAA record(s) for host xxxxxxxxx
+</code></pre></div></p>
+</li>
+<li>
+<p>If you do, uninstall and try again:
+<div class="highlight"><pre><span></span><code>service dbus restart
+sudo ipa-client-install --uninstall
+</code></pre></div></p>
+</li>
+<li>
+<p>Note by changing the DNS, its possible the node may not be able to connect to public internet. When you need to do so (e.g. for yum install, you can temporarily revert back the /etc/resolv.conf.bak)</p>
+</li>
+</ul>
+<h3 id="verify">Verify<a class="headerlink" href="#verify" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>By registering as a client of the IPA server, SSSD is automatically setup. So now the host recognizes users defined in IPA
+<div class="highlight"><pre><span></span><code>id hadoopadmin
+</code></pre></div></p>
+</li>
+<li>
+<p>You can also authenticate and get a kerberos ticket (password is <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a>)
+<div class="highlight"><pre><span></span><code>kinit -V hadoopadmin
+</code></pre></div></p>
+</li>
+</ul>
+<hr />
+<h1 id="2-secure-ambari-via-ambari-server-setup-security"><a name="section-2"></a> 2. Secure Ambari via ambari-server setup-security<a class="headerlink" href="#2-secure-ambari-via-ambari-server-setup-security" title="Permanent link">&para;</a></h1>
+<p>Lets use FreeIPA Generated certificate for Options 1 and 4 in <code>ambari-server setup-security</code></p>
+<p><code>Security setup options...
+===========================================================================
+Choose one of the following options:
+  *[1] Enable HTTPS for Ambari server.
+  *[2] Encrypt passwords stored in ambari.properties file.
+  [3] Setup Ambari kerberos JAAS configuration.
+  *[4] Setup truststore.
+  [5] Import certificate to truststore.
+===========================================================================</code></p>
+<p><strong>Preparation:</strong> Create certificates on all ipa-client hosts (run this on each node)</p>
+<p>Ensure SELinux is not enforcing, else requesting a certificate as the root user with admin's kerberos ticket will be denied by the system and certificate will not be created. </p>
+<div class="highlight"><pre><span></span><code>getenforce
+# If result is &quot;Enforcing&quot;, run the following
+sudo su
+setenforce 0
+</code></pre></div>
+<p>Obtain kerberos ticket as <strong>admin</strong>(or an IPA Privileged User), and request a x509 certificate pair saved as "host.key" and "host.crt" on each host. </p>
+<div class="highlight"><pre><span></span><code>echo BadPass#1 | kinit admin 
+mkdir /etc/security/certificates/
+cd /etc/security/certificates/
+ipa-getcert request -v -f /etc/security/certificates/host.crt -k /etc/security/certificates/host.key
+</code></pre></div>
+<p>List the directory to verify certificates are created. </p>
+<div class="highlight"><pre><span></span><code>[root@demo certificates]# ls -ltr /etc/security/certificates/
+total 8
+-rw------- 1 root root 1704 Sep 30 04:56 host.key
+-rw------- 1 root root 1724 Sep 30 04:56 host.crt
+</code></pre></div>
+<h3 id="21-enable-https-for-ambari-server">2.1 Enable HTTPS for Ambari server<a class="headerlink" href="#21-enable-https-for-ambari-server" title="Permanent link">&para;</a></h3>
+<p>If you are running Knox on this host (which is highly not recommended) changing the default port from 8443 will avoid the port conflict. </p>
+<div class="highlight"><pre><span></span><code>[root@demo ~]$ambari-server setup-security
+
+Security setup options...
+===========================================================================
+Choose one of the following options:
+  [1] Enable HTTPS for Ambari server.
+  [2] Encrypt passwords stored in ambari.properties file.
+  [3] Setup Ambari kerberos JAAS configuration.
+  [4] Setup truststore.
+  [5] Import certificate to truststore.
+===========================================================================
+
+# Enable SSL
+Enter choice, (1-5): 1
+Do you want to configure HTTPS [y/n] (y)? y
+SSL port [8443] ? 8444
+Enter path to Certificate: /etc/security/certificates/host.crt
+Enter path to Private Key: /etc/security/certificates/host.key
+Please enter password for Private Key: changeit
+</code></pre></div>
+<h3 id="verify_1">Verify<a class="headerlink" href="#verify_1" title="Permanent link">&para;</a></h3>
+<p>Restart ambari-server. Curl Ambari on the new https port <strong>without</strong> specifying the "-k" flag.
+<div class="highlight"><pre><span></span><code>[root@demo ~]$ curl -u admin:&quot;password&quot; https://`hostname -f`:8444/api/v1/clusters
+</code></pre></div></p>
+<h3 id="22-encrypt-passwords-stored-in-ambariproperties-file">2.2 Encrypt passwords stored in ambari.properties file.<a class="headerlink" href="#22-encrypt-passwords-stored-in-ambariproperties-file" title="Permanent link">&para;</a></h3>
+<p>This step is required for the kerberos wizard to persist the KDC credentials (<code>hadoopadmin</code>). It is also required for persisting the <code>ldapbind</code> password, without which, enabling ldaps in Ambari 2.7.1 seems to have some challenges.  </p>
+<div class="highlight"><pre><span></span><code>[root@demo ~]# ambari-server setup-security
+Using python  /usr/bin/python
+Security setup options...
+===========================================================================
+Choose one of the following options:
+  [1] Enable HTTPS for Ambari server.
+  [2] Encrypt passwords stored in ambari.properties file.
+  [3] Setup Ambari kerberos JAAS configuration.
+  [4] Setup truststore.
+  [5] Import certificate to truststore.
+===========================================================================
+Enter choice, (1-5): 2
+Please provide master key for locking the credential store:
+Re-enter master key:
+Do you want to persist master key. If you choose not to persist, you need to provide the Master Key while starting the ambari server as an env variable named AMBARI_SECURITY_MASTER_KEY or the start will prompt for the master key. Persist [y/n] (y)? y
+Adjusting ambari-server permissions and ownership...
+Ambari Server &#39;setup-security&#39; completed successfully.
+</code></pre></div>
+<h3 id="23-setup-truststore">2.3 Setup truststore.<a class="headerlink" href="#23-setup-truststore" title="Permanent link">&para;</a></h3>
+<p>Setting up the truststore ahead of time and restarting Ambari seems to make the ldap integration happier. 
+Ambari can leverage the <code>/etc/pki/java/cacerts</code> truststore managed by IPA Clients on the hosts. This truststore contains the public CAs, along with the IPA CA, which should be the only certificates needed.    </p>
+<div class="highlight"><pre><span></span><code># Example for ipa hostname: ipa.us-west-2.compute.internal
+
+[root@demo ~]# /usr/java/default/bin/keytool -list \
+-keystore /etc/pki/java/cacerts \
+-v -storepass changeit | grep ipa
+
+Alias name: hortonworks.comipaca
+   accessLocation: URIName: http://ipa-ca.us-west-2.compute.internal/ca/ocsp
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>[root@demo certificates]# ambari-server setup-security
+Using python  /usr/bin/python
+Security setup options...
+===========================================================================
+Choose one of the following options:
+  [1] Enable HTTPS for Ambari server.
+  [2] Encrypt passwords stored in ambari.properties file.
+  [3] Setup Ambari kerberos JAAS configuration.
+  [4] Setup truststore.
+  [5] Import certificate to truststore.
+===========================================================================
+Enter choice, (1-5): 4
+Do you want to configure a truststore [y/n] (y)? y
+TrustStore type [jks/jceks/pkcs12] (jks):
+Path to TrustStore file :/etc/pki/java/cacerts
+Password for TrustStore: changeit
+Re-enter password: changeit
+Ambari Server &#39;setup-security&#39; completed successfully.
+</code></pre></div>
+<h3 id="24-restart-ambari-for-changes-to-take-effect">2.4 Restart Ambari for changes to take effect<a class="headerlink" href="#24-restart-ambari-for-changes-to-take-effect" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code>ambari-server restart
+</code></pre></div>
+<p><br> </p>
+<hr />
+<h1 id="3-enable-kerberos-on-the-cluster"><a name="section-3"></a>3. Enable kerberos on the cluster<a class="headerlink" href="#3-enable-kerberos-on-the-cluster" title="Permanent link">&para;</a></h1>
+<p>Enable Kerberos for cluster services via the wizard in Ambari, located in the Cluster Admin menu in the bottom left navigation panel. <a href="https://demo.us-west-2.compute.internal:8444/#/main/admin/kerberos">https://demo.us-west-2.compute.internal:8444/#/main/admin/kerberos</a></p>
+<p><img alt="Ambari-IPA-kerberos-1" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-IPA-kerberos-1.png" /></p>
+<p>At this point, requirements are met.The ambari-managed principals group is not required and password expiration policies should not affect the service keytabs as they have not been given passwords. The <code>hadoopadmin</code> and <code>ldapbind</code> user password will expire and need to be changed in 90 days (along with the rest of the users), but that's a good thing. See the docs for explanations <a href="https://docs.hortonworks.com/HDPDocuments/HDP3/HDP-3.0.1/authentication-with-kerberos/content/kerberos_optional_use_an_existing_ipa.html">https://docs.hortonworks.com/HDPDocuments/HDP3/HDP-3.0.1/authentication-with-kerberos/content/kerberos_optional_use_an_existing_ipa.html</a> </p>
+<ul>
+<li>KDC host: <code>ipa.us-west-2.compute.internal</code></li>
+<li>Realm name: <code>US-WEST-2.COMPUTE.INTERNAL</code></li>
+<li>
+<p>Domain: <code>us-west-2.compute.internal</code></p>
+</li>
+<li>
+<p>Kadmin host: <code>ipa.us-west-2.compute.internal</code></p>
+</li>
+<li>Admin principal: <code>hadoopadmin</code></li>
+<li>Admin password: <code>BadPass#1</code></li>
+<li>Save Admin Credentials: true</li>
+</ul>
+<p><img alt="Ambari-IPA-kerberos-2" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-IPA-kerberos-2.png" /></p>
+<p>If all goes well, go grab a beer. </p>
+<p><img alt="Ambari-IPA-kerberos-3" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-IPA-kerberos-3.png" /></p>
+<p>Useful CLI for verifying the newly created Service Principals:</p>
+<div class="highlight"><pre><span></span><code>#Usage: ipa service-show &lt;principal&gt;
+[root@demo ~]# ipa service-show spark/demo.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+  Principal name: spark/demo.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+  Principal alias: spark/demo.us-west-2.compute.internal@US-WEST-2.COMPUTE.INTERNAL
+  Keytab: True
+  Managed by: demo.us-west-2.compute.internal
+</code></pre></div>
+<hr />
+<h1 id="4-enable-ldap-for-ambari"><a name="section-4"></a>4. Enable LDAP For Ambari<a class="headerlink" href="#4-enable-ldap-for-ambari" title="Permanent link">&para;</a></h1>
+<h4 id="freeipa-tips-for-determining-ldap-search-properties">FreeIPA Tips for determining LDAP Search Properties<a class="headerlink" href="#freeipa-tips-for-determining-ldap-search-properties" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>IPA Clients contain <code>/etc/ipa/default.conf</code> with various ldap server properties </p>
+<div class="highlight"><pre><span></span><code>[root@demo ~]# cat /etc/ipa/default.conf 
+basedn = dc=us-west-2,dc=compute,dc=internal
+realm = US-WEST-2.COMPUTE.INTERNAL
+domain = us-west-2.compute.internal
+server = ipa.us-west-2.compute.internal
+</code></pre></div>
+</li>
+<li>
+<p>Determining valid <strong>user</strong> attributes (posixaccount, uid, etc):</p>
+<div class="highlight"><pre><span></span><code>ipa user-show hadoopadmin --raw --all
+</code></pre></div>
+</li>
+<li>
+<p>Determining valid <strong>group</strong> attributes (posixgroup, member, memberUid, etc)</p>
+<div class="highlight"><pre><span></span><code>ipa group-show admins --raw --all
+</code></pre></div>
+</li>
+<li>
+<p>Verifying ldapbind account and search base via <code>ldapsearch</code></p>
+<div class="highlight"><pre><span></span><code>[root@demo ~]# yum install -y openldap-clients
+
+# Test ldap bind properties
+AM_LDAP_SEARCHBASE=&quot;cn=accounts,dc=us-west-2,dc=compute,dc=internal&quot;
+AM_LDAP_BINDDN=&quot;uid=ldapbind,cn=users,cn=accounts,dc=us-west-2,dc=compute,dc=internal&quot;
+AM_LDAP_BINDDN_PW=&quot;BadPass#1&quot;
+AM_LDAP_URL=ldaps://ipa.us-west-2.compute.internal:636
+
+# Search for a valid uid and ensure the searchbase, bind dn, and ldapurl resolve properly
+[root@demo ~]# ldapsearch -D ${AM_LDAP_BINDDN} \
+-w ${AM_LDAP_BINDDN_PW} \
+-b ${AM_LDAP_SEARCHBASE} \
+-H ${AM_LDAP_URL} uid=hadoopadmin
+
+# Tail results of a valid ldapsearch for a single uid:
+numResponses: 2
+numEntries: 1
+</code></pre></div>
+</li>
+</ul>
+<h3 id="41-enable-ldap-for-ambari-server">4.1 Enable LDAP for Ambari Server<a class="headerlink" href="#41-enable-ldap-for-ambari-server" title="Permanent link">&para;</a></h3>
+<p>Ambari 2.7.1 offers a CLI option in <code>ambari-server setup-ldap</code> for choosing ldap type as IPA, which attempts to set some of the defaults required for integration. It seems to still have a few challenges, so few of the defaults need to be change. </p>
+<p>On the ambari-server host:</p>
+<p><div class="highlight"><pre><span></span><code>[root@demo certificates]# ambari-server setup-ldap
+Currently &#39;no auth method&#39; is configured, do you wish to use LDAP instead [y/n] (y)?  
+Please select the type of LDAP you want to use (AD, IPA, Generic LDAP):IPA
+Primary LDAP Host (ipa.ambari.apache.org): ipa.us-west-2.compute.internal
+Primary LDAP Port (636):
+Secondary LDAP Host &lt;Optional&gt;:
+Secondary LDAP Port &lt;Optional&gt;:
+Use SSL [true/false] (true):
+Do you want to provide custom TrustStore for Ambari [y/n] (y)?
+TrustStore type [jks/jceks/pkcs12] (jks):
+Path to TrustStore file (/etc/pki/java/cacerts):
+Password for TrustStore: changeit
+Re-enter password: changeit
+User object class (posixUser): posixaccount
+User ID attribute (uid):
+Group object class (posixGroup):
+Group name attribute (cn):
+Group member attribute (memberUid): member
+Distinguished name attribute (dn):
+Search Base (dc=ambari,dc=apache,dc=org): cn=accounts,dc=us-west-2,dc=compute,dc=internal
+Referral method [follow/ignore] (follow):
+Bind anonymously [true/false] (false):
+Bind DN (uid=ldapbind,cn=users,cn=accounts,dc=ambari,dc=apache,dc=org): uid=ldapbind,cn=users,cn=accounts,dc=us-west-2,dc=compute,dc=internal
+Enter Bind DN Password: BadPass#1
+Confirm Bind DN Password: BadPass#1
+Handling behavior for username collisions [convert/skip] for LDAP sync (skip):
+Force lower-case user names [true/false]:
+Results from LDAP are paginated when requested [true/false]:
+</code></pre></div>
+- Then enter Ambari credentials (<a class="magiclink magiclink-github magiclink-issue" href="https://github.com/admin/BadPass/issues/1" title="GitHub Issue: admin/BadPass #1">admin/BadPass#1</a>)</p>
+<h3 id="42-sync-users">4.2 Sync users<a class="headerlink" href="#42-sync-users" title="Permanent link">&para;</a></h3>
+<p>LDAP Users must be synced by invoked a command on the Ambari Server host. User additions, and group associations made on the LDAP server will not propagate to Ambari automatically, only when this command is invoked. </p>
+<div class="highlight"><pre><span></span><code>[root@demo ~]# ambari-server sync-ldap --all
+Using python  /usr/bin/python
+Syncing with LDAP...
+Enter Ambari Admin login: admin
+Enter Ambari Admin password:
+
+Fetching LDAP configuration from DB.
+Syncing all...
+
+Completed LDAP Sync.
+Summary:
+  memberships:
+    removed = 0
+    created = 16
+  users:
+    skipped = 1
+    removed = 0
+    updated = 0
+    created = 15
+  groups:
+    updated = 0
+    removed = 0
+    created = 26
+
+Ambari Server &#39;sync-ldap&#39; completed successfully.
+</code></pre></div>
+<ul>
+<li>Now restart ambari-server</li>
+</ul>
+<h3 id="421-verify-user-group-associations-in-ambari">4.2.1 Verify user group associations in Ambari<a class="headerlink" href="#421-verify-user-group-associations-in-ambari" title="Permanent link">&para;</a></h3>
+<p>Log in to Ambari as an Admin and Navigate to Manage Ambari &gt; Users. Example user/groups from this lab:</p>
+<p><img alt="Ambari-IPA-usersync" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master//screenshots/Ambari-IPA-usersync.png" /></p>
+<h3 id="enabling-spnego-authentication-for-hadoop">Enabling SPNEGO Authentication for Hadoop<a class="headerlink" href="#enabling-spnego-authentication-for-hadoop" title="Permanent link">&para;</a></h3>
+<ul>
+<li>
+<p>This is needed to secure the Hadoop components webUIs (e.g. Namenode UI, JobHistory UI, Yarn ResourceManager UI etc...)</p>
+</li>
+<li>
+<p>As of HDP 3.0, this is taken care of as part of setting up Kerberos via Ambari Security Wizard</p>
+</li>
+<li>
+<p>Now when you try to open any of the web UIs like below you will get <code>401: Authentication required</code></p>
+</li>
+<li>HDFS: Namenode UI</li>
+<li>Mapreduce: Job history UI</li>
+<li>YARN: Resource Manager UI</li>
+</ul>
+<hr />
+<h1 id="lab-5">Lab 5<a class="headerlink" href="#lab-5" title="Permanent link">&para;</a></h1>
+<h2 id="ranger-install">Ranger install<a class="headerlink" href="#ranger-install" title="Permanent link">&para;</a></h2>
+<p>Goal: In this lab we will install Apache Ranger via Ambari and setup Ranger plugins for Hadoop components: HDFS, Hive, Hbase, YARN, Knox. We will also enable Ranger audits to Solr and HDFS</p>
+<h3 id="ranger-prereqs">Ranger prereqs<a class="headerlink" href="#ranger-prereqs" title="Permanent link">&para;</a></h3>
+<h5 id="create-confirm-mysql-user-root">Create &amp; confirm MySQL user 'root'<a class="headerlink" href="#create-confirm-mysql-user-root" title="Permanent link">&para;</a></h5>
+<p>Prepare MySQL DB for Ranger use.</p>
+<ul>
+<li>Run these steps on the node where MySQL/Hive is located. To find this, you can either:</li>
+<li>use Ambari UI or</li>
+<li>
+<p>Just run <code>mysql</code> on each node: if it returns <code>mysql: command not found</code>, move onto next node</p>
+</li>
+<li>
+<p><code>sudo mysql</code></p>
+</li>
+<li>
+<p>Execute following in the MySQL shell to create "Ranger DB root User" in MySQL. Ambari will use this user to create rangeradmin user.
+<div class="highlight"><pre><span></span><code><span class="k">CREATE</span><span class="w"> </span><span class="k">USER</span><span class="w"> </span><span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;%&#39;</span><span class="p">;</span>
+<span class="k">GRANT</span><span class="w"> </span><span class="k">ALL</span><span class="w"> </span><span class="k">PRIVILEGES</span><span class="w"> </span><span class="k">ON</span><span class="w"> </span><span class="o">*</span><span class="p">.</span><span class="o">*</span><span class="w"> </span><span class="k">to</span><span class="w"> </span><span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;%&#39;</span><span class="w"> </span><span class="k">WITH</span><span class="w"> </span><span class="k">GRANT</span><span class="w"> </span><span class="k">OPTION</span><span class="p">;</span>
+<span class="k">SET</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="k">FOR</span><span class="w"> </span><span class="s1">&#39;root&#39;</span><span class="o">@</span><span class="s1">&#39;%&#39;</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PASSWORD</span><span class="p">(</span><span class="s1">&#39;BadPass#1&#39;</span><span class="p">);</span>
+<span class="k">SET</span><span class="w"> </span><span class="n">PASSWORD</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PASSWORD</span><span class="p">(</span><span class="s1">&#39;BadPass#1&#39;</span><span class="p">);</span>
+<span class="n">FLUSH</span><span class="w"> </span><span class="k">PRIVILEGES</span><span class="p">;</span>
+<span class="n">exit</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>Confirm MySQL user: <code>mysql -u root -h $(hostname -f) -p -e "select count(user) from mysql.user;"</code></p>
+</li>
+<li>Output should be a simple count. </li>
+<li>In case of errors, check the previous step for errors. </li>
+<li>If you encounter below error, modeify /etc/my.conf by removing <code>skip-grant-tables</code> and then restarting the service by <code>service mysqld restart</code></li>
+</ul>
+<p><code>ERROR 1290 (HY000): The MySQL server is running with the --skip-grant-tables option so it cannot execute this statement</code></p>
+<ul>
+<li>If it still does not work, try creating user admin instead. If you do this, make sure to enter admin insted of root when prompted for "Ranger DB root User" in Ambari</li>
+</ul>
+<h5 id="prepare-ambari-for-mysql">Prepare Ambari for MySQL<a class="headerlink" href="#prepare-ambari-for-mysql" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Run this on Ambari node</li>
+<li>Add MySQL JAR to Ambari:</li>
+<li><code>sudo ambari-server setup --jdbc-db=mysql --jdbc-driver=/usr/share/java/mysql-connector-java.jar</code><ul>
+<li>If the file is not present, it is available on RHEL/CentOS with: <code>sudo yum -y install mysql-connector-java</code></li>
+</ul>
+</li>
+</ul>
+<h6 id="setup-solr-for-ranger-audit">Setup Solr for Ranger audit<a class="headerlink" href="#setup-solr-for-ranger-audit" title="Permanent link">&para;</a></h6>
+<ul>
+<li>Starting HDP 2.5, if you have deployed Ambari Infra service installed, this can be used for Ranger audits.</li>
+<li>
+<p><strong>Make sure Ambari Infra service is installed and started before starting Ranger install</strong></p>
+</li>
+<li>
+<p><em>TODO</em>: add steps to install/configure Banana dashboard for Ranger Audits</p>
+</li>
+</ul>
+<h2 id="ranger-install_1">Ranger install<a class="headerlink" href="#ranger-install_1" title="Permanent link">&para;</a></h2>
+<h5 id="install-ranger">Install Ranger<a class="headerlink" href="#install-ranger" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p>Start the Ambari 'Add Service' wizard and select Ranger</p>
+</li>
+<li>
+<p>When prompted for where to install it, choose any node you like</p>
+</li>
+<li>
+<p>On the Ranger Requirements popup windows, you can check the box and continue as we have already completed the pre-requisite steps</p>
+</li>
+<li>
+<p>On the 'Customize Services' page of the wizard there are a number of tabs that need to be configured as below</p>
+</li>
+<li>
+<p>Go through each Ranger config tab, making below changes:</p>
+</li>
+<li>
+<p>Ranger Admin tab:</p>
+</li>
+<li>Ranger DB Host = FQDN of host where Mysql is running (e.g. ip-172-30-0-242.us-west-2.compute.internal)</li>
+<li>Enter passwords: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+<li>
+<p>Click 'Test Connection' button
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-1.png" />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-2.png" /></p>
+</li>
+<li>
+<p>Ranger User info tab</p>
+</li>
+<li>'Sync Source' = LDAP/AD </li>
+<li>
+<p>Common configs subtab</p>
+<ul>
+<li>Enter password: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+</ul>
+</li>
+<li>
+<p>Ranger User info tab </p>
+</li>
+<li>
+<p>User configs subtab</p>
+<ul>
+<li>User Search Base = <code>cn=accounts,dc=us-west-2,dc=compute,dc=internal</code></li>
+<li>User Search Filter = <code>(objectcategory=posixaccount)</code></li>
+</ul>
+</li>
+<li>
+<p>Ranger User info tab </p>
+</li>
+<li>
+<p>Group configs subtab</p>
+<ul>
+<li>Make sure Group sync is disabled
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-6.png" /></li>
+</ul>
+</li>
+<li>
+<p>Ranger plugins tab</p>
+</li>
+<li>
+<p>Enable all plugins
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-7.png" /></p>
+</li>
+<li>
+<p>Ranger Audits tab </p>
+</li>
+<li>SolrCloud = ON
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-8.png" />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-9.png" /></li>
+</ul>
+<p>7.Advanced tab
+  - No changes needed (skipping configuring Ranger authentication against AD for now)
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/ali/ranger-213-setup/ranger-213-10.png" /></p>
+<ul>
+<li>
+<p>Click Next &gt; Proceed Anyway to proceed</p>
+</li>
+<li>
+<p>If prompted, on Configure Identities page, you may have to enter your AD admin credentials:</p>
+</li>
+<li>Admin principal: <code>hadoopadmin@LAB.HORTONWORKS.NET</code></li>
+<li>Admin password: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+<li>
+<p>Notice that you can now save the admin credentials. Check this box too
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-configureidentities.png" /></p>
+</li>
+<li>
+<p>Click Next &gt; Deploy to install Ranger</p>
+</li>
+<li>
+<p>Once installed, restart components that require restart (e.g. HDFS, YARN, Hive etc)</p>
+</li>
+<li>
+<p>(Optional) In case of failure (usually caused by incorrectly entering the Mysql nodes FQDN in the config above), delete Ranger service from Ambari and retry.</p>
+</li>
+</ul>
+<p>8 - (Optional) Enable Deny Conditions in Ranger </p>
+<p>The deny condition in policies is optional by default and must be enabled for use.</p>
+<ul>
+<li>
+<p>From Ambari&gt;Ranger&gt;Configs&gt;Advanced&gt;Custom ranger-admin-site, add : 
+<code>ranger.servicedef.enableDenyAndExceptionsInPolicies=true</code></p>
+</li>
+<li>
+<p>Restart Ranger</p>
+</li>
+</ul>
+<p><a href="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.6.1/bk_security/content/about_ranger_policies.html">https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.6.1/bk_security/content/about_ranger_policies.html</a></p>
+<h5 id="check-ranger">Check Ranger<a class="headerlink" href="#check-ranger" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Open Ranger UI at <a href="http://RANGERHOST_PUBLIC_IP:6080">http://RANGERHOST_PUBLIC_IP:6080</a> using admin/admin</li>
+<li>
+<p>Confirm that repos for HDFS, YARN, Hive, HBase, Knox appear under 'Access Manager tab'
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-AccessManager.png" /></p>
+</li>
+<li>
+<p>Confirm that audits appear under 'Audit' &gt; 'Access' tab
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audits.png" /></p>
+</li>
+<li>
+<p>If audits do not show up here, you may need to restart Ambari Infra Solr from Ambari</p>
+</li>
+<li>
+<p>In case audits still don't show up and Ranger complains that audit collection not found: try <a href="https://community.hortonworks.com/articles/96618/how-to-clean-up-recreate-collections-on-ambari-inf.html">these steps</a></p>
+</li>
+<li>
+<p>Confirm that plugins for HDFS, YARN, Hive etc appear under 'Audit' &gt; 'Plugins' tab 
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-plugins.png" /></p>
+</li>
+<li>
+<p>Confirm users/group sync from AD into Ranger are working by clicking 'Settings' &gt; 'Users/Groups tab' in Ranger UI and noticing AD users/groups are present
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-user-groups.png" /></p>
+</li>
+<li>
+<p>Confirm HDFS audits working by querying the audits dir in HDFS:</p>
+</li>
+</ul>
+<div class="highlight"><pre><span></span><code>#### 1 authenticate
+export PASSWORD=BadPass#1
+
+#detect name of cluster
+output=`curl -u hadoopadmin:$PASSWORD -k -i -H &#39;X-Requested-By: ambari&#39;  https://localhost:8443/api/v1/clusters`
+cluster=`echo $output | sed -n &#39;s/.*&quot;cluster_name&quot; : &quot;\([^\&quot;]*\)&quot;.*/\1/p&#39;`
+
+echo $cluster
+## this should show the name of your cluster
+
+## if not you can manully set this as below
+## cluster=Security-HWX-LabTesting-XXXX
+
+#then kinit as hdfs using the headless keytab and the principal name
+sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab &quot;hdfs-${cluster,,}&quot;
+
+#### 2 read audit dir in hdfs 
+sudo -u hdfs hdfs dfs -cat /ranger/audit/hdfs/*/*
+</code></pre></div>
+<!---
+- Confirm Solr audits working by querying Solr REST API *from any solr node* - SKIP 
+<div class="highlight"><pre><span></span><code>curl &quot;http://localhost:6083/solr/ranger_audits/select?q=*%3A*&amp;df=id&amp;wt=csv&quot;
+</code></pre></div>
+
+- Confirm Banana dashboard has started to show HDFS audits - SKIP
+http://PUBLIC_IP_OF_SOLRLEADER_NODE:6083/solr/banana/index.html#/dashboard
+
+![Image](https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Banana-audits.png)
+--->
+<hr />
+<h1 id="lab-6a">Lab 6a<a class="headerlink" href="#lab-6a" title="Permanent link">&para;</a></h1>
+<h2 id="ranger-kmsdata-encryption-setup">Ranger KMS/Data encryption setup<a class="headerlink" href="#ranger-kmsdata-encryption-setup" title="Permanent link">&para;</a></h2>
+<ul>
+<li>
+<p>Goal: In this lab we will install Ranger KMS via Ambari. Next we will create some encryption keys and use them to create encryption zones (EZs) and copy files into them. Reference: <a href="http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.4/bk_Ranger_KMS_Admin_Guide/content/ch_ranger_kms_overview.html">docs</a></p>
+</li>
+<li>
+<p>In this section we will have to setup proxyusers. This is done to enable <em>impersonation</em> whereby a superuser can submit jobs or access hdfs on behalf of another user (e.g. because superuser has kerberos credentials but user joe doesn’t have any)</p>
+</li>
+<li>
+<p>For more details on this, refer to the <a href="https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/Superusers.html">doc</a></p>
+</li>
+<li>
+<p>Before starting KMS install, find and note down the below piece of information. These will be used during KMS install</p>
+</li>
+<li>
+<p>Find the internal hostname of host running <em>Mysql</em> and note it down</p>
+<ul>
+<li>From Ambari &gt; Hive &gt; Mysql &gt; click the 'Mysql Server' hyperlink. The internal hostname should appear in upper left of the page.</li>
+</ul>
+</li>
+<li>
+<p>Open Ambari &gt; start 'Add service' wizard &gt; select 'Ranger KMS'.</p>
+</li>
+<li>Pick any node to install on</li>
+<li>Keep the default configs except for </li>
+<li>
+<p>under Ambari &gt; Ranger KMS &gt; Settings tab :</p>
+<ul>
+<li>Ranger KMS DB host: <FQDN of Mysql></li>
+<li>Ranger KMS DB password: <code>BadPass#1</code> </li>
+<li>DBA password: <code>BadPass#1</code></li>
+<li>KMS master secret password: <code>BadPass#1</code>
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-KMS-enhancedconfig1.png" /> 
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-KMS-enhancedconfig2.png" /> </li>
+</ul>
+</li>
+<li>
+<p>Under Advanced &gt; Custom kms-site, enter below configs (Tip: to avoid adding one at a time, you can use 'bulk add' mode):</p>
+<ul>
+<li>hadoop.kms.proxyuser.oozie.users=*</li>
+<li>hadoop.kms.proxyuser.ambari.users=*</li>
+<li>hadoop.kms.proxyuser.oozie.hosts=*</li>
+<li>hadoop.kms.proxyuser.ambari.hosts=*</li>
+<li>hadoop.kms.proxyuser.keyadmin.groups=*</li>
+<li>hadoop.kms.proxyuser.keyadmin.hosts=*</li>
+<li>hadoop.kms.proxyuser.keyadmin.users=*   <br />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-KMS-proxy.png" /> </li>
+</ul>
+</li>
+<li>
+<p>Click Next &gt; Proceed Anyway to proceed with the wizard</p>
+</li>
+<li>
+<p>If prompted, on Configure Identities page, you may have to enter your AD admin credentials:</p>
+</li>
+<li>Admin principal: <code>hadoopadmin@LAB.HORTONWORKS.NET</code></li>
+<li>Admin password: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+<li>
+<p>Check the "Save admin credentials" checkbox</p>
+</li>
+<li>
+<p>Click Next &gt; Deploy to install RangerKMS</p>
+</li>
+<li>
+<p>Confirm these properties got populated to kms://http@(kmshostname):9292/kms</p>
+</li>
+<li>HDFS &gt; Configs &gt; Advanced core-site:<ul>
+<li>hadoop.security.key.provider.path</li>
+</ul>
+</li>
+<li>
+<p>HDFS &gt; Configs &gt; Advanced hdfs-site:</p>
+<ul>
+<li>dfs.encryption.key.provider.uri  </li>
+</ul>
+</li>
+<li>
+<p>Restart the services that require it e.g. HDFS, Mapreduce, YARN via Actions &gt; Restart All Required</p>
+</li>
+<li>
+<p>Restart Ranger and RangerKMS services.</p>
+</li>
+<li>
+<p>(Optional) Add another KMS:</p>
+</li>
+<li>Ambari &gt; Ranger KMS &gt; Service Actions &gt; Add Ranger KMS Server &gt; Pick any host
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-add-KMS.png" /> </li>
+<li>
+<p>After it is installed, you can start it by:</p>
+<ul>
+<li>Ambari &gt; Ranger KMS &gt; Service Actions &gt; Start</li>
+</ul>
+</li>
+<li>
+<p>Once started you will see multiple KMS Servers running in Ambari:<br />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ambari-multiple-KMS.png" /> </p>
+</li>
+</ul>
+<hr />
+<h1 id="lab-6b">Lab 6b<a class="headerlink" href="#lab-6b" title="Permanent link">&para;</a></h1>
+<h2 id="ranger-kmsdata-encryption-exercise">Ranger KMS/Data encryption exercise<a class="headerlink" href="#ranger-kmsdata-encryption-exercise" title="Permanent link">&para;</a></h2>
+<ul>
+<li>Before we can start exercising HDFS encryption, we will need to set:</li>
+<li>policy for hadoopadmin access to HDFS</li>
+<li>policy for hadoopadmin access to Hive  </li>
+<li>
+<p>policy for hadoopadmin access to the KMS keys we created</p>
+</li>
+<li>
+<p>Add the user hadoopadmin to the Ranger HDFS global policies. </p>
+<ul>
+<li>Access Manager &gt; HDFS &gt; (clustername)_hdfs   </li>
+<li>This will open the list of HDFS policies
+   <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HDFS-list.png" /> </li>
+<li>Edit the 'all - path' global policy (the first one) and add hadoopadmin to global HDFS policy and Save 
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HDFS-add-hadoopadmin.png" /> </li>
+<li>Your policy now includes hadoopadmin
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HDFS-list-after.png" /> </li>
+</ul>
+</li>
+<li>
+<p>Add the user hadoopadmin to the Ranger Hive global policies. (Hive has two global policies: one on Hive tables, and one on Hive UDFs)</p>
+<ul>
+<li>Access Manager &gt; HIVE &gt; (clustername)_hive   </li>
+<li>This will open the list of HIVE policies
+<a href="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HIVE-list.png">Image</a> </li>
+<li>Edit the 'all - database, table, column' global policy (the first one) and add hadoopadmin to global HIVE policy and Save<br />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HIVE-add-hadoopadmin-table.png" /> </li>
+<li>Edit the 'all - database, udf' global policy (the second one) and add hadoopadmin to global HIVE policy and Save 
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HIVE-add-hadoopadmin-udf.png" /> </li>
+<li>Your policies now includes hadoopadmin
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-HIVE-list-after.png" /> </li>
+</ul>
+</li>
+<li>
+<p>Give keyadmin permission to view Audits screen in Ranger:</p>
+<ul>
+<li>Settings tab &gt; Permissions
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-user-permissions.png" /></li>
+<li>Click 'Audit' to change users who have access to Audit screen</li>
+<li>Under 'Select User', add 'keyadmin' user
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-user-permissions-audits.png" /></li>
+<li>Save</li>
+</ul>
+</li>
+<li>
+<p>Logout of Ranger</p>
+</li>
+<li>Top right &gt; admin &gt; Logout      </li>
+<li>Login to Ranger as keyadmin/keyadmin</li>
+<li>Confirm the KMS repo was setup correctly</li>
+<li>Under Service Manager &gt; KMS &gt; Click the Edit icon (next to the trash icon) to edit the KMS repo
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-edit-repo.png" /> </li>
+<li>
+<p>Click 'Test connection' and confirm it works</p>
+</li>
+<li>
+<p>Create a key called testkey - for reference: see <a href="http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.5.0/bk_security/content/use_ranger_kms.html">doc</a></p>
+</li>
+<li>Select Encryption &gt; Key Management</li>
+<li>Select KMS service &gt; pick your kms &gt; Add new Key<ul>
+<li>if an error is thrown, go back and test connection as described in previous step</li>
+</ul>
+</li>
+<li>
+<p>Create a key called <code>testkey</code> &gt; Save
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-createkey.png" /></p>
+</li>
+<li>
+<p>Similarly, create another key called <code>testkey2</code></p>
+</li>
+<li>Select Encryption &gt; Key Management</li>
+<li>Select KMS service &gt; pick your kms &gt; Add new Key</li>
+<li>
+<p>Create a key called <code>testkey2</code> &gt; Save  </p>
+</li>
+<li>
+<p>Add user <code>hadoopadmin</code> to default KMS key policy</p>
+</li>
+<li>Click Access Manager tab</li>
+<li>
+<p>Click Service Manager &gt; KMS &gt; (clustername)_kms link
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-policy.png" /></p>
+</li>
+<li>
+<p>Edit the default policy
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-edit-policy.png" /></p>
+</li>
+<li>
+<p>Under 'Select User', Add <code>hadoopadmin</code> user and click Save
+   <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-policy-add-nn.png" /></p>
+<ul>
+<li>Note that:</li>
+<li><code>hdfs</code> user  needs <code>GetMetaData</code> and <code>GenerateEEK</code> privilege - HDP 2.5</li>
+<li><code>nn</code> user  needs <code>GetMetaData</code> and <code>GenerateEEK</code> privilege - HDP 2.4</li>
+<li><code>hive</code> user needs <code>GetMetaData</code> and <code>DecryptEEK</code> privilege</li>
+</ul>
+</li>
+<li>
+<p>Run below to create a zone using the key and perform basic key and encryption zone (EZ) exercises </p>
+</li>
+<li>Create EZs using keys</li>
+<li>Copy file to EZs</li>
+<li>Delete file from EZ</li>
+<li>View contents for raw file</li>
+<li>Prevent access to raw file</li>
+<li>Copy file across EZs</li>
+<li>move hive warehouse dir to EZ</li>
+</ul>
+<div class="highlight"><pre><span></span><code>#run below on Ambari node
+
+export PASSWORD=BadPass#1
+
+#detect name of cluster
+output=`curl -u hadoopadmin:$PASSWORD -k -i -H &#39;X-Requested-By: ambari&#39;  https://localhost:8443/api/v1/clusters`
+cluster=`echo $output | sed -n &#39;s/.*&quot;cluster_name&quot; : &quot;\([^\&quot;]*\)&quot;.*/\1/p&#39;`
+
+echo $cluster
+## this should show the name of your cluster
+
+## if not you can manully set this as below
+## cluster=Security-HWX-LabTesting-XXXX
+
+#first we will run login 3 different users: hdfs, hadoopadmin, sales1
+
+#kinit as hadoopadmin and sales using BadPass#1 
+sudo -u hadoopadmin kinit
+## enter BadPass#1
+sudo -u sales1 kinit
+## enter BadPass#1
+
+#then kinit as hdfs using the headless keytab and the principal name
+sudo -u hdfs kinit -kt /etc/security/keytabs/hdfs.headless.keytab &quot;hdfs-${cluster,,}&quot;
+
+#as hadoopadmin list the keys and their metadata
+sudo -u hadoopadmin hadoop key list -metadata
+
+#as hadoopadmin create dirs for EZs
+sudo -u hadoopadmin hdfs dfs -mkdir /zone_encr
+sudo -u hadoopadmin hdfs dfs -mkdir /zone_encr2
+
+#as hdfs create 2 EZs using the 2 keys
+sudo -u hdfs hdfs crypto -createZone -keyName testkey -path /zone_encr
+sudo -u hdfs hdfs crypto -createZone -keyName testkey2 -path /zone_encr2
+# if you get &#39;RemoteException&#39; error it means you have not given namenode user permissions on testkey by creating a policy for KMS in Ranger
+
+#check EZs got created
+sudo -u hdfs hdfs crypto -listZones  
+
+#create test files
+sudo -u hadoopadmin echo &quot;My test file1&quot; &gt; /tmp/test1.log
+sudo -u hadoopadmin echo &quot;My test file2&quot; &gt; /tmp/test2.log
+
+#copy files to EZs
+sudo -u hadoopadmin hdfs dfs -copyFromLocal /tmp/test1.log /zone_encr
+sudo -u hadoopadmin hdfs dfs -copyFromLocal /tmp/test2.log /zone_encr
+
+sudo -u hadoopadmin hdfs dfs -copyFromLocal /tmp/test2.log /zone_encr2
+
+#Notice that hadoopadmin allowed to decrypt EEK but not sales user (since there is no Ranger policy allowing this)
+sudo -u hadoopadmin hdfs dfs -cat /zone_encr/test1.log
+sudo -u hadoopadmin hdfs dfs -cat /zone_encr2/test2.log
+#this should work
+
+sudo -u sales1      hdfs dfs -cat /zone_encr/test1.log
+## this should give you below error
+## cat: User:sales1 not allowed to do &#39;DECRYPT_EEK&#39; on &#39;testkey&#39;
+</code></pre></div>
+<ul>
+<li>
+<p>Check the Ranger &gt; Audit page and notice that the request from hadoopadmin was allowed but the request from sales1 was denied
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-audit.png" /></p>
+</li>
+<li>
+<p>Now lets test deleting and copying files between EZs - (<a href="https://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.4/bk_hdfs_admin_tools/content/copy-to-from-encr-zone.html">Reference doc</a>)
+<div class="highlight"><pre><span></span><code>#try to remove file from EZ using usual -rm command 
+sudo -u hadoopadmin hdfs dfs -rm /zone_encr/test2.log
+## This works because as of HDP2.4.3 -skipTrash option no longer needs to be specified
+
+#confirm that test2.log was deleted and that zone_encr only contains test1.log
+sudo -u hadoopadmin hdfs dfs -ls  /zone_encr/
+
+#copy a file between EZs using distcp with -skipcrccheck option
+sudo -u hadoopadmin hadoop distcp -skipcrccheck -update /zone_encr2/test2.log /zone_encr/
+</code></pre></div></p>
+</li>
+<li>
+<p>Lets now look at the contents of the raw file
+<div class="highlight"><pre><span></span><code>#View contents of raw file in encrypted zone as hdfs super user. This should show some encrypted characters
+sudo -u hdfs hdfs dfs -cat /.reserved/raw/zone_encr/test1.log
+
+#Prevent user hdfs from reading the file by setting security.hdfs.unreadable.by.superuser attribute. Note that this attribute can only be set on files and can never be removed.
+sudo -u hdfs hdfs dfs -setfattr -n security.hdfs.unreadable.by.superuser  /.reserved/raw/zone_encr/test1.log
+
+# Now as hdfs super user, try to read the files or the contents of the raw file
+sudo -u hdfs hdfs dfs -cat /.reserved/raw/zone_encr/test1.log
+
+## You should get below error
+##cat: Access is denied for hdfs since the superuser is not allowed to perform this operation.
+</code></pre></div></p>
+</li>
+<li>
+<p>Configure Hive for HDFS Encryption using testkey. <a href="http://docs.hortonworks.com/HDPDocuments/HDP2/HDP-2.3.4/bk_hdfs_admin_tools/content/hive-access-encr.html">Reference</a>
+<div class="highlight"><pre><span></span><code>sudo -u hadoopadmin hdfs dfs -mv /apps/hive /apps/hive-old
+sudo -u hadoopadmin hdfs dfs -mkdir /apps/hive
+sudo -u hdfs hdfs crypto -createZone -keyName testkey -path /apps/hive
+sudo -u hadoopadmin hadoop distcp -skipcrccheck -update /apps/hive-old/warehouse /apps/hive/warehouse
+</code></pre></div></p>
+</li>
+<li>
+<p>To configure the Hive scratch directory (hive.exec.scratchdir) so that it resides inside the encryption zone:</p>
+</li>
+<li>Ambari &gt; Hive &gt; Configs &gt; Advanced <ul>
+<li>hive.exec.scratchdir = /apps/hive/tmp</li>
+</ul>
+</li>
+<li>
+<p>Restart Hive</p>
+</li>
+<li>
+<p>Make sure that the permissions for /apps/hive/tmp are set to 1777
+<div class="highlight"><pre><span></span><code>sudo -u hdfs hdfs dfs -chmod -R 1777 /apps/hive/tmp
+</code></pre></div></p>
+</li>
+<li>
+<p>Confirm permissions by accessing the scratch dir as sales1
+<div class="highlight"><pre><span></span><code>sudo -u sales1 hdfs dfs -ls /apps/hive/tmp
+## this should provide listing
+</code></pre></div></p>
+</li>
+<li>
+<p>Destroy ticket for sales1
+<div class="highlight"><pre><span></span><code>sudo -u sales1 kdestroy
+</code></pre></div></p>
+</li>
+<li>
+<p>Logout of Ranger as keyadmin user</p>
+</li>
+</ul>
+<hr />
+<h1 id="lab-7a">Lab 7a<a class="headerlink" href="#lab-7a" title="Permanent link">&para;</a></h1>
+<h2 id="secured-hadoop-exercises">Secured Hadoop exercises<a class="headerlink" href="#secured-hadoop-exercises" title="Permanent link">&para;</a></h2>
+<p>In this lab we will see how to interact with Hadoop components (HDFS, Hive, Hbase, Sqoop) running on a kerborized cluster and create Ranger appropriate authorization policies for access.</p>
+<ul>
+<li>We will Configure Ranger policies to:</li>
+<li>Protect /sales HDFS dir - so only sales group has access to it</li>
+<li>Protect sales hive table - so only sales group has access to it</li>
+<li>Protect sales HBase table - so only sales group has access to it</li>
+</ul>
+<h4 id="access-secured-hdfs">Access secured HDFS<a class="headerlink" href="#access-secured-hdfs" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>Goal: Create a /sales dir in HDFS and ensure only users belonging to sales group (and admins) have access</p>
+</li>
+<li>
+<p>Login to Ranger (using admin/admin) and confirm the HDFS repo was setup correctly in Ranger</p>
+</li>
+<li>In Ranger &gt; Under Service Manager &gt; HDFS &gt; Click the Edit icon (next to the trash icon) to edit the HDFS repo</li>
+<li>Click 'Test connection' </li>
+<li>if it fails re-enter below fields and re-try:<ul>
+<li>Username: <code>rangeradmin@LAB.HORTONWORKS.NET</code></li>
+<li>Password: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+<li>RPC Protection type: Authentication</li>
+</ul>
+</li>
+<li>
+<p>Once the test passes, click Save  </p>
+</li>
+<li>
+<p>Create /sales dir in HDFS as hadoopadmin
+<div class="highlight"><pre><span></span><code>#authenticate
+sudo -u hadoopadmin kinit
+# enter password: BadPass#1
+
+#create dir and set permissions to 000
+sudo -u hadoopadmin hdfs dfs -mkdir /sales
+sudo -u hadoopadmin hdfs dfs -chmod 000 /sales
+</code></pre></div></p>
+</li>
+<li>
+<p>Now login as sales1 and attempt to access it before adding any Ranger HDFS policy
+<div class="highlight"><pre><span></span><code>sudo su - sales1
+
+hdfs dfs -ls /sales
+</code></pre></div></p>
+</li>
+<li>
+<p>This fails with <code>GSSException: No valid credentials provided</code> because the cluster is kerberized and we have not authenticated yet</p>
+</li>
+<li>
+<p>Authenticate as sales1 user and check the ticket
+<div class="highlight"><pre><span></span><code>kinit
+# enter password: BadPass#1
+
+klist
+## Default principal: sales1@LAB.HORTONWORKS.NET
+</code></pre></div></p>
+</li>
+<li>Now try accessing the dir again as sales1
+<div class="highlight"><pre><span></span><code>hdfs dfs -ls /sales
+</code></pre></div></li>
+<li>This time it fails with authorization error: </li>
+<li>
+<p><code>Permission denied: user=sales1, access=READ_EXECUTE, inode="/sales":hadoopadmin:hdfs:d---------</code></p>
+</li>
+<li>
+<p>Login into Ranger UI e.g. at <a href="http://RANGER_HOST_PUBLIC_IP:6080/index.html">http://RANGER_HOST_PUBLIC_IP:6080/index.html</a> as admin/admin</p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and filter by below. </p>
+</li>
+<li>Service Type: <code>HDFS</code></li>
+<li>
+<p>User: <code>sales1</code></p>
+</li>
+<li>
+<p>Notice that Ranger captured the access attempt and since there is currently no policy to allow the access, it was "Denied"
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HDFS-denied.png" /></p>
+</li>
+<li>
+<p>To create an HDFS Policy in Ranger, follow below steps:</p>
+</li>
+<li>On the 'Access Manager' tab click HDFS &gt; (clustername)_hadoop
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HDFS-policy.png" /></li>
+<li>This will open the list of HDFS policies
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HDFS-edit-policy.png" /></li>
+<li>
+<p>Click 'Add New Policy' button to create a new one allowing <code>sales</code> group users access to <code>/sales</code> dir:</p>
+<ul>
+<li>Policy Name: <code>sales dir</code></li>
+<li>Resource Path: <code>/sales</code></li>
+<li>Group: <code>sales</code></li>
+<li>Permissions : <code>Execute Read Write</code></li>
+<li>Add
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HDFS-create-policy.png" /></li>
+</ul>
+</li>
+<li>
+<p>Wait 30s for policy to take effect</p>
+</li>
+<li>
+<p>Now try accessing the dir again as sales1 and now there is no error seen
+<div class="highlight"><pre><span></span><code>hdfs dfs -ls /sales
+</code></pre></div></p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and filter by below:</p>
+</li>
+<li>Service Type: HDFS</li>
+<li>
+<p>User: sales1</p>
+</li>
+<li>
+<p>Notice that Ranger captured the access attempt and since this time there is a policy to allow the access, it was <code>Allowed</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HDFS-allowed.png" />  </p>
+</li>
+<li>
+<p>You can also see the details that were captured for each request:</p>
+<ul>
+<li>Policy that allowed the access</li>
+<li>Time</li>
+<li>Requesting user</li>
+<li>Service type (e.g. hdfs, hive, hbase etc)</li>
+<li>Resource name </li>
+<li>Access type (e.g. read, write, execute)</li>
+<li>Result (e.g. allowed or denied)</li>
+<li>Access enforcer (i.e. whether native acl or ranger acls were used)</li>
+<li>Client IP</li>
+<li>Event count</li>
+</ul>
+</li>
+<li>
+<p>For any allowed requests, notice that you can quickly check the details of the policy that allowed the access by clicking on the policy number in the 'Policy ID' column
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-policy-details.png" />  </p>
+</li>
+<li>
+<p>Now let's check whether non-sales users can access the directory</p>
+</li>
+<li>
+<p>Logout as sales1 and log back in as hr1
+<div class="highlight"><pre><span></span><code>kdestroy
+#logout as sales1
+logout
+
+#login as hr1 and authenticate
+sudo su - hr1
+
+kinit
+# enter password: BadPass#1
+
+klist
+## Default principal: hr1@LAB.HORTONWORKS.NET
+</code></pre></div></p>
+</li>
+<li>
+<p>Try to access the same dir as hr1 and notice it fails
+<div class="highlight"><pre><span></span><code>hdfs dfs -ls /sales
+## ls: Permission denied: user=hr1, access=READ_EXECUTE, inode=&quot;/sales&quot;:hadoopadmin:hdfs:d---------
+</code></pre></div></p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and this time filter by 'Resource Name'</p>
+</li>
+<li>Service Type: <code>HDFS</code></li>
+<li>
+<p>Resource Name: <code>/sales</code></p>
+</li>
+<li>
+<p>Notice you can see the history/details of all the requests made for /sales directory:</p>
+</li>
+<li>created by hadoopadmin </li>
+<li>initial request by sales1 user was denied </li>
+<li>subsequent request by sales1 user was allowed (once the policy was created)</li>
+<li>
+<p>request by hr1 user was denied
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HDFS-summary.png" />  </p>
+</li>
+<li>
+<p>Logout as hr1
+<div class="highlight"><pre><span></span><code>kdestroy
+logout
+</code></pre></div></p>
+</li>
+<li>We have successfully setup an HDFS dir which is only accessible by sales group (and admins)</li>
+</ul>
+<h4 id="access-secured-hive">Access secured Hive<a class="headerlink" href="#access-secured-hive" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>Goal: Setup Hive authorization policies to ensure sales users only have access to code, description columns in default.sample_07</p>
+</li>
+<li>
+<p>Enable Hive on tez by setting below and restarting Hive </p>
+</li>
+<li>
+<p>Ambari &gt; Hive &gt; Configs     </p>
+<ul>
+<li>Execution Engine = Tez</li>
+</ul>
+</li>
+<li>
+<p>Confirm the HIVE repo was setup correctly in Ranger</p>
+</li>
+<li>In Ranger &gt; Service Manager &gt; HIVE &gt; Click the Edit icon (next to the trash icon) to edit the HIVE repo</li>
+<li>Click 'Test connection' </li>
+<li>if it fails re-enter below fields and re-try:<ul>
+<li>Username: <code>rangeradmin@LAB.HORTONWORKS.NET</code></li>
+<li>Password: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+</ul>
+</li>
+<li>
+<p>Once the test passes, click Save  </p>
+</li>
+<li>
+<p>Now run these steps from node where Hive (or client) is installed </p>
+</li>
+<li>
+<p>Login as sales1 and attempt to connect to default database in Hive via beeline and access sample_07 table</p>
+</li>
+<li>
+<p>Notice that in the JDBC connect string for connecting to an secured Hive while its running in default (ie binary) transport mode :</p>
+</li>
+<li>port remains 10000</li>
+<li>
+<p><em>now a kerberos principal needs to be passed in</em></p>
+</li>
+<li>
+<p>Login as sales1 without kerberos ticket and try to open beeline connection:
+<div class="highlight"><pre><span></span><code>sudo su - sales1
+kdestroy
+beeline -u &quot;jdbc:hive2://localhost:10000/default;principal=hive/$(hostname -f)@LAB.HORTONWORKS.NET&quot;
+</code></pre></div></p>
+</li>
+<li>
+<p>This fails with <code>GSS initiate failed</code> because the cluster is kerberized and we have not authenticated yet</p>
+</li>
+<li>
+<p>To exit beeline:
+<div class="highlight"><pre><span></span><code>!q
+</code></pre></div></p>
+</li>
+<li>Authenticate as sales1 user and check the ticket
+<div class="highlight"><pre><span></span><code>kinit
+# enter password: BadPass#1
+
+klist
+## Default principal: sales1@LAB.HORTONWORKS.NET
+</code></pre></div></li>
+<li>
+<p>Now try connect to Hive via beeline as sales1
+<div class="highlight"><pre><span></span><code>beeline -u &quot;jdbc:hive2://localhost:10000/default;principal=hive/$(hostname -f)@LAB.HORTONWORKS.NET&quot;
+</code></pre></div></p>
+</li>
+<li>
+<p>If you get the below error, it is because you did not add hive to the global KMS policy in an earlier step (along with nn, hadoopadmin). Go back and add it in.
+<div class="highlight"><pre><span></span><code>org.apache.hadoop.security.authorize.AuthorizationException: User:hive not allowed to do &#39;GET_METADATA&#39; on &#39;testkey&#39;
+</code></pre></div></p>
+</li>
+<li>
+<p>This time it connects. Now try to run a query
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description from sample_07;
+</code></pre></div></p>
+</li>
+<li>Now it fails with authorization error: </li>
+<li>
+<p><code>HiveAccessControlException Permission denied: user [sales1] does not have [SELECT] privilege on [default/sample_07]</code></p>
+</li>
+<li>
+<p>Login into Ranger UI e.g. at <a href="http://RANGER_HOST_PUBLIC_IP:6080/index.html">http://RANGER_HOST_PUBLIC_IP:6080/index.html</a> as admin/admin</p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and filter by below. </p>
+</li>
+<li>Service Type: <code>Hive</code></li>
+<li>
+<p>User: <code>sales1</code></p>
+</li>
+<li>
+<p>Notice that Ranger captured the access attempt and since there is currently no policy to allow the access, it was <code>Denied</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HIVE-denied.png" /></p>
+</li>
+<li>
+<p>To create an HIVE Policy in Ranger, follow below steps:</p>
+</li>
+<li>On the 'Access Manager' tab click HIVE &gt; (clustername)_hive
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-policy.png" /></li>
+<li>This will open the list of HIVE policies
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-edit-policy.png" /></li>
+<li>
+<p>Click 'Add New Policy' button to create a new one allowing <code>sales</code> group users access to <code>code</code>, <code>description</code> and <code>total_emp</code> columns in <code>sample_07</code> dir:</p>
+<ul>
+<li>Policy Name: <code>sample_07</code></li>
+<li>Hive Database: <code>default</code></li>
+<li>table: <code>sample_07</code></li>
+<li>Hive Column: <code>code</code> <code>description</code> <code>total_emp</code></li>
+<li>Group: <code>sales</code></li>
+<li>Permissions : <code>select</code></li>
+<li>Add
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-create-policy.png" /></li>
+</ul>
+</li>
+<li>
+<p>Notice that as you typed the name of the DB and table, Ranger was able to look these up and autocomplete them</p>
+</li>
+<li>
+<p>This was done using the rangeradmin principal we provided during Ranger install</p>
+</li>
+<li>
+<p>Also, notice that permissions are only configurable for allowing access, and you are not able to explicitly deny a user/group access to a resource unless you have enabled Deny Conditions during your Ranger install (step 8).</p>
+</li>
+<li>
+<p>Wait 30s for the new policy to be picked up</p>
+</li>
+<li>
+<p>Now try accessing the columns again and now the query works
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description, total_emp from sample_07;
+</code></pre></div></p>
+</li>
+<li>
+<p>Note though, that if instead you try to describe the table or query all columns, it will be denied - because we only gave sales users access to two columns in the table</p>
+</li>
+<li><code>beeline&gt; desc sample_07;</code></li>
+<li>
+<p><code>beeline&gt; select * from sample_07;</code></p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and filter by below:</p>
+</li>
+<li>Service Type: HIVE</li>
+<li>
+<p>User: sales1</p>
+</li>
+<li>
+<p>Notice that Ranger captured the access attempt and since this time there is a policy to allow the access, it was <code>Allowed</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HIVE-allowed.png" />  </p>
+</li>
+<li>
+<p>You can also see the details that were captured for each request:</p>
+<ul>
+<li>Policy that allowed the access</li>
+<li>Time</li>
+<li>Requesting user</li>
+<li>Service type (e.g. hdfs, hive, hbase etc)</li>
+<li>Resource name </li>
+<li>Access type (e.g. read, write, execute)</li>
+<li>Result (e.g. allowed or denied)</li>
+<li>Access enforcer (i.e. whether native acl or ranger acls were used)</li>
+<li>Client IP</li>
+<li>Event count</li>
+</ul>
+</li>
+<li>
+<p>For any allowed requests, notice that you can quickly check the details of the policy that allowed the access by clicking on the policy number in the 'Policy ID' column
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HIVE-policy-details.png" />  </p>
+</li>
+<li>
+<p>We are also able to limit sales1's access to only subset of data by using row-level filter.  Suppose we only want to allow the sales group access to data where <code>total_emp</code> is less than 5000. </p>
+</li>
+<li>
+<p>On the Hive Policies page, select the 'Row Level Filter' tab and click on 'Add New Policy'
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-select-row-level-filter-tab.png" />  </p>
+<ul>
+<li>Please note that in order to apply a row level filter policy the user/group must already have 'select' permissions on the table. </li>
+</ul>
+</li>
+<li>
+<p>Create a policy restricting access to only rows where <code>total_emp</code> is less than 5000:</p>
+<ul>
+<li>Policy Name: <code>sample_07_filter_total_emp</code></li>
+<li>Hive Database: <code>default</code></li>
+<li>table: <code>sample_07</code></li>
+<li>Group: <code>sales</code></li>
+<li>Permissions : <code>select</code></li>
+<li>Row Level Filter : <code>total_emp&lt;5000</code><ul>
+<li>The filter syntax is similar to what you would write after a 'WHERE' clause in a SQL query</li>
+</ul>
+</li>
+<li>Add
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-create-row-level-filter-policy.png" /></li>
+</ul>
+</li>
+<li>
+<p>Wait 30s for the new policy to be picked up</p>
+</li>
+<li>
+<p>Now try accessing the columns again and notice how only rows that match the filter criteria are shown
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description, total_emp from sample_07;
+</code></pre></div></p>
+</li>
+<li>
+<p>Go back to the Ranger Audits page and notice how the filter policy was applied to the query</p>
+</li>
+<li>
+<p>Suppose we would now like to mask <code>total_emp</code> column from sales1.  This is different from denying/dis-allowing access in that the user can query the column but cannot see the actual data </p>
+</li>
+<li>
+<p>On the Hive Policies page, select the 'Masking' tab and click on 'Add New Policy'
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-select-masking-tab.png" />  </p>
+<ul>
+<li>Please note that in order to mask a column, the user/group must already have 'select' permissions to that column.  Creating a masking policy on a column that a user does not have access to will deny the user access</li>
+</ul>
+</li>
+<li>
+<p>Create a policy masking the  <code>total_emp</code> column for <code>sales</code> group users:</p>
+<ul>
+<li>Policy Name: <code>sample_07_total_emp</code></li>
+<li>Hive Database: <code>default</code></li>
+<li>table: <code>sample_07</code></li>
+<li>Hive Column: <code>total_emp</code></li>
+<li>Group: <code>sales</code></li>
+<li>Permissions : <code>select</code></li>
+<li>
+<p>Masking Option : <code>redact</code></p>
+<ul>
+<li>Notice the different masking options available</li>
+<li>The 'Custom' masking option can use any Hive UDF as long as it returns the same data type as that of the column </li>
+</ul>
+</li>
+<li>
+<p>Add
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-create-masking-policy.png" /></p>
+</li>
+</ul>
+</li>
+<li>
+<p>Wait 30s for the new policy to be picked up</p>
+</li>
+<li>
+<p>Now try accessing the columns again and notice how the results for the <code>total_emp</code> column is masked
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description, total_emp from sample_07;
+</code></pre></div></p>
+</li>
+<li>
+<p>Go back to the Ranger Audits page and notice how the masking policy was applied to the query.</p>
+</li>
+<li>
+<p>Exit beeline
+<div class="highlight"><pre><span></span><code>!q
+</code></pre></div></p>
+</li>
+<li>
+<p>Now let's check whether non-sales users can access the table</p>
+</li>
+<li>
+<p>Logout as sales1 and log back in as hr1
+<div class="highlight"><pre><span></span><code>kdestroy
+#logout as sales1
+logout
+
+#login as hr1 and authenticate
+sudo su - hr1
+
+kinit
+# enter password: BadPass#1
+
+klist
+## Default principal: hr1@LAB.HORTONWORKS.NET
+</code></pre></div></p>
+</li>
+<li>Try to access the same table as hr1 and notice it fails
+<div class="highlight"><pre><span></span><code>beeline -u &quot;jdbc:hive2://localhost:10000/default;principal=hive/$(hostname -f)@LAB.HORTONWORKS.NET&quot;
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description from sample_07;
+</code></pre></div></li>
+<li>In Ranger, click on 'Audit' to open the Audits page and filter by 'Service Type' = 'Hive'</li>
+<li>
+<p>Service Type: <code>HIVE</code></p>
+</li>
+<li>
+<p>Here you can see the request by sales1 was allowed but hr1 was denied</p>
+</li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HIVE-summary.png" />  </p>
+<ul>
+<li>Exit beeline
+<div class="highlight"><pre><span></span><code>!q
+</code></pre></div></li>
+<li>
+<p>Logoff as hr1
+<div class="highlight"><pre><span></span><code>logout
+</code></pre></div></p>
+</li>
+<li>
+<p>We have setup Hive authorization policies to ensure only sales users have access to code, description columns in default.sample_07</p>
+</li>
+</ul>
+<h4 id="access-secured-hbase">Access secured HBase<a class="headerlink" href="#access-secured-hbase" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>Goal: Create a table called 'sales' in HBase and setup authorization policies to ensure only sales users have access to the table</p>
+</li>
+<li>
+<p>Run these steps from any node where Hbase Master or RegionServer services are installed </p>
+</li>
+<li>
+<p>Login as sales1
+<div class="highlight"><pre><span></span><code>sudo su - sales1
+</code></pre></div></p>
+</li>
+<li>Start the hbase shell
+<div class="highlight"><pre><span></span><code>hbase shell
+</code></pre></div></li>
+<li>List tables in default database
+<div class="highlight"><pre><span></span><code>hbase&gt; list &#39;default&#39;
+</code></pre></div></li>
+<li>
+<p>This fails with <code>GSSException: No valid credentials provided</code> because the cluster is kerberized and we have not authenticated yet</p>
+</li>
+<li>
+<p>To exit hbase shell:
+<div class="highlight"><pre><span></span><code>exit
+</code></pre></div></p>
+</li>
+<li>Authenticate as sales1 user and check the ticket
+<div class="highlight"><pre><span></span><code>kinit
+# enter password: BadPass#1
+
+klist
+## Default principal: sales1@LAB.HORTONWORKS.NET
+</code></pre></div></li>
+<li>Now try connect to Hbase shell and list tables as sales1
+<div class="highlight"><pre><span></span><code>hbase shell
+hbase&gt; list &#39;default&#39;
+</code></pre></div></li>
+<li>This time it works. Now try to create a table called <code>sales</code> with column family called <code>cf</code>
+<div class="highlight"><pre><span></span><code>hbase&gt; create &#39;sales&#39;, &#39;cf&#39;
+</code></pre></div></li>
+<li>Now it fails with authorization error: </li>
+<li><code>org.apache.hadoop.hbase.security.AccessDeniedException: Insufficient permissions for user 'sales1@LAB.HORTONWORKS.NET' (action=create)</code></li>
+<li>
+<p>Note: there will be a lot of output from above. The error will be on the line right after your create command</p>
+</li>
+<li>
+<p>Login into Ranger UI e.g. at <a href="http://RANGER_HOST_PUBLIC_IP:6080/index.html">http://RANGER_HOST_PUBLIC_IP:6080/index.html</a> as admin/admin</p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and filter by below. </p>
+</li>
+<li>Service Type: <code>Hbase</code></li>
+<li>
+<p>User: <code>sales1</code></p>
+</li>
+<li>
+<p>Notice that Ranger captured the access attempt and since there is currently no policy to allow the access, it was <code>Denied</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HBASE-denied.png" /></p>
+</li>
+<li>
+<p>To create an HBASE Policy in Ranger, follow below steps:</p>
+</li>
+<li>On the 'Access Manager' tab click HBASE &gt; (clustername)_hbase
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HBASE-policy.png" /></li>
+<li>This will open the list of HBASE policies
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HBASE-edit-policy.png" /></li>
+<li>
+<p>Click 'Add New Policy' button to create a new one allowing <code>sales</code> group users access to <code>sales</code> table in HBase:</p>
+<ul>
+<li>Policy Name: <code>sales</code></li>
+<li>Hbase Table: <code>sales</code></li>
+<li>Hbase Column Family: <code>*</code></li>
+<li>Hbase Column: <code>*</code></li>
+<li>Group : <code>sales</code>    </li>
+<li>Permissions : <code>Admin</code> <code>Create</code> <code>Read</code> <code>Write</code></li>
+<li>Add
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HBASE-create-policy.png" /></li>
+</ul>
+</li>
+<li>
+<p>Wait 30s for policy to take effect</p>
+</li>
+<li>
+<p>Now try creating the table and now it works
+<div class="highlight"><pre><span></span><code>hbase&gt; create &#39;sales&#39;, &#39;cf&#39;
+</code></pre></div></p>
+</li>
+<li>
+<p>In Ranger, click on 'Audit' to open the Audits page and filter by below:</p>
+</li>
+<li>Service Type: HBASE</li>
+<li>
+<p>User: sales1</p>
+</li>
+<li>
+<p>Notice that Ranger captured the access attempt and since this time there is a policy to allow the access, it was <code>Allowed</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HBASE-allowed.png" />  </p>
+</li>
+<li>
+<p>You can also see the details that were captured for each request:</p>
+<ul>
+<li>Policy that allowed the access</li>
+<li>Time</li>
+<li>Requesting user</li>
+<li>Service type (e.g. hdfs, hive, hbase etc)</li>
+<li>Resource name </li>
+<li>Access type (e.g. read, write, execute)</li>
+<li>Result (e.g. allowed or denied)</li>
+<li>Access enforcer (i.e. whether native acl or ranger acls were used)</li>
+<li>Client IP</li>
+<li>Event count</li>
+</ul>
+</li>
+<li>
+<p>For any allowed requests, notice that you can quickly check the details of the policy that allowed the access by clicking on the policy number in the 'Policy ID' column
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HBASE-policy-details.png" />  </p>
+</li>
+<li>
+<p>Exit hbase shell
+<div class="highlight"><pre><span></span><code>hbase&gt; exit
+</code></pre></div></p>
+</li>
+<li>
+<p>Now let's check whether non-sales users can access the table</p>
+</li>
+<li>
+<p>Logout as sales1 and log back in as hr1
+<div class="highlight"><pre><span></span><code>kdestroy
+#logout as sales1
+logout
+
+#login as hr1 and authenticate
+sudo su - hr1
+
+kinit
+# enter password: BadPass#1
+
+klist
+## Default principal: hr1@LAB.HORTONWORKS.NET
+</code></pre></div></p>
+</li>
+<li>Try to access the same dir as hr1 and notice this user does not even see the table
+<div class="highlight"><pre><span></span><code>hbase shell
+hbase&gt; describe &#39;sales&#39;
+hbase&gt; list &#39;default&#39;
+</code></pre></div></li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-hbase-sales.png" /></p>
+<ul>
+<li>Try to create a table as hr1 and it fails with <code>org.apache.hadoop.hbase.security.AccessDeniedException: Insufficient permissions</code>
+<div class="highlight"><pre><span></span><code>hbase&gt; create &#39;sales&#39;, &#39;cf&#39;
+</code></pre></div></li>
+<li>In Ranger, click on 'Audit' to open the Audits page and filter by:</li>
+<li>Service Type: <code>HBASE</code></li>
+<li>
+<p>Resource Name: <code>sales</code></p>
+</li>
+<li>
+<p>Here you can see the request by sales1 was allowed but hr1 was denied</p>
+</li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-HBASE-summary.png" />  </p>
+<ul>
+<li>
+<p>Exit hbase shell
+<div class="highlight"><pre><span></span><code>hbase&gt; exit
+</code></pre></div></p>
+</li>
+<li>
+<p>Logout as hr1
+<div class="highlight"><pre><span></span><code>kdestroy
+logout
+</code></pre></div></p>
+</li>
+<li>
+<p>We have successfully created a table called 'sales' in HBase and setup authorization policies to ensure only sales users have access to the table</p>
+</li>
+<li>
+<p>This shows how you can interact with Hadoop components on kerberized cluster and use Ranger to manage authorization policies and audits</p>
+</li>
+</ul>
+<!---
+- **TODO: fix for 2.5. Skip for now** At this point your Silk/Banana audit dashboard should show audit data from multiple Hadoop components e.g. http://54.68.246.157:6083/solr/banana/index.html#/dashboard
+
+![Image](https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-banana.png)  
+--->
+
+<h4 id="optional-use-sqoop-to-import">(Optional) Use Sqoop to import<a class="headerlink" href="#optional-use-sqoop-to-import" title="Permanent link">&para;</a></h4>
+<ul>
+<li>If Sqoop is not already installed, install it via Ambari on same node where Mysql/Hive are installed:</li>
+<li>Admin &gt; Stacks and Versions &gt; Sqoop &gt; Add service &gt; select node where Mysql/Hive are installed and accept all defaults and finally click "Proceed Anyway"</li>
+<li>
+<p>You will be asked to enter admin principal/password:</p>
+<ul>
+<li><code>hadoopadmin@LAB.HORTONWORKS.NET</code></li>
+<li><a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a></li>
+</ul>
+</li>
+<li>
+<p><em>On the host running Mysql</em>: change user to root and download a sample csv and login to Mysql
+<div class="highlight"><pre><span></span><code>sudo su - 
+wget https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/labdata/PII_data_small.csv
+mysql -u root -pBadPass#1
+</code></pre></div></p>
+</li>
+<li>
+<p>At the <code>mysql&gt;</code> prompt run below to: </p>
+</li>
+<li>create a table in Mysql</li>
+<li>give access to sales1</li>
+<li>import the data from csv</li>
+<li>
+<p>test that table was created
+<div class="highlight"><pre><span></span><code>create database people;
+use people;
+create table persons (people_id INT PRIMARY KEY, sex text, bdate DATE, firstname text, lastname text, addresslineone text, addresslinetwo text, city text, postalcode text, ssn text, id2 text, email text, id3 text);
+GRANT ALL PRIVILEGES ON people.* to &#39;sales1&#39;@&#39;%&#39; IDENTIFIED BY &#39;BadPass#1&#39;;
+LOAD DATA LOCAL INFILE &#39;~/PII_data_small.csv&#39; REPLACE INTO TABLE persons FIELDS TERMINATED BY &#39;,&#39; LINES TERMINATED BY &#39;\n&#39;;
+
+select people_id, firstname, lastname, city from persons where lastname=&#39;SMITH&#39;;
+exit
+</code></pre></div></p>
+</li>
+<li>
+<p>logoff as root
+<div class="highlight"><pre><span></span><code>logout
+</code></pre></div></p>
+</li>
+<li>
+<p>Create Ranger policy to allow <code>sales</code> group <code>all permissions</code> on <code>persons</code> table in Hive</p>
+</li>
+<li>Access Manager &gt; Hive &gt; (cluster)_hive &gt; Add new policy</li>
+<li>
+<p>Create new policy as below and click Add:
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-create-policy-persons.png" /> </p>
+</li>
+<li>
+<p>Create Ranger policy to allow <code>sales</code> group <code>all permissions</code> on <code>/ranger/audit/kms</code> dir in HDFS</p>
+</li>
+<li>Access Manager &gt; HDFS &gt; (cluster)_hdfs &gt; Add new policy</li>
+<li>
+<p>Create new policy as below and click Add:
+  <strong>TODO: add screenshot</strong></p>
+</li>
+<li>
+<p>Log out of Ranger</p>
+</li>
+<li>
+<p>Create Ranger policy to allow <code>sales</code> group <code>Get Metadata</code> <code>GenerateEEK</code> <code>DecryptEEK</code> permissions on <code>testkey</code> (i.e. the key used to encrypt Hive warehouse directories)</p>
+</li>
+<li>Login to Ranger <a href="http://RANGER_PUBLIC_IP:6080">http://RANGER_PUBLIC_IP:6080</a> with keyadmin/keyadmin</li>
+<li>Access Manager &gt; KMS &gt; (cluster)_KMS &gt; Add new policy</li>
+<li>Create new policy as below and click Add:
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-KMS-create-policy-testkey.png" />  </li>
+<li>
+<p>Log out of Ranger and re-login as admin/admin</p>
+</li>
+<li>
+<p>Login as sales1
+<div class="highlight"><pre><span></span><code>sudo su - sales1
+</code></pre></div></p>
+</li>
+<li>
+<p>As sales1 user, kinit and run sqoop job to create persons table in Hive (in ORC format) and import data from MySQL. Below are the details of the arguments passed in:</p>
+</li>
+<li>Table: MySQL table name</li>
+<li>username: Mysql username</li>
+<li>password: Mysql password</li>
+<li>hcatalog-table: Hive table name</li>
+<li>create-hcatalog-table: hive table should be created first</li>
+<li>driver: classname for Mysql driver</li>
+<li>m: number of mappers</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code>kinit
+## enter BadPass#1 as password
+
+sqoop import --verbose --connect &quot;jdbc:mysql://$(hostname -f)/people&quot; --table persons --username sales1 --password BadPass#1 --hcatalog-table persons --hcatalog-storage-stanza &quot;stored as orc&quot; -m 1 --create-hcatalog-table  --driver com.mysql.jdbc.Driver
+</code></pre></div>
+- This will start a mapreduce job to import the data from Mysql to Hive in ORC format</p>
+<ul>
+<li>
+<p>Note: if the mapreduce job fails with below, most likely you have not given sales group all the permissions needed on the EK used to encrypt Hive directories 
+<div class="highlight"><pre><span></span><code> java.lang.RuntimeException: com.mysql.jdbc.exceptions.jdbc4.CommunicationsException: Communications link failure
+</code></pre></div></p>
+</li>
+<li>
+<p>Also note: if the mapreduce job fails saying sales user does not have write access to /apps/hive/warehouse, you will need to create HDFS policy allowing sales1 user and hive access on /apps/hive/warehouse dir </p>
+</li>
+<li>
+<p>Login to beeline
+<div class="highlight"><pre><span></span><code>beeline -u &quot;jdbc:hive2://localhost:10000/default;principal=hive/$(hostname -f)@LAB.HORTONWORKS.NET&quot;
+</code></pre></div></p>
+</li>
+<li>
+<p>Query persons table in beeline
+<div class="highlight"><pre><span></span><code>beeline&gt; select * from persons;
+</code></pre></div></p>
+</li>
+<li>
+<p>Since the authorization policy is in place, the query should work</p>
+</li>
+<li>
+<p>Ranger audit should show the request was allowed:</p>
+</li>
+<li>Under Ranger &gt; Audit &gt; query for<ul>
+<li>Service type: HIVE
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-audit-persons.png" /></li>
+</ul>
+</li>
+</ul>
+<h5 id="drop-encrypted-hive-tables">Drop Encrypted Hive tables<a class="headerlink" href="#drop-encrypted-hive-tables" title="Permanent link">&para;</a></h5>
+<ul>
+<li>From beeline, try to drop the persons table. 
+<div class="highlight"><pre><span></span><code>beeline&gt; drop table persons;
+</code></pre></div></li>
+<li>
+<p>You will get error similar to below
+<div class="highlight"><pre><span></span><code>message:Unable to drop default.persons because it is in an encryption zone and trash is enabled.  Use PURGE option to skip trash.
+</code></pre></div></p>
+</li>
+<li>
+<p>To drop a Hive table (when Hive directories are located in EncryptionZone), you need to include <code>purge</code> as below:
+<div class="highlight"><pre><span></span><code>beeline&gt; drop table persons purge;
+</code></pre></div></p>
+</li>
+<li>
+<p>Destroy the ticket and logout as sales1
+<div class="highlight"><pre><span></span><code>kdestroy
+logout
+</code></pre></div></p>
+</li>
+<li>
+<p>This completes the lab. You have now interacted with Hadoop components in secured mode and used Ranger to manage authorization policies and audits</p>
+</li>
+</ul>
+<hr />
+<h1 id="lab-7b">Lab 7b<a class="headerlink" href="#lab-7b" title="Permanent link">&para;</a></h1>
+<h2 id="tag-based-policies-atlasranger-integration">Tag-Based Policies (Atlas+Ranger Integration)<a class="headerlink" href="#tag-based-policies-atlasranger-integration" title="Permanent link">&para;</a></h2>
+<p>Goal: In this lab we will explore how Atlas and Ranger integrate to enhance data access and authorization through tags </p>
+<h4 id="atlas-preparation">Atlas Preparation<a class="headerlink" href="#atlas-preparation" title="Permanent link">&para;</a></h4>
+<p>To create Tag-Based Policies, we will first need to create tags in Atlas and associate them to entities</p>
+<ul>
+<li>
+<p>Go to <a href="https://localhost:21000">https://localhost:21000</a> and login to the Atlas UI using admin/admin for the username and pass
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-login-page.png" /></p>
+</li>
+<li>
+<p>Select the "TAGS" tab and click on "Create Tag"
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-select-create-tag.png" /></p>
+</li>
+<li>
+<p>Create a new tag by inputing</p>
+<ul>
+<li>Name: <code>Private</code></li>
+<li>Create
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-create-tag.png" /></li>
+</ul>
+</li>
+<li>
+<p>Repeat the tag creation process above and create an additional tag named "Restricted" </p>
+</li>
+<li>
+<p>Create a third tag named "Sensitive", however, during creation, click on "Add New Attributes" and input:</p>
+<ul>
+<li>Attribute Name: <code>level</code></li>
+<li>Type: <code>int</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-sensitive-tag-creation.png" /></li>
+</ul>
+</li>
+<li>
+<p>Create a fourth tag named "EXPIRES_ON", and during creation, click on "Add New Attributes" and input:</p>
+<ul>
+<li>Attribute Name: <code>expiry_date</code></li>
+<li>Type: <code>int</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-expires-on-tag-creation.png" /></li>
+</ul>
+</li>
+<li>
+<p>Under the "Tags" tab in the main screen you should see the list of newly created tags
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-created-tags.png" /></p>
+</li>
+<li>
+<p>In the search tab search using the following:</p>
+<ul>
+<li>Search By Type: <code>hive_table</code></li>
+<li>Search By Text: <code>sample_08</code></li>
+<li>Search
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-search-table.png" /></li>
+</ul>
+</li>
+<li>
+<p>To associate a tag to the "sample_08" table, click on the "+" under the Tags column in the search results for "sample_08"
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-search-result.png" /></p>
+</li>
+<li>
+<p>From the dropdown select <code>Private</code> and click <code>Add</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-attach-tag.png" /></p>
+</li>
+<li>
+<p>You should see that the "Private" tag has been associated to the "sample_08" table
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-associated-table-tags.png" /></p>
+</li>
+<li>
+<p>Now, in the same manner, associate the "EXPIRES_ON" tag to the "sample_08" table
+    When prompted, select a date in the past for "expiry_date"
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-tag-item-expires-on.png" /></p>
+</li>
+<li>
+<p>In the search results panel, click on the "sample_08" link
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-search-table.png" /></p>
+</li>
+<li>
+<p>Scroll down and select the "Schema" tab
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-select-table-schema.png" /></p>
+</li>
+<li>
+<p>Select the "+" button under the Tag column for "salary" and associate the <code>Restricted</code> tag to it</p>
+</li>
+<li>
+<p>Select the "+" button under the Tag column for "total_emp" and associate the <code>Sensitive</code> tag to it</p>
+<ul>
+<li>When prompted, input <code>5</code> for the "level"
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-tag-item-sensitive.png" /></li>
+</ul>
+</li>
+<li>
+<p>On the "sample_08" table schema page you should see the table columns with the associated tags
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Atlas-associated-column-tags.png" /></p>
+</li>
+</ul>
+<p>We have now completed our preparation work in Atlas and have created the following tags and associations:
+    - "Private" tag associated to "sample_08" table
+    - "Sensitive" tag with a "level" of '5', associated to "sample_08.total_emp" column
+    - "Restricted" tag associated to "sample_08.salary" column</p>
+<h4 id="ranger-preparation">Ranger Preparation<a class="headerlink" href="#ranger-preparation" title="Permanent link">&para;</a></h4>
+<p>To enable Ranger for Tag-Based Policies complete the following:</p>
+<ul>
+<li>
+<p>Select "Access Manager" and then "Tag Based Policies" from the upper left hand corner of the main Ranger UI page
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-navigate-to-tag-based-policies.png" /></p>
+</li>
+<li>
+<p>Click on the "+" to create a new tag service
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-create-tag-service.png" /></p>
+</li>
+<li>
+<p>In the tag service page input:</p>
+<ul>
+<li>Service Name: <code>tags</code></li>
+<li>Save
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-save-tag-service.png" /></li>
+</ul>
+</li>
+<li>
+<p>On the Ranger UI main page, select the edit button next to your (clustername)_hive service
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-HIVE-policy.png" /></p>
+</li>
+<li>
+<p>In the Edit Service page add the below and then click save</p>
+<ul>
+<li>Select Tag Service: <code>tags</code>
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-add-hive-tag-service.png" /></li>
+</ul>
+</li>
+</ul>
+<p>We should now be able to create Tag-Based Policies for Hive</p>
+<h4 id="tag-based-access-control">Tag-Based Access Control<a class="headerlink" href="#tag-based-access-control" title="Permanent link">&para;</a></h4>
+<p>Goal: Create a Tag-Based policy for sales to access all entities tagged as "Private"</p>
+<ul>
+<li>
+<p>Select "Access Manager" and then "Tag Based Policies" from the upper left hand corner of the main Ranger UI page
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-navigate-to-tag-based-policies.png" /></p>
+</li>
+<li>
+<p>Select the "tags" service that you had previously created</p>
+</li>
+<li>
+<p>On the "tags Policies" page, click on "Add New Policy"
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-policy-list-1.png" /></p>
+</li>
+<li>
+<p>Input the following to create the new policy</p>
+<ul>
+<li>Policy Name: <code>Private Data Access</code></li>
+<li>TAG: <code>Private</code></li>
+<li>Under "Allow Conditions"<ul>
+<li>Select Group: <code>sales</code></li>
+<li>Component Permissions: (select <code>Hive</code> and enable all actions)</li>
+</ul>
+</li>
+<li>Add
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-tbac.png" />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-component-permissions.png" /></li>
+</ul>
+</li>
+<li>
+<p>Run these steps from node where Hive (or client) is installed </p>
+</li>
+<li>
+<p>From node where Hive (or client) is installed, login as sales1 and connect to beeline:
+<div class="highlight"><pre><span></span><code>su - sales1
+klist
+## Default principal: sales1@LAB.HORTONWORKS.NET
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>beeline -u &quot;jdbc:hive2://localhost:10000/default;principal=hive/$(hostname -f)@LAB.HORTONWORKS.NET&quot;
+</code></pre></div></p>
+</li>
+<li>Now try accessing table "sample_08" and notice how you have access to all the contents of the table
+<div class="highlight"><pre><span></span><code>beeline&gt; select * from sample_08;
+</code></pre></div></li>
+</ul>
+<h4 id="attribute-based-access-control">Attribute-Based Access Control<a class="headerlink" href="#attribute-based-access-control" title="Permanent link">&para;</a></h4>
+<p>Goal: Disallow everybody's access to data tagged as "Sensitive" and has an attribute "level" 5 or above</p>
+<ul>
+<li>
+<p>Return to the Ranger "tags Policies" page and "Add New Policy" with the below parameters</p>
+<ul>
+<li>Policy Name: <code>Sensitive Data Access</code></li>
+<li>TAG: <code>Sensitive</code></li>
+<li>Under "Deny Conditions" <ul>
+<li>Select Group: <code>public</code></li>
+<li>Policy Conditions/Enter boolean expression: <code>level&gt;=5</code><ul>
+<li>Note: Boolean expressions are written in Javascript</li>
+</ul>
+</li>
+<li>Component Permissions: (select <code>Hive</code> and enable all actions)</li>
+</ul>
+</li>
+<li>Add
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-abac-1.png" />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-abac-2.png" /></li>
+</ul>
+</li>
+<li>
+<p>Wait 30 seconds before trying to access the "total_emp" column in table "sample_08" and notice how you are denied access
+<div class="highlight"><pre><span></span><code>beeline&gt; select total_emp from sample_08;
+</code></pre></div></p>
+</li>
+<li>
+<p>Now try to access the other columns and notice how you are allowed access to them access
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description, salary from sample_08;
+</code></pre></div></p>
+</li>
+</ul>
+<h4 id="tag-based-masking">Tag-Based Masking<a class="headerlink" href="#tag-based-masking" title="Permanent link">&para;</a></h4>
+<p>Goal: Mask data tagged as "Restricted"</p>
+<ul>
+<li>
+<p>Return to the Ranger "tags Policies" page, click on the "Masking" tab in the upper right hand 
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-tbm-tab.png" /></p>
+</li>
+<li>
+<p>Click on "Add New Policy" and input the below parameters</p>
+<ul>
+<li>Policy Name: <code>Restricted Data Access</code></li>
+<li>TAG: <code>Restricted</code></li>
+<li>Under "Mask Conditions" <ul>
+<li>Select Group: <code>public</code></li>
+<li>Component Permissions: (select <code>Hive</code> and enable all actions)</li>
+<li>Select Masking Option: <code>Redact</code>   </li>
+</ul>
+</li>
+<li>Add</li>
+</ul>
+</li>
+<li>
+<p>Wait 30 seconds and try run the below query.  Notice how salary data has been masked
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description, salary from sample_08;
+</code></pre></div></p>
+</li>
+</ul>
+<h4 id="location-based-access-control">Location-Based Access Control<a class="headerlink" href="#location-based-access-control" title="Permanent link">&para;</a></h4>
+<p>Goal: Restrict access to data based on a user's physical location at the time.</p>
+<ul>
+<li>
+<p>Return to the Ranger "tags Policies" page ("Access" tab) and "Add New Policy" with the below parameters</p>
+<ul>
+<li>Policy Name: <code>Geo-Location Access</code></li>
+<li>TAG: <code>Restricted</code></li>
+<li>Under "Deny Conditions" <ul>
+<li>Select Group: <code>public</code></li>
+<li>Policy Conditions/Enter boolean expression: <code>country_code=='USA'</code><ul>
+<li>If you are outside of USA use <code>country_code!='USA'</code> instead</li>
+</ul>
+</li>
+<li>Component Permissions: (select <code>Hive</code> and enable all actions)</li>
+</ul>
+</li>
+<li>Add
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-lba-1.png" />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-lba-2.png" /></li>
+</ul>
+</li>
+<li>
+<p>Wait 30 seconds and try run the below query.  Notice how you are now denied access to the "salary" column because of your location
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description, salary from sample_08;
+</code></pre></div></p>
+</li>
+</ul>
+<h4 id="time-based-policies">Time-Based Policies<a class="headerlink" href="#time-based-policies" title="Permanent link">&para;</a></h4>
+<p>Goal: To place an expiry date on sales' access policy to data tagged as "Private" after which access will be denied</p>
+<ul>
+<li>
+<p>Return to the Ranger "tags Policies" page ("Access" tab)and "Add New Policy" with the below parameters.  You may already have default policy named "EXPIRES_ON", if so, please delete it before clicking "Add New Policy" </p>
+<ul>
+<li>Policy Name: <code>EXPIRES_ON</code></li>
+<li>TAG: <code>EXPIRES_ON</code></li>
+<li>Under "Deny Conditions" <ul>
+<li>Select Group: <code>public</code></li>
+<li>Policy Conditions/Accessed after expiry_date: <code>yes</code></li>
+<li>Component Permissions: (select <code>Hive</code> and enable all actions)</li>
+</ul>
+</li>
+<li>Add
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-eo-1.png" />
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Tags-create-eo-2.png" /></li>
+</ul>
+</li>
+<li>
+<p>Wait 30 seconds and try run the below query.  Notice how you are now denied access to the entire "sample_08" table because it is accessed after the expiry date tagged in Atlas
+<div class="highlight"><pre><span></span><code>beeline&gt; select code, description from sample_08;
+</code></pre></div></p>
+</li>
+<li>
+<p>Exit beeline
+<div class="highlight"><pre><span></span><code>!q
+</code></pre></div></p>
+</li>
+<li>Logoff as sales1
+<div class="highlight"><pre><span></span><code>logout
+</code></pre></div></li>
+</ul>
+<h2 id="policy-evaluation-and-precedence">Policy Evaluation and Precedence<a class="headerlink" href="#policy-evaluation-and-precedence" title="Permanent link">&para;</a></h2>
+<p>Notice how in the policies above, ones that deny access always take precedence over ones that allow access.  For example, even though sales had access to "Private" data in the Tag-Based Access Control section, they were gradually disallowed access over the following sections as we set up "Deny" policies.  This applies to both, Tag-Based as well as Resource-Based policies.  To understand better the sequence of policy evaluation, take a look at the following flow-chart.
+<img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-Policy-Evaluation-Flow-with-Tags.png" /></p>
+<hr />
+<h1 id="lab-8">Lab 8<a class="headerlink" href="#lab-8" title="Permanent link">&para;</a></h1>
+<h2 id="knox">Knox<a class="headerlink" href="#knox" title="Permanent link">&para;</a></h2>
+<p>Goal: In this lab we will configure Apache Knox for AD authentication and make WebHDFS, Hive requests over Knox (after setting the appropriate Ranger authorization polices for access)</p>
+<h3 id="knox-configuration">Knox Configuration<a class="headerlink" href="#knox-configuration" title="Permanent link">&para;</a></h3>
+<h4 id="knox-configuration-for-ad-authentication">Knox Configuration for AD authentication<a class="headerlink" href="#knox-configuration-for-ad-authentication" title="Permanent link">&para;</a></h4>
+<ul>
+<li>
+<p>Run these steps on the node where Knox was installed earlier</p>
+</li>
+<li>
+<p>To configure Knox for AD authentication we need to enter AD related properties in topology xml via Ambari</p>
+</li>
+<li>
+<p>The problem is it requires us to enter LDAP bind password, but we do not want it exposed as plain text in the Ambari configs</p>
+</li>
+<li>
+<p>The solution? Create keystore alias for the ldap manager user (which you will later pass in to the topology via the 'systemUsername' property)</p>
+</li>
+<li>Read password for use in following command (this will prompt you for a password and save it in knoxpass environment variable). Enter <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a>:
+   <div class="highlight"><pre><span></span><code>read -s -p &quot;Password: &quot; knoxpass
+</code></pre></div></li>
+<li>
+<p>This is a handy way to set an env var without storing the command in your history</p>
+</li>
+<li>
+<p>Create password alias for Knox called knoxLdapSystemPassword
+   <div class="highlight"><pre><span></span><code>sudo -u knox /usr/hdp/current/knox-server/bin/knoxcli.sh create-alias knoxLdapSystemPassword --cluster default --value ${knoxpass}
+unset knoxpass
+</code></pre></div></p>
+</li>
+<li>
+<p>Now lets configure Knox to use our AD for authentication. Replace below content in Ambari &gt; Knox &gt; Config &gt; Advanced topology. </p>
+</li>
+<li>
+<p>How to tell what configs were changed from defaults? </p>
+<ul>
+<li>Default configs remain indented below</li>
+<li>Configurations that were added/modified are not indented
+<div class="highlight"><pre><span></span><code>&lt;topology&gt;
+
+            &lt;gateway&gt;
+
+                &lt;provider&gt;
+                    &lt;role&gt;authentication&lt;/role&gt;
+                    &lt;name&gt;ShiroProvider&lt;/name&gt;
+                    &lt;enabled&gt;true&lt;/enabled&gt;
+                    &lt;param&gt;
+                        &lt;name&gt;sessionTimeout&lt;/name&gt;
+                        &lt;value&gt;30&lt;/value&gt;
+                    &lt;/param&gt;
+                    &lt;param&gt;
+                        &lt;name&gt;main.ldapRealm&lt;/name&gt;
+                        &lt;value&gt;org.apache.hadoop.gateway.shirorealm.KnoxLdapRealm&lt;/value&gt;
+                    &lt;/param&gt;
+
+&lt;!-- changes for AD/user sync --&gt;
+
+&lt;param&gt;
+    &lt;name&gt;main.ldapContextFactory&lt;/name&gt;
+    &lt;value&gt;org.apache.hadoop.gateway.shirorealm.KnoxLdapContextFactory&lt;/value&gt;
+&lt;/param&gt;
+
+&lt;!-- main.ldapRealm.contextFactory needs to be placed before other main.ldapRealm.contextFactory* entries  --&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.contextFactory&lt;/name&gt;
+    &lt;value&gt;$ldapContextFactory&lt;/value&gt;
+&lt;/param&gt;
+
+&lt;!-- IPA url --&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.contextFactory.url&lt;/name&gt;
+    &lt;value&gt;ldap://ipa.us-west-2.compute.internal:389&lt;/value&gt;
+&lt;/param&gt;
+
+&lt;!-- system user --&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.contextFactory.systemUsername&lt;/name&gt;
+    &lt;value&gt;uid=hadoopadmin,cn=users,cn=accounts,dc=us-west-2,dc=compute,dc=internal&lt;/value&gt;
+&lt;/param&gt;
+
+&lt;!-- pass in the password using the alias created earlier --&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.contextFactory.systemPassword&lt;/name&gt;
+    &lt;value&gt;${ALIAS=knoxLdapSystemPassword}&lt;/value&gt;
+&lt;/param&gt;
+
+                    &lt;param&gt;
+                        &lt;name&gt;main.ldapRealm.contextFactory.authenticationMechanism&lt;/name&gt;
+                        &lt;value&gt;simple&lt;/value&gt;
+                    &lt;/param&gt;
+                    &lt;param&gt;
+                        &lt;name&gt;urls./**&lt;/name&gt;
+                        &lt;value&gt;authcBasic&lt;/value&gt;
+                    &lt;/param&gt;
+
+&lt;!--  AD groups of users to allow --&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.searchBase&lt;/name&gt;
+    &lt;value&gt;cn=accounts,dc=us-west-2,dc=compute,dc=internal&lt;/value&gt;
+&lt;/param&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.userObjectClass&lt;/name&gt;
+    &lt;value&gt;posixAccount&lt;/value&gt;
+&lt;/param&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.userSearchAttributeName&lt;/name&gt;
+    &lt;value&gt;uid&lt;/value&gt;
+&lt;/param&gt;
+
+&lt;!-- changes needed for group sync--&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.authorizationEnabled&lt;/name&gt;
+    &lt;value&gt;true&lt;/value&gt;
+&lt;/param&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.groupSearchBase&lt;/name&gt;
+    &lt;value&gt;cn=accounts,dc=us-west-2,dc=compute,dc=internal&lt;/value&gt;
+&lt;/param&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.groupObjectClass&lt;/name&gt;
+    &lt;value&gt;posixGroup&lt;/value&gt;
+&lt;/param&gt;
+&lt;param&gt;
+    &lt;name&gt;main.ldapRealm.groupIdAttribute&lt;/name&gt;
+    &lt;value&gt;cn&lt;/value&gt;
+&lt;/param&gt;
+
+
+                &lt;/provider&gt;
+
+                &lt;provider&gt;
+                    &lt;role&gt;identity-assertion&lt;/role&gt;
+                    &lt;name&gt;Default&lt;/name&gt;
+                    &lt;enabled&gt;true&lt;/enabled&gt;
+                &lt;/provider&gt;
+
+                &lt;provider&gt;
+                    &lt;role&gt;authorization&lt;/role&gt;
+                    &lt;name&gt;XASecurePDPKnox&lt;/name&gt;
+                    &lt;enabled&gt;true&lt;/enabled&gt;
+                &lt;/provider&gt;
+
+&lt;!--
+  Knox HaProvider for Hadoop services
+  --&gt;
+&lt;provider&gt;
+     &lt;role&gt;ha&lt;/role&gt;
+     &lt;name&gt;HaProvider&lt;/name&gt;
+     &lt;enabled&gt;true&lt;/enabled&gt;
+     &lt;param&gt;
+         &lt;name&gt;OOZIE&lt;/name&gt;
+         &lt;value&gt;maxFailoverAttempts=3;failoverSleep=1000;enabled=true&lt;/value&gt;
+     &lt;/param&gt;
+     &lt;param&gt;
+         &lt;name&gt;HBASE&lt;/name&gt;
+         &lt;value&gt;maxFailoverAttempts=3;failoverSleep=1000;enabled=true&lt;/value&gt;
+     &lt;/param&gt;
+     &lt;param&gt;
+         &lt;name&gt;WEBHCAT&lt;/name&gt;
+         &lt;value&gt;maxFailoverAttempts=3;failoverSleep=1000;enabled=true&lt;/value&gt;
+     &lt;/param&gt;
+     &lt;param&gt;
+         &lt;name&gt;WEBHDFS&lt;/name&gt;
+         &lt;value&gt;maxFailoverAttempts=3;failoverSleep=1000;maxRetryAttempts=300;retrySleep=1000;enabled=true&lt;/value&gt;
+     &lt;/param&gt;
+     &lt;param&gt;
+        &lt;name&gt;HIVE&lt;/name&gt;
+        &lt;value&gt;maxFailoverAttempts=3;failoverSleep=1000;enabled=true;zookeeperEnsemble=machine1:2181,machine2:2181,machine3:2181;
+       zookeeperNamespace=hiveserver2&lt;/value&gt;
+     &lt;/param&gt;
+&lt;/provider&gt;
+&lt;!--
+  END Knox HaProvider for Hadoop services
+  --&gt;
+
+
+            &lt;/gateway&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;NAMENODE&lt;/role&gt;
+                &lt;url&gt;hdfs://{{namenode_host}}:{{namenode_rpc_port}}&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;JOBTRACKER&lt;/role&gt;
+                &lt;url&gt;rpc://{{rm_host}}:{{jt_rpc_port}}&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;WEBHDFS&lt;/role&gt;
+                &lt;url&gt;http://{{namenode_host}}:{{namenode_http_port}}/webhdfs&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;WEBHCAT&lt;/role&gt;
+                &lt;url&gt;http://{{webhcat_server_host}}:{{templeton_port}}/templeton&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;OOZIE&lt;/role&gt;
+                &lt;url&gt;http://{{oozie_server_host}}:{{oozie_server_port}}/oozie&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;WEBHBASE&lt;/role&gt;
+                &lt;url&gt;http://{{hbase_master_host}}:{{hbase_master_port}}&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;HIVE&lt;/role&gt;
+                &lt;url&gt;http://{{hive_server_host}}:{{hive_http_port}}/{{hive_http_path}}&lt;/url&gt;
+            &lt;/service&gt;
+
+            &lt;service&gt;
+                &lt;role&gt;RESOURCEMANAGER&lt;/role&gt;
+                &lt;url&gt;http://{{rm_host}}:{{rm_port}}/ws&lt;/url&gt;
+            &lt;/service&gt;
+        &lt;/topology&gt;
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>Then restart Knox via Ambari</p>
+</li>
+</ul>
+<h4 id="hdfs-configuration-for-knox">HDFS Configuration for Knox<a class="headerlink" href="#hdfs-configuration-for-knox" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Tell Hadoop to allow our users to access Knox from any node of the cluster. Modify the below properties under Ambari &gt; HDFS &gt; Config &gt; Custom core-site  ('users' group should already part of the groups so just add the rest)</li>
+<li>hadoop.proxyuser.knox.groups=users,hadoop-admins,sales,hr,legal</li>
+<li>hadoop.proxyuser.knox.hosts=*<ul>
+<li>(better would be to put a comma separated list of the FQDNs of the hosts)</li>
+</ul>
+</li>
+<li>Now restart HDFS</li>
+<li>Without this step you will see an error like below when you run the WebHDFS request later on:
+  <div class="highlight"><pre><span></span><code> org.apache.hadoop.security.authorize.AuthorizationException: User: knox is not allowed to impersonate sales1&quot;
+</code></pre></div></li>
+</ul>
+<h4 id="ranger-configuration-for-webhdfs-over-knox">Ranger Configuration for WebHDFS over Knox<a class="headerlink" href="#ranger-configuration-for-webhdfs-over-knox" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Setup a Knox policy for sales group for WEBHDFS by:</li>
+<li>Login to Ranger &gt; Access Manager &gt; KNOX &gt; click the cluster name link &gt; Add new policy</li>
+<li>Policy name: webhdfs</li>
+<li>Topology name: default</li>
+<li>Service name: WEBHDFS</li>
+<li>Group permissions: sales </li>
+<li>Permission: check Allow</li>
+<li>Add</li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-knox-webhdfs-policy.png" /></p>
+<h4 id="webhdfs-over-knox-exercises">WebHDFS over Knox exercises<a class="headerlink" href="#webhdfs-over-knox-exercises" title="Permanent link">&para;</a></h4>
+<ul>
+<li>Now we can post some requests to WebHDFS over Knox to check its working. We will use curl with following arguments:</li>
+<li>-i (aka –include): used to output HTTP response header information. This will be important when the content of the HTTP Location header is required for subsequent requests.</li>
+<li>-k (aka –insecure) is used to avoid any issues resulting from the use of demonstration SSL certificates.</li>
+<li>-u (aka –user) is used to provide the credentials to be used when the client is challenged by the gateway.</li>
+<li>
+<p>Note that most of the samples do not use the cookie features of cURL for the sake of simplicity. Therefore we will pass in user credentials with each curl request to authenticate.</p>
+</li>
+<li>
+<p><em>From the host where Knox is running</em>, send the below curl request to 8443 port where Knox is running to run <code>ls</code> command on <code>/</code> dir in HDFS:
+<div class="highlight"><pre><span></span><code>curl -ik -u sales1:BadPass#1 https://localhost:8443/gateway/default/webhdfs/v1/?op=LISTSTATUS
+</code></pre></div></p>
+</li>
+<li>
+<p>This should return json object containing list of dirs/files located in root dir and their attributes</p>
+</li>
+<li>
+<p>To avoid passing password on command prompt you can pass in just the username (to avoid having the password captured in the shell history). In this case, you will be prompted for the password<br />
+<div class="highlight"><pre><span></span><code>curl -ik -u sales1 https://localhost:8443/gateway/default/webhdfs/v1/?op=LISTSTATUS
+
+## enter BadPass#1
+</code></pre></div></p>
+</li>
+<li>
+<p>For the remaining examples below, for simplicity, we are passing in the password on the command line, but feel free to remove the password and enter it in manually when prompted</p>
+</li>
+<li>
+<p>Try the same request as hr1 and notice it fails with <code>Error 403 Forbidden</code> :</p>
+</li>
+<li>
+<p>This is expected since in the policy above, we only allowed sales group to access WebHDFS over Knox
+<div class="highlight"><pre><span></span><code>curl -ik -u hr1:BadPass#1 https://localhost:8443/gateway/default/webhdfs/v1/?op=LISTSTATUS
+</code></pre></div></p>
+</li>
+<li>
+<p>Notice that to make the requests over Knox, a kerberos ticket is not needed - the user authenticates by passing in AD/LDAP credentials</p>
+</li>
+<li>
+<p>Check in Ranger Audits to confirm the requests were audited:</p>
+</li>
+<li>Ranger &gt; Audit &gt; Service type: KNOX</li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-knox-webhdfs-audit.png" /></p>
+<ul>
+<li>
+<p>Other things to access WebHDFS with Knox</p>
+</li>
+<li>
+<p>A. Use cookie to make request without passing in credentials</p>
+<ul>
+<li>When you ran the previous curl request it would have listed HTTP headers as part of output. One of the headers will be 'Set Cookie'</li>
+<li>e.g. <code>Set-Cookie: JSESSIONID=xxxxxxxxxxxxxxx;Path=/gateway/default;Secure;HttpOnly</code></li>
+<li>You can pass in the value from your setup and make the request without passing in credentials:</li>
+<li>Make sure you copy the JSESSIONID from a request that worked (i.e the one from sales1 not hr1)
+  <div class="highlight"><pre><span></span><code>curl -ik --cookie &quot;JSESSIONID=xxxxxxxxxxxxxxx;Path=/gateway/default;Secure;HttpOnly&quot; -X GET https://localhost:8443/gateway/default/webhdfs/v1/?op=LISTSTATUS
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>B. Open file via WebHDFS</p>
+<ul>
+<li>Sample command to list files under /tmp:
+<div class="highlight"><pre><span></span><code>curl -ik -u sales1:BadPass#1 https://localhost:8443/gateway/default/webhdfs/v1/tmp?op=LISTSTATUS
+</code></pre></div></li>
+<li>You can run below command to create a test file into /tmp</li>
+</ul>
+<div class="highlight"><pre><span></span><code>echo &quot;Test file&quot; &gt; /tmp/testfile.txt
+sudo -u sales1 kinit
+## enter BadPass#1
+sudo -u sales1 hdfs dfs -put /tmp/testfile.txt /tmp
+sudo -u sales1 kdestroy
+</code></pre></div>
+<ul>
+<li>Open this file via WebHDFS 
+<div class="highlight"><pre><span></span><code>curl -ik -u sales1:BadPass#1 -X GET https://localhost:8443/gateway/default/webhdfs/v1/tmp/testfile.txt?op=OPEN
+</code></pre></div></li>
+<li>
+<p>Look at value of Location header. This will contain a long url 
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/knox-location.png" /></p>
+</li>
+<li>
+<p>Access contents of file /tmp/testfile.txt by passing the value from the above Location header
+<div class="highlight"><pre><span></span><code>curl -ik -u sales1:BadPass#1 -X GET &#39;{https://localhost:8443/gateway/default/webhdfs/data/v1/webhdfs/v1/tmp/testfile.txt?_=AAAACAAAABAAAAEwvyZNDLGGNwahMYZKvaHHaxymBy1YEoe4UCQOqLC7o8fg0z6845kTvMQN_uULGUYGoINYhH5qafY_HjozUseNfkxyrEo313-Fwq8ISt6MKEvLqas1VEwC07-ihmK65Uac8wT-Cmj2BDab5b7EZx9QXv29BONUuzStCGzBYCqD_OIgesHLkhAM6VNOlkgpumr6EBTuTnPTt2mYN6YqBSTX6cc6OhX73WWE6atHy-lv7aSCJ2I98z2btp8XLWWHQDmwKWSmEvtQW6Aj-JGInJQzoDAMnU2eNosdcXaiYH856zC16IfEucdb7SA_mqAymZuhm8lUCvL25hd-bd8p6mn1AZlOn92VySGp2TaaVYGwX-6L9by73bC6sIdi9iKPl3Iv13GEQZEKsTm1a96Bh6ilScmrctk3zmY4vBYp2SjHG9JRJvQgr2XzgA}&#39;
+</code></pre></div></p>
+</li>
+</ul>
+</li>
+<li>
+<p>C. Use groovy scripts to access WebHDFS</p>
+<ul>
+<li>Edit the groovy script to set:</li>
+<li>gateway = "<a href="https://localhost:8443/gateway/default">https://localhost:8443/gateway/default</a>"
+<div class="highlight"><pre><span></span><code>sudo vi /usr/hdp/current/knox-server/samples/ExampleWebHdfsLs.groovy
+</code></pre></div></li>
+<li>Run the script and enter credentials when prompted username: sales1 and password: <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/wgzhao/BadPass/issues/1" title="GitHub Issue: wgzhao/BadPass #1">BadPass#1</a>
+<div class="highlight"><pre><span></span><code>sudo java -jar /usr/hdp/current/knox-server/bin/shell.jar /usr/hdp/current/knox-server/samples/ExampleWebHdfsLs.groovy
+</code></pre></div></li>
+<li>Notice output show list of dirs in HDFS
+<div class="highlight"><pre><span></span><code>[app-logs, apps, ats, hdp, mapred, mr-history, ranger, tmp, user, zone_encr]
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>D. Access via browser </p>
+<ul>
+<li>Take the same url we have been hitting via curl and replace localhost with public IP of Knox node (remember to use https!) e.g. <strong>https</strong>://PUBLIC_IP_OF_KNOX_HOST:8443/gateway/default/webhdfs/v1?op=LISTSTATUS</li>
+<li>Open the URL via browser</li>
+<li>Login as <a class="magiclink magiclink-github magiclink-issue" href="https://github.com/sales1/BadPass/issues/1" title="GitHub Issue: sales1/BadPass #1">sales1/BadPass#1</a></li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/knox-webhdfs-browser1.png" />
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/knox-webhdfs-browser2.png" />
+ <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/knox-webhdfs-browser3.png" /></p>
+</li>
+<li>
+<p>We have shown how you can use Knox to avoid the end user from having to know about internal details of cluster</p>
+</li>
+<li>whether its kerberized or not</li>
+<li>what the cluster topology is (e.g. what node WebHDFS was running)</li>
+</ul>
+<h4 id="hive-over-knox">Hive over Knox<a class="headerlink" href="#hive-over-knox" title="Permanent link">&para;</a></h4>
+<h5 id="configure-hive-for-knox">Configure Hive for Knox<a class="headerlink" href="#configure-hive-for-knox" title="Permanent link">&para;</a></h5>
+<ul>
+<li>In Ambari, under Hive &gt; Configs &gt; set the below and restart Hive component.</li>
+<li>hive.server2.transport.mode = http</li>
+<li>Give users access to jks file.</li>
+<li>This is only for testing since we are using a self-signed cert.</li>
+<li>This only exposes the truststore, not the keys.
+<div class="highlight"><pre><span></span><code>sudo chmod o+x /usr/hdp/current/knox-server /usr/hdp/current/knox-server/data /usr/hdp/current/knox-server/data/security /usr/hdp/current/knox-server/data/security/keystores
+sudo chmod o+r /usr/hdp/current/knox-server/data/security/keystores/gateway.jks
+</code></pre></div></li>
+</ul>
+<h5 id="ranger-configuration-for-hive-over-knox">Ranger Configuration for Hive over Knox<a class="headerlink" href="#ranger-configuration-for-hive-over-knox" title="Permanent link">&para;</a></h5>
+<ul>
+<li>Setup a Knox policy for sales group for HIVE by:</li>
+<li>Login to Ranger &gt; Access Manager &gt; KNOX &gt; click the cluster name link &gt; Add new policy</li>
+<li>Policy name: hive</li>
+<li>Topology name: default</li>
+<li>Service name: HIVE</li>
+<li>Group permissions: sales </li>
+<li>Permission: check Allow</li>
+<li>Add</li>
+</ul>
+<p><img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-knox-hive-policy.png" /></p>
+<h5 id="use-hive-for-knox">Use Hive for Knox<a class="headerlink" href="#use-hive-for-knox" title="Permanent link">&para;</a></h5>
+<ul>
+<li>
+<p>By default Knox will use a self-signed (untrusted) certificate. To trust the certificate:</p>
+<ul>
+<li>First on Knox node, create the /tmp/knox.crt certificate</li>
+</ul>
+</li>
+</ul>
+<p><div class="highlight"><pre><span></span><code>knoxserver=$(hostname -f)
+openssl s_client -connect ${knoxserver}:8443 &lt;&lt;&lt;&#39;&#39; | openssl x509 -out /tmp/knox.crt
+</code></pre></div>
+  - On node where beeline will be run from (e.g. Hive node):
+      - copy over the /tmp/knox.crt
+        - easiest option is to just open it in <code>vi</code> and copy/paste the contents over:
+        <code>vi /tmp/knox.crt</code>
+      - trust the certificate by running the command below      </p>
+<div class="highlight"><pre><span></span><code>sudo keytool -import -trustcacerts -keystore /etc/pki/java/cacerts -storepass changeit -noprompt -alias knox -file /tmp/knox.crt
+</code></pre></div>
+<ul>
+<li>Now connect via beeline, making sure to replace KnoxserverInternalHostName first below:</li>
+</ul>
+<div class="highlight"><pre><span></span><code>beeline -u &quot;jdbc:hive2://&lt;KnoxserverInternalHostName&gt;:8443/;ssl=true;transportMode=http;httpPath=gateway/default/hive&quot; -n sales1 -p BadPass#1
+</code></pre></div>
+<ul>
+<li>Notice that in the JDBC connect string for connecting to an secured Hive running in http transport mode:</li>
+<li><em>port changes to Knox's port 8443</em></li>
+<li><em>traffic between client and Knox is over HTTPS</em></li>
+<li>
+<p><em>a kerberos principal not longer needs to be passed in</em></p>
+</li>
+<li>
+<p>Test these users:</p>
+</li>
+<li><a class="magiclink magiclink-github magiclink-issue" href="https://github.com/sales1/BadPass/issues/1" title="GitHub Issue: sales1/BadPass #1">sales1/BadPass#1</a> should work</li>
+<li>
+<p><a class="magiclink magiclink-github magiclink-issue" href="https://github.com/hr1/BadPass/issues/1" title="GitHub Issue: hr1/BadPass #1">hr1/BadPass#1</a> should <em>not</em> work</p>
+<ul>
+<li>Will fail with:
+<div class="highlight"><pre><span></span><code>Could not create http connection to jdbc:hive2://&lt;hostname&gt;:8443/;ssl=true;transportMode=http;httpPath=gateway/default/hive. HTTP Response code: 403 (state=08S01,code=0)
+</code></pre></div></li>
+</ul>
+</li>
+<li>
+<p>Check in Ranger Audits to confirm the requests were audited:</p>
+</li>
+<li>
+<p>Ranger &gt; Audit &gt; Service type: KNOX
+  <img alt="Image" src="https://raw.githubusercontent.com/HortonworksUniversity/Security_Labs/master/screenshots/Ranger-audit-KNOX-hive-summary.png" /></p>
+</li>
+<li>
+<p>This shows how Knox helps end users access Hive securely over HTTPS using Ranger to set authorization policies and for audits</p>
+</li>
+</ul>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/01mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.indexes", "navigation.expand", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "header.autohide", "announce.dismiss", "toc.integrate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5090c770.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js"></script>
+      
+    
+  </body>
+</html>

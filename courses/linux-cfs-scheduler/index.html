@@ -1,0 +1,3661 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="记录日常工作、学习的一些文档，收藏看到好的资源等">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/courses/linux-cfs-scheduler/">
+      
+      
+        <link rel="prev" href="../commands-in-sbin/">
+      
+      
+        <link rel="next" href="../pg9_high_performance_notes/">
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS 订阅" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="已更新内容的 RSS 订阅" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+    
+    
+      
+        <title>Linux CFS 调度器：原理、设计与内核实现 - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#linux-cfs" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Linux CFS 调度器：原理、设计与内核实现
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="分享" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bigdata/ambari-cli/" class="md-tabs__link">
+          
+  
+    
+  
+  Bigdata
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../commands-in-sbin/" class="md-tabs__link">
+          
+  
+    
+  
+  Courses
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../database/maridb-ax-setup/" class="md-tabs__link">
+          
+  
+    
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-tabs__link">
+          
+  
+    
+  
+  Kubernetes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../misc/Latex%20Math%20Symbols/" class="md-tabs__link">
+          
+  
+    
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-tabs__link">
+          
+  
+    
+  
+  Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tips/bash-tips/" class="md-tabs__link">
+          
+  
+    
+  
+  Tips
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-tabs__link">
+          
+  
+    
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Bigdata
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Bigdata
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ambari-cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Ambari API 来操作 Hadoop 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/flink-cdc-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flink SQL CDC 实践以及一致性分析
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-hive-with-spark/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating Apache Hive with Apache Spark
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-phoenix-with-kerberos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoenix 集成 HBase 并支持 Kerberos 认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ipa-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/kerberos-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MIT Kerberos  安装及维护手册
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    马蜂窝数据仓库设计与实践
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/presto-with-ssl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Presto SSL 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/zookeeper-optimize/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    zookeeper集群应对万级并发的调优
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Courses
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Courses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../commands-in-sbin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux 命令学习
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Linux CFS 调度器：原理、设计与内核实现
+    
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pg9_high_performance_notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《PostgreSQL 9 High Performance》读书笔记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Mysql lecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Mysql lecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-lecture/mysql-practices-lecture-45-1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第一部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-lecture/mysql-practices-lecture-45-2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第二部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-lecture/mysql-practices-lecture-45-3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第三部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-lecture/mysql-practices-lecture-45-4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第四部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mysql-lecture/mysql-practices-lecture-45-5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第五部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Time series analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Time series analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/01-basic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基础篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/02-primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    初级篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/03-advance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    进阶篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/04-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    应用篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../time-series-analysis/05-complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    补完篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/maridb-ax-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MariaDB AX 安装测试简记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/mysql-cluster-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MySQL Cluster 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-11g-imp-and-exp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 11g 导入导出基本操作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-silent-installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 静默安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/percona-cluster-with-haproxy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HAProxy + Percona XtraDB Cluster 部署
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/setup-a-clickhouse-cluster-on-one-node/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在一个节点上部署 ClickHouse 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/why-mysql8-slower-than-mysql57/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Kubernetes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Kubernetes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    外部机器如何直接直接访问 kubernetes 集群内服务
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/calico-node-troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calico Node 无法启动的排查
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/collect-k8s-log-with-filebeat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基于 ELK 的 日志收集与自动索引创建
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/coredns-support-hosts-file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoreDNS 支持解析宿主机的 hosts 文件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/deep-dive-into-k8s-internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用奇怪的方式构建简单 k8s 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/kubernetes-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 kubeadm 安装 kubernetes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/take-flannel-to-calico/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrate kubernetes cluster from Flannel to Calico
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Misc
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Misc
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/Latex%20Math%20Symbols/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用于 LateX 的数学符号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/git-from-zero-to-hero/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git从入门到应付日常工作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/gitlab-ci-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    gitlab-ci.yml 详解
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/osint-introduce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    超级情报手机工具库：开源验证和调查工具及使用方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Programming
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Programming
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Python 和 Flask 设计 RESTful API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/programming-with-vim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    无插件Vim编程技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/pure-bash-bible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pure Bash Bible
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/understanding-awk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tips
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Tips
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/bash-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BASH 的一些技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/batch-convert-word-to-pdf/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows 下批量转换 word 文档为 pdf 的方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/change-keyboard-layout-in-ubuntu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ubuntu 下修改键盘映射
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/git-internals-objects-branches-create-repo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/git-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    git 不常见的操作技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/how-to-create-dummy-rpm-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速创建一个虚假 RPM 包
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-change-git-author/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to change git author name and email
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-delete-old-images-from-nexus-registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    如何删除 nexus 私服上的 Docker 镜像
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-save-tmux-session/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to save tmux session
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/learn-seaborn-with-10min/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    十分钟掌握 Seaborn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/matplotlib-support-chinese/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Python 中 matplotlib 图支持中文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/move-running-process-into-tmux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    把一个运行的进程放到 tmux 会话中
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/rpm-tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rpm 包管理基本技能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/sed-one-line-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/setup-gitlab-ci-for-android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Gitlab CI For Android
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/ssh-three-key-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssh的三板斧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/ssh-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/wechat-contacts-backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    微信通讯录备份
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Troubleshooting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TCPDump Capture HTTP GET/POST requests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/deep-in-tcp-connect/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    详解 TCP 半连接队列与全连接队列
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/docker-run-no-space-left/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker 运行容器报磁盘空间不足的错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/fix-ora-00227/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    修复 Oracle ORA-00227 错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Oracle JDK 1.6 TLSv1.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+
+<h1 id="linux-cfs">Linux CFS 调度器：原理、设计与内核实现<a class="headerlink" href="#linux-cfs" title="Permanent link">&para;</a></h1>
+<p><a href="http://arthurchiao.art/blog/linux-cfs-design-and-implementation-zh/" title="Permalink to Linux CFS 调度器：原理、设计与内核实现（2023）">Source</a></p>
+<p>整理一些 Linux 默认调度器 CFS 相关的东西。CFS、cgroup 等内核技术合力实现了进程的 CPU 资源限额（<strong>CPU 带宽控制</strong>），这是容器的基础之一。</p>
+<h1 id="1">1 概念及关系<a class="headerlink" href="#1" title="Permanent link">&para;</a></h1>
+<p>首先理清几个概念和它们之间的关系。</p>
+<h2 id="11-cfstask">1.1 CFS：进程（task）的公平调度<a class="headerlink" href="#11-cfstask" title="Permanent link">&para;</a></h2>
+<p>CFS（Completely Fair Scheduler）是 Linux 内置（也是目前默认）的一个**内核调度器**， 如名字所示，它实现了所谓的“完全公平”调度算法，将 CPU 资源均匀地分配给各进程（ 在内核代码中称为“任务”，task）。 简单来说，如果一台机器有一个 CPU 多个（计算密集型）进程，那采用 CFS 调度器时，</p>
+<p><img alt="" src="../../images/cfs.png" /></p>
+<ul>
+<li>两个进程：每个进程会各占 50% CPU 时间；</li>
+<li>四个进程：每个进程会各占 25% CPU 时间；</li>
+</ul>
+<p>这个很好理解。接下来看第二个概念。</p>
+<h2 id="12-cfs">1.2 CFS 扩展<a class="headerlink" href="#12-cfs" title="Permanent link">&para;</a></h2>
+<p>最初的 CFS 管理的是单个任务（进程）的调度，给每个进程分配公平的 CPU 时间。 但很多情况下，进程会组织成进程组（task group）的形式， 用户希望先对进程组分配 CPU 份额，再**在每个进程组里面实现公平调度**。</p>
+<p>举个具体例子，多个用户使用同一台机器时，可能希望，</p>
+<ul>
+<li>首先按 user 公平（也可以不公平）分配 CPU；</li>
+<li>针对每个 user，再对其所有进程公平分配这个 user 的总 CPU 时间。</li>
+</ul>
+<p>为此，<strong>CFS 引入了几项扩展</strong>，例如</p>
+<ul>
+<li>实时任务的组调度（RT group）</li>
+<li>常规进程的组调度（task group）</li>
+</ul>
+<p>但实现这几个扩展是需要一些前提的。</p>
+<h3 id="121-config_cgroups">1.2.1 前提：<code>CONFIG_CGROUPS</code><a class="headerlink" href="#121-config_cgroups" title="Permanent link">&para;</a></h3>
+<p>要实现按进程组分配和管理 CPU 份额的功能，首先要能够控制（<strong>control</strong>） 进程组（task <strong>group</strong>）的资源限额， 这种技术在 Linux 内核中已经有了，叫**控制组（control group）<strong>，缩写是 cgroup。 （</strong><code>CONFIG_CGROUPS</code>**）。</p>
+<ul>
+<li>cgroup 有两个版本，分别称为 cgroup v1 和 cgroup v2。这两个版本**不兼容**，现在默认都是用的 v1；</li>
+<li>有了 <code>cgroup</code>，调度器就能通过 <code>cgroup</code> 伪文件系统来管理进程组占用的资源（我们这里关心的是CPU 资源）了；</li>
+<li>更多信息见 <a href="https://www.kernel.org/doc/Documentation/admin-guide/cgroup-v1/cgroups.rst">Documentation/admin-guide/cgroup-v1/cgroups.rst</a>。</li>
+</ul>
+<h3 id="122-config_cgroup_sched">1.2.2 前提：<code>CONFIG_CGROUP_SCHED</code><a class="headerlink" href="#122-config_cgroup_sched" title="Permanent link">&para;</a></h3>
+<p>cgroup 是按资源类型（cpu/memory/device/hugetlb/…）来做资源限额的，每种资源 类型会有一种对应的控制器（controller），有独立的开关。 控制**进程或进程组能使用的 CPU 时间**，对应的开关是 <code>CONFIG_CGROUP_SCHED</code>。</p>
+<p>至此，支持进程组级别资源控制的基础就具备了。接下来就是 CFS 扩展代码的实现， 添加对于 realtime/conventional task group 的支持。下面分别来看下。</p>
+<h3 id="123-config_rt_group_sched">1.2.3 扩展：支持实时进程组（<code>CONFIG_RT_GROUP_SCHED</code>）<a class="headerlink" href="#123-config_rt_group_sched" title="Permanent link">&para;</a></h3>
+<p><code>CONFIG_RT_GROUP_SCHED</code> 支持对 real-time (SCHED_FIFO and SCHED_RR) 任务进行分组 CFS。</p>
+<p>实时进程有严格的响应时间限制，不管机器的 load 有多高，都应该确保这些进程的响应实时性。 例子：内核中的 <strong><code>migration</code></strong> 进程，负责在不同 CPU 之间分发任务（进程负载均衡）。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>ps<span class="w"> </span>-ef<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>migration
+root<span class="w">          </span><span class="m">12</span><span class="w">       </span><span class="m">2</span><span class="w">  </span><span class="m">0</span><span class="w">       </span><span class="m">00</span>:00:01<span class="w"> </span><span class="o">[</span>migration/0<span class="o">]</span>
+</code></pre></div>
+<h3 id="124-config_fair_group_sched">1.2.4 扩展：支持常规进程组（<code>CONFIG_FAIR_GROUP_SCHED</code>）<a class="headerlink" href="#124-config_fair_group_sched" title="Permanent link">&para;</a></h3>
+<p>实时进程之外的进程就是所谓的**常规进程**，它们没有严格的响应时间限制， 当系统繁忙时，响应延迟就会增加。</p>
+<p>在 cgroup 技术基础上上，再对 CFS 代码做一些增强，就能够支持进程组内的公平调度了。 这些增强代码是通过编译选项 <strong><code>CONFIG_FAIR_GROUP_SCHED</code></strong> 控制的。 支持对普通 CFS (SCHED_NORMAL, SCHED_BATCH) 任务进行分组。</p>
+<p>至此，我们已经能对进程和进程组进行 CFS 调度。</p>
+<h2 id="13-cfs-cpu">1.3 常规进程组 CFS 再扩展：支持 CPU 带宽控制（限额）<a class="headerlink" href="#13-cfs-cpu" title="Permanent link">&para;</a></h2>
+<h3 id="131-cfs">1.3.1 CFS 存在的问题<a class="headerlink" href="#131-cfs" title="Permanent link">&para;</a></h3>
+<p>CFS 自己也存在一些问题或限制：</p>
+<ol>
+<li>某些情况下做不到真正的公平。</li>
+</ol>
+<p>CFS 本质上是会把 CPU 用满的（work-conserving）。具体来说，如果一个 CPU 上 有两个任务，理论上应该各占用 50% 的 CPU；但如果其中一个任务有很多 sleep/wait 时间， CFS 就会把多余的时间给到第二个进程，导致第二个进程实际使用的时间超过一半。
+2. 优先级高的进程仍然可能获得更大的时间片。</p>
+<p>内核中有两中调度类（scheduling class）：SCHED_RT 和 SCHED_NORMAL，前者的优先级更大。 当一个 CPU 上有 RT 类型任务时，永远是它们先执行。优先级可以通过 <code>nice(2)</code> 控制。
+3. 无法设置 CPU 使用上限。</p>
+<p>CFS <strong>只关注 CPU 平均分配，并不保证 CPU 时间</strong>（上下限）。 换句话说，CPU share/quota 只有相对意义，share 大的一定比 share 小的能分到更多 CPU，仅此而已。 进程越多，每个进程分到的 CPU 时间越少。 CPU 限额（上限）对**按 CPU 时间计费**的场景非常关键，例如公有云。</p>
+<pre class="mermaid"><code>%%{ init: { 'flowchart': { 'curve': 'bumpX' } } }%%
+graph TB
+rg(["Root group/&lt;br&gt;(no tasks directrly under root)&lt;br/&gt; CPU:100%&lt;br/&gt;shares: 1024"])
+prof["professor&lt;br&gt;CPU:50%&lt;br&gt;shares:1024"]
+stu["students&lt;br&gt;CPU:25%&lt;br&gt;shares:1024"]
+sys["system_tasks&lt;br&gt;CPU:25%&lt;br&gt;shares:1024"]
+e1["Electronics Students&lt;br&gt;CPU:30%&lt;br/&gt;shares:3072"]
+e2["Electronics Students&lt;br&gt;CPU:30%&lt;br/&gt;shares:3072"]
+e3["Computers Students&lt;br&gt;CPU:30%&lt;br/&gt;shares:3072"]
+e4["Other Students&lt;br&gt;CPU:30%&lt;br/&gt;shares:3072"]
+
+rg ---&gt; prof &amp; stu &amp; sys
+stu ---&gt; e1 &amp; e2 &amp; e3 &amp; e</code></pre>
+<p>图片来自 google paper [5]。注意：严格来说，这里的相对时间还只是在 SCHED_NORMAL 里的时间，不包括 SCHED_RT 进程占掉的 CPU 时间。</p>
+<h3 id="132-config_cfs_bandwidth">1.3.2 <code>CONFIG_CFS_BANDWIDTH</code><a class="headerlink" href="#132-config_cfs_bandwidth" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>严格来说，Linux 中的调度单位是线程（thread），因此在调度上下文中并没有进程（process）的概念。</p>
+</blockquote>
+<p>基于以上原因，Google 提出了 <strong>CFS CPU 带宽控制</strong>（CFS bandwidth control）方案，并合并到了主线内核。 这里的“CPU 带宽”指的就是 CPU 份额，或者说的更清楚点，CPU 比例。 SCHED_RT 中其实已经有这个功能，这里指的是 SCHED_NORMAL 支持这个功能。</p>
+<p>这个功能的好处主要是给服务器，不是给桌面电脑。 好处：</p>
+<ul>
+<li>能精确控制一个进程使用的 CPU 带宽上限；比如设置一个容器只能使用 0.2 CPU， 那它的总时间就不能超过这个比例，即使这个 CPU 非常空闲；</li>
+<li>对容量规划非常有用（例如 OpenStack 调度 VM，k8s 调度 pod）；</li>
+<li>延迟更有保证；</li>
+</ul>
+<h2 id="14-cfs-bandwith">1.4 CFS BANDWITH 近几年改进<a class="headerlink" href="#14-cfs-bandwith" title="Permanent link">&para;</a></h2>
+<ul>
+<li>burst 特性：允许借用前一个进程剩下的带宽。</li>
+</ul>
+<h2 id="15-cfs">1.5 小结：CFS 相关内核编译选项的关系<a class="headerlink" href="#15-cfs" title="Permanent link">&para;</a></h2>
+<p>总结一下前面提到的 CFS 相关功能，它们的配置选项或依赖关系如下：</p>
+<div class="highlight"><pre><span></span><code>CONFIG_CGROUPS                     # 1. 是否支持 cgroup，下面进一步区分 cpu/memory/hugetlb/...
+  |-CONFIG_MEMCG                   #   1.1 是否支持 memory cgroup
+  |-CONFIG_BLK_CGROUP              #   1.2 是否支持 blkio cgroup
+  |-CONFIG_CGROUP_SCHED            #   1.3 是否支持 cpu cgroup
+  |   |-CONFIG_RT_GROUP_SCHED      #     1.3.1 是否支持 realtime scheduler cpu cgroup
+  |   |-CONFIG_FAIR_GROUP_SCHED    #     1.3.2 是否支持 cfs for task cgroup
+  |       |-CONFIG_CFS_BANDWIDTH   #       1.3.2.1 是否支持 cfs cpu bandwidth
+  |
+  |-CONFIG_CGROUP_PIDS             #   1.4 是否支持 pid cgroup
+  |-CONFIG_CPUSETS                 #   1.5 是否支持 cpuset cgroup
+  |-CONFIG_CGROUP_DEVICE           #   1.6 是否支持 device cgroup
+  |-CONFIG_CGROUP_CPUACCT          #   1.7 是否支持 cpu,acc cgroup
+  |-...                            #   1.8 是否支持 ... cgroup
+</code></pre></div>
+<p>这些宏定义（编译开关）的层次关系在 <code>init/Kconfig</code> 中可以看出来，在父一级开关为 yes 的条件下，才会有子一级的开关。 例如，要启用 CFS CPU 带宽控制功能，就必须要有： <code>CONFIG_CGROUPS=y &amp;&amp; CONFIG_CGROUP_SCHED=y &amp;&amp; CONFIG_FAIR_GROUP_SCHED=y &amp;&amp; CONFIG_CFS_BANDWIDTH=y</code> 这是本文接下来将重点关注的部分（<strong><code>1 -&gt; 1.3 -&gt; 1.3.2 -&gt; 1.3.2.1</code></strong>）。</p>
+<p>各开关的详细解释：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// init/Kconfig</span>
+
+<span class="n">menuconfig</span><span class="w"> </span><span class="n">CGROUPS</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Control Group support&quot;</span>
+<span class="w">    </span><span class="n">help</span>
+<span class="w">      </span><span class="n">This</span><span class="w"> </span><span class="n">option</span><span class="w"> </span><span class="n">adds</span><span class="w"> </span><span class="n">support</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">grouping</span><span class="w"> </span><span class="n">sets</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">processes</span><span class="w"> </span><span class="n">together</span><span class="p">,</span><span class="w"> </span><span class="k">for</span>
+<span class="w">      </span><span class="n">use</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="n">subsystems</span><span class="w"> </span><span class="n">such</span><span class="w"> </span><span class="n">as</span><span class="w"> </span><span class="n">Cpusets</span><span class="p">,</span><span class="w"> </span><span class="n">CFS</span><span class="p">,</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">controls</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="n">isolation</span><span class="p">.</span>
+<span class="w">      </span><span class="n">See</span>
+<span class="w">        </span><span class="o">-</span><span class="w"> </span><span class="n">Documentation</span><span class="o">/</span><span class="n">scheduler</span><span class="o">/</span><span class="n">sched</span><span class="o">-</span><span class="n">design</span><span class="o">-</span><span class="n">CFS</span><span class="p">.</span><span class="n">rst</span><span class="w">    </span><span class="p">(</span><span class="n">CFS</span><span class="p">)</span>
+<span class="w">        </span><span class="o">-</span><span class="w"> </span><span class="n">Documentation</span><span class="o">/</span><span class="n">admin</span><span class="o">-</span><span class="n">guide</span><span class="o">/</span><span class="n">cgroup</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="w"> </span><span class="p">(</span><span class="n">features</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">grouping</span><span class="p">,</span><span class="w"> </span><span class="n">isolation</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">resource</span><span class="w"> </span><span class="n">control</span><span class="p">)</span>
+
+<span class="k">if</span><span class="w"> </span><span class="n">CGROUPS</span>
+<span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="n">MEMCG</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Memory controller&quot;</span>
+<span class="w">        </span><span class="n">select</span><span class="w"> </span><span class="n">PAGE_COUNTER</span>
+<span class="w">        </span><span class="n">help</span>
+<span class="w">          </span><span class="n">Provides</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">memory</span><span class="w"> </span><span class="n">footprint</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">cgroup</span><span class="p">.</span>
+<span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="n">BLK_CGROUP</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;IO controller&quot;</span>
+<span class="w">        </span><span class="n">depends</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">BLOCK</span>
+<span class="w">        </span><span class="n">help</span>
+<span class="w">          </span><span class="n">Generic</span><span class="w"> </span><span class="n">block</span><span class="w"> </span><span class="n">IO</span><span class="w"> </span><span class="n">controller</span><span class="w"> </span><span class="n">cgroup</span><span class="w"> </span><span class="n">interface</span><span class="p">.</span><span class="w"> </span><span class="n">This</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">common</span>
+<span class="w">          </span><span class="n">cgroup</span><span class="w"> </span><span class="n">interface</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="n">should</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">various</span><span class="w"> </span><span class="n">IO</span><span class="w"> </span><span class="n">controlling</span><span class="w"> </span><span class="n">policies</span><span class="p">.</span>
+
+<span class="w">          </span><span class="n">Currently</span><span class="p">,</span><span class="w"> </span><span class="n">CFQ</span><span class="w"> </span><span class="n">IO</span><span class="w"> </span><span class="n">scheduler</span><span class="w"> </span><span class="n">uses</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">recognize</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="n">groups</span><span class="w"> </span><span class="n">and</span>
+<span class="w">          </span><span class="n">control</span><span class="w"> </span><span class="n">disk</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">allocation</span><span class="w"> </span><span class="p">(</span><span class="n">proportional</span><span class="w"> </span><span class="n">time</span><span class="w"> </span><span class="n">slice</span><span class="w"> </span><span class="n">allocation</span><span class="p">)</span>
+<span class="w">          </span><span class="n">to</span><span class="w"> </span><span class="n">such</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="n">groups</span><span class="p">.</span><span class="w"> </span><span class="n">It</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">also</span><span class="w"> </span><span class="n">used</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">bio</span><span class="w"> </span><span class="n">throttling</span><span class="w"> </span><span class="n">logic</span><span class="w"> </span><span class="n">in</span>
+<span class="w">          </span><span class="n">block</span><span class="w"> </span><span class="n">layer</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">implement</span><span class="w"> </span><span class="n">upper</span><span class="w"> </span><span class="n">limit</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">IO</span><span class="w"> </span><span class="n">rates</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">device</span><span class="p">.</span>
+
+<span class="w">          </span><span class="n">This</span><span class="w"> </span><span class="n">option</span><span class="w"> </span><span class="n">only</span><span class="w"> </span><span class="n">enables</span><span class="w"> </span><span class="n">generic</span><span class="w"> </span><span class="n">Block</span><span class="w"> </span><span class="n">IO</span><span class="w"> </span><span class="n">controller</span><span class="w"> </span><span class="n">infrastructure</span><span class="p">.</span>
+<span class="w">          </span><span class="n">One</span><span class="w"> </span><span class="n">needs</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">also</span><span class="w"> </span><span class="n">enable</span><span class="w"> </span><span class="n">actual</span><span class="w"> </span><span class="n">IO</span><span class="w"> </span><span class="n">controlling</span><span class="w"> </span><span class="n">logic</span><span class="o">/</span><span class="n">policy</span><span class="p">.</span><span class="w"> </span><span class="n">For</span>
+<span class="w">          </span><span class="n">enabling</span><span class="w"> </span><span class="n">proportional</span><span class="w"> </span><span class="n">weight</span><span class="w"> </span><span class="n">division</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">disk</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">CFQ</span><span class="p">,</span><span class="w"> </span><span class="n">set</span>
+<span class="w">          </span><span class="n">CONFIG_BFQ_GROUP_IOSCHED</span><span class="o">=</span><span class="n">y</span><span class="p">;</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">enabling</span><span class="w"> </span><span class="n">throttling</span><span class="w"> </span><span class="n">policy</span><span class="p">,</span><span class="w"> </span><span class="n">set</span>
+<span class="w">          </span><span class="n">CONFIG_BLK_DEV_THROTTLING</span><span class="o">=</span><span class="n">y</span><span class="p">.</span>
+
+<span class="w">          </span><span class="n">See</span><span class="w"> </span><span class="n">Documentation</span><span class="o">/</span><span class="n">admin</span><span class="o">-</span><span class="n">guide</span><span class="o">/</span><span class="n">cgroup</span><span class="o">-</span><span class="n">v1</span><span class="o">/</span><span class="n">blkio</span><span class="o">-</span><span class="n">controller</span><span class="p">.</span><span class="n">rst</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">more</span><span class="w"> </span><span class="n">information</span><span class="p">.</span>
+
+<span class="w">    </span><span class="n">menuconfig</span><span class="w"> </span><span class="n">CGROUP_SCHED</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;CPU controller&quot;</span>
+<span class="w">        </span><span class="n">help</span>
+<span class="w">          </span><span class="n">This</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="n">lets</span><span class="w"> </span><span class="n">CPU</span><span class="w"> </span><span class="n">scheduler</span><span class="w"> </span><span class="n">recognize</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="n">groups</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">control</span><span class="w"> </span><span class="n">CPU</span>
+<span class="w">          </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">allocation</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">such</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="n">groups</span><span class="p">.</span><span class="w"> </span><span class="n">It</span><span class="w"> </span><span class="n">uses</span><span class="w"> </span><span class="n">cgroups</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">tasks</span><span class="p">.</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="n">CGROUP_SCHED</span>
+<span class="w">        </span><span class="n">config</span><span class="w"> </span><span class="n">FAIR_GROUP_SCHED</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Group scheduling for SCHED_OTHER&quot;</span>
+<span class="w">            </span><span class="n">depends</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">CGROUP_SCHED</span>
+<span class="w">            </span><span class="k">default</span><span class="w"> </span><span class="n">CGROUP_SCHED</span>
+
+<span class="w">            </span><span class="n">config</span><span class="w"> </span><span class="n">CFS_BANDWIDTH</span>
+<span class="w">                </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;CPU bandwidth provisioning for FAIR_GROUP_SCHED&quot;</span>
+<span class="w">                </span><span class="n">depends</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">FAIR_GROUP_SCHED</span>
+<span class="w">                </span><span class="n">help</span>
+<span class="w">                  </span><span class="n">This</span><span class="w"> </span><span class="n">option</span><span class="w"> </span><span class="n">allows</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">define</span><span class="w"> </span><span class="n">CPU</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">rates</span><span class="w"> </span><span class="p">(</span><span class="n">limits</span><span class="p">)</span><span class="w"> </span><span class="k">for</span>
+<span class="w">                  </span><span class="n">tasks</span><span class="w"> </span><span class="n">running</span><span class="w"> </span><span class="n">within</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">fair</span><span class="w"> </span><span class="n">group</span><span class="w"> </span><span class="n">scheduler</span><span class="p">.</span><span class="w">  </span><span class="n">Groups</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">limit</span>
+<span class="w">                  </span><span class="n">set</span><span class="w"> </span><span class="n">are</span><span class="w"> </span><span class="n">considered</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">unconstrained</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="n">with</span><span class="w"> </span><span class="n">no</span><span class="w"> </span><span class="n">restriction</span><span class="p">.</span>
+<span class="w">                  </span><span class="n">See</span><span class="w"> </span><span class="n">Documentation</span><span class="o">/</span><span class="n">scheduler</span><span class="o">/</span><span class="n">sched</span><span class="o">-</span><span class="n">bwc</span><span class="p">.</span><span class="n">rst</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">more</span><span class="w"> </span><span class="n">information</span><span class="p">.</span>
+<span class="w">        </span><span class="n">config</span><span class="w"> </span><span class="n">RT_GROUP_SCHED</span>
+<span class="w">            </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Group scheduling for SCHED_RR/FIFO&quot;</span>
+<span class="w">            </span><span class="n">depends</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">CGROUP_SCHED</span>
+<span class="w">            </span><span class="n">help</span>
+<span class="w">              </span><span class="n">This</span><span class="w"> </span><span class="n">feature</span><span class="w"> </span><span class="n">lets</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">explicitly</span><span class="w"> </span><span class="n">allocate</span><span class="w"> </span><span class="n">real</span><span class="w"> </span><span class="n">CPU</span><span class="w"> </span><span class="n">bandwidth</span>
+<span class="w">              </span><span class="n">to</span><span class="w"> </span><span class="n">task</span><span class="w"> </span><span class="n">groups</span><span class="p">.</span><span class="w"> </span><span class="n">If</span><span class="w"> </span><span class="n">enabled</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">also</span><span class="w"> </span><span class="n">make</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">impossible</span><span class="w"> </span><span class="n">to</span>
+<span class="w">              </span><span class="n">schedule</span><span class="w"> </span><span class="n">realtime</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">non</span><span class="o">-</span><span class="n">root</span><span class="w"> </span><span class="n">users</span><span class="w"> </span><span class="n">until</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">allocate</span><span class="w"> </span><span class="n">realtime</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">them</span><span class="p">.</span>
+<span class="w">              </span><span class="n">See</span><span class="w"> </span><span class="n">Documentation</span><span class="o">/</span><span class="n">scheduler</span><span class="o">/</span><span class="n">sched</span><span class="o">-</span><span class="n">rt</span><span class="o">-</span><span class="n">group</span><span class="p">.</span><span class="n">rst</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">more</span><span class="w"> </span><span class="n">information</span><span class="p">.</span>
+<span class="w">    </span><span class="n">endif</span><span class="w"> </span><span class="err">#</span><span class="n">CGROUP_SCHED</span>
+
+<span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="n">CGROUP_PIDS</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;PIDs controller&quot;</span>
+<span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="n">CPUSETS</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Cpuset controller&quot;</span>
+<span class="w">        </span><span class="n">help</span>
+<span class="w">          </span><span class="n">This</span><span class="w"> </span><span class="n">option</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">let</span><span class="w"> </span><span class="n">you</span><span class="w"> </span><span class="n">create</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">manage</span><span class="w"> </span><span class="n">CPUSETs</span><span class="w"> </span><span class="n">which</span>
+<span class="w">          </span><span class="n">allow</span><span class="w"> </span><span class="n">dynamically</span><span class="w"> </span><span class="n">partitioning</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">system</span><span class="w"> </span><span class="n">into</span><span class="w"> </span><span class="n">sets</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">CPUs</span><span class="w"> </span><span class="n">and</span>
+<span class="w">          </span><span class="n">Memory</span><span class="w"> </span><span class="n">Nodes</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">assigning</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">run</span><span class="w"> </span><span class="n">only</span><span class="w"> </span><span class="n">within</span><span class="w"> </span><span class="n">those</span><span class="w"> </span><span class="n">sets</span><span class="p">.</span>
+<span class="w">          </span><span class="n">This</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">primarily</span><span class="w"> </span><span class="n">useful</span><span class="w"> </span><span class="n">on</span><span class="w"> </span><span class="n">large</span><span class="w"> </span><span class="n">SMP</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">NUMA</span><span class="w"> </span><span class="n">systems</span><span class="p">.</span>
+<span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="n">CGROUP_DEVICE</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Device controller&quot;</span>
+<span class="w">        </span><span class="n">help</span>
+<span class="w">          </span><span class="n">Provides</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">cgroup</span><span class="w"> </span><span class="n">controller</span><span class="w"> </span><span class="n">implementing</span><span class="w"> </span><span class="n">whitelists</span><span class="w"> </span><span class="k">for</span>
+<span class="w">          </span><span class="n">devices</span><span class="w"> </span><span class="n">which</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">process</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">cgroup</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">mknod</span><span class="w"> </span><span class="n">or</span><span class="w"> </span><span class="n">open</span><span class="p">.</span>
+<span class="w">    </span><span class="n">config</span><span class="w"> </span><span class="n">CGROUP_CPUACCT</span>
+<span class="w">        </span><span class="kt">bool</span><span class="w"> </span><span class="s">&quot;Simple CPU accounting controller&quot;</span>
+<span class="w">        </span><span class="n">help</span>
+<span class="w">          </span><span class="n">Provides</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">simple</span><span class="w"> </span><span class="n">controller</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">monitoring</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">total</span><span class="w"> </span><span class="n">CPU</span><span class="w"> </span><span class="n">consumed</span><span class="w"> </span><span class="n">by</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">tasks</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">cgroup</span><span class="p">.</span>
+<span class="n">endif</span><span class="w"> </span><span class="err">#</span><span class="w"> </span><span class="n">CGROUPS</span>
+</code></pre></div>
+<h1 id="2-cfs">2 CFS 相关设计<a class="headerlink" href="#2-cfs" title="Permanent link">&para;</a></h1>
+<h2 id="21">2.1 设计目标和基本原理<a class="headerlink" href="#21" title="Permanent link">&para;</a></h2>
+<p>CFS 早在 2007 年就合并到 Linux 内核（<code>2.6.23</code>） <a href="https://www.kernel.org/doc/Documentation/admin-guide/cgroup-v1/cgroups.rst">1</a>，取代了之前调度器中的 SCHED_OTHER 实现。 CFS 80% 的设计都可以总结为一句话：<strong>将真实 CPU 建模为一个“理想、精确的多任务 CPU”</strong>。 “理想多任务 CPU” 掌控 100% 物理资源，能精确地以相同速度并行执行多个进程， 每个任务的速度都是 <code>1/nr_running</code>。</p>
+<p>内核为每个 CPU 维护了一个可运行进程的队列（runqueue）； CFS 有一个可配置的调度周期 <code>sched_latency</code>；接下来的基本调度过程：</p>
+<ul>
+<li>CFS 根据当前可运行进程的数量 N，计算得到每个进程应该执行的时间 sched_latency/N；</li>
+<li>依次取出进程执行以上计算出的时间；</li>
+<li>如果 runqueue 有变化，再重新计算可执行时间。</li>
+</ul>
+<h2 id="22">2.2 核心概念<a class="headerlink" href="#22" title="Permanent link">&para;</a></h2>
+<h3 id="221-vruntime">2.2.1 <code>vruntime</code><a class="headerlink" href="#221-vruntime" title="Permanent link">&para;</a></h3>
+<p>在真实 CPU 上，任意时间只能运行一个任务；为了实现“公平”，CFS 引入了 “virtual runtime”（虚拟运行时间）的概念。</p>
+<ul>
+<li>vruntime 表示进程真正在 CPU 上执行的时间，不包括任何形式的等待时间；</li>
+<li>注意机器一般都是多核的，因此 vruntime 是在多个 CPU 上执行时间的累加。</li>
+</ul>
+<h3 id="222-runqueue">2.2.2 <code>runqueue</code><a class="headerlink" href="#222-runqueue" title="Permanent link">&para;</a></h3>
+<p>刚才其实已经提到了，是每个 CPU 上的可运行进程队列，之前就已经存在，并不是 CFS 引入的。</p>
+<h3 id="223">2.2.3 基于时序的红黑树<a class="headerlink" href="#223" title="Permanent link">&para;</a></h3>
+<p>哪个进程 vruntime 最小，说明累计执行时间最少，从“公平”的角度来说，就需要执行它。</p>
+<ul>
+<li>CFS 用红黑树来组织这些进程（描述 runqueue），用 <strong>vruntime 做 key</strong>， 所以这是一个**基于时序的红黑树**（time-ordered rbtree）， 所有 runnable 的进程都是用 <code>p-&gt;se.vruntime</code> 作为 key 来排序的。</li>
+<li>CFS 每次取出最左边的进程（红黑树特性），执行完成后插入越来越右边，这样每个任务都有机会成为最左边的节点， 在一段确定是时间内总得得到 CPU 资源。</li>
+</ul>
+<p>实际上 CFS 还维护了 min/max vruntime，</p>
+<ul>
+<li>min vruntime 用途：<strong>新进程或重新回到 ready 状态的进程</strong>，用 vruntime=min_vruntime 来初始化，放到最左边；这对防止进程饥饿非常关键；</li>
+<li>max vruntime 用途：限额？</li>
+</ul>
+<blockquote>
+<p>查询复杂度：<code>O(1)</code> 插入复杂度 <code>O(logN)</code></p>
+</blockquote>
+<h2 id="23-scheduling-policy">2.3 调度策略（scheduling policy）<a class="headerlink" href="#23-scheduling-policy" title="Permanent link">&para;</a></h2>
+<h3 id="231">2.3.1 实时进程调度策略<a class="headerlink" href="#231" title="Permanent link">&para;</a></h3>
+<p>可运行的进程都放到了一个 runqueue（运行队列）的数据结构中，调度器根据调度策略从里面取出进程放到 CPU 上执行。 有两种调度策略：SCHED_RR 和 SCHED_FIFO。</p>
+<h4 id="sched_fifo"><code>SCHED_FIFO</code><a class="headerlink" href="#sched_fifo" title="Permanent link">&para;</a></h4>
+<p>很简单，先进先出。</p>
+<p>进程在下面的条件下会放弃 CPU：</p>
+<ol>
+<li>进程在等待，例如 IO 操作。当进程**再回到 ready 状态时**，它会被放到 runqueue 队尾。</li>
+<li>进程通过 <strong><code>sched_yield</code></strong> yield（主动让出） CPU。进程**立即**进入 runqueue 队尾。</li>
+</ol>
+<h4 id="sched_rr"><code>SCHED_RR</code><a class="headerlink" href="#sched_rr" title="Permanent link">&para;</a></h4>
+<p>在这种调度策略中，runqueue 中的每个进程轮流获得时间片（quantum）。</p>
+<p>调度策略：影响的是 runqueue 如何工作，每个进程能获得多少执行时间。</p>
+<h3 id="232">2.3.2 常规进程调度策略<a class="headerlink" href="#232" title="Permanent link">&para;</a></h3>
+<p>CFS 实现了三种调度策略：</p>
+<h4 id="sched_normal"><code>SCHED_NORMAL</code><a class="headerlink" href="#sched_normal" title="Permanent link">&para;</a></h4>
+<p>历史上叫 <code>SCHED_OTHER</code>，适用于普通任务的调度。</p>
+<h4 id="sched_batch"><code>SCHED_BATCH</code><a class="headerlink" href="#sched_batch" title="Permanent link">&para;</a></h4>
+<p>适合批量任务。不像普通任务那样容易被抢占，因此每个任务运行的时间可以更长，缓存效率更高，但交互性变差。</p>
+<h4 id="sched_idle"><code>SCHED_IDLE</code><a class="headerlink" href="#sched_idle" title="Permanent link">&para;</a></h4>
+<p>This is even weaker than nice 19, but its not a true idle timer scheduler in order to avoid to get into priority inversion problems which would deadlock the machine.</p>
+<h3 id="233-sched_normal-sched_rr">2.3.3 常规进程 <code>SCHED_NORMAL</code> 和实时进程 <code>SCHED_RR</code> 调度策略的区别<a class="headerlink" href="#233-sched_normal-sched_rr" title="Permanent link">&para;</a></h3>
+<p>二者都是按进程公平分配 CPU，计算好每个进程的执行时间（时长都一样），然后依次取出进程执行， 听起来有点像，但不一样：</p>
+<p>SCHED_RRSCHED_NORMAL调度的进程类型实时进程普通进程时间片静态，不依赖系统中的进程数量动态，根据系统中进程的数量会发生变化下一个进程的选择从 runqueue 中按 RR 选下一个从红黑树中选 vruntime 最小的一个</p>
+<h3 id="234">2.3.4 查看或修改进程的调度属性<a class="headerlink" href="#234" title="Permanent link">&para;</a></h3>
+<p><code>chrt</code> 可**查看或修改进程的调度属性**：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>chrt<span class="w"> </span>--help
+Show<span class="w"> </span>or<span class="w"> </span>change<span class="w"> </span>the<span class="w"> </span>real-time<span class="w"> </span>scheduling<span class="w"> </span>attributes<span class="w"> </span>of<span class="w"> </span>a<span class="w"> </span>process.
+...
+</code></pre></div>
+<p>查看调度属性：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>chrt<span class="w"> </span>-p<span class="w"> </span><span class="m">219027</span>
+pid<span class="w"> </span><span class="m">219027</span><span class="s1">&#39;s current scheduling policy: SCHED_OTHER</span>
+<span class="s1">pid 219027&#39;</span>s<span class="w"> </span>current<span class="w"> </span>scheduling<span class="w"> </span>priority:<span class="w"> </span><span class="m">0</span>
+</code></pre></div>
+<h2 id="24-scheduling-class">2.4 调度类（scheduling class）<a class="headerlink" href="#24-scheduling-class" title="Permanent link">&para;</a></h2>
+<p>CFS 引入了 “Scheduling Class” 概念，将调度策略封装到一个调度类型，使得 CFS 调度器核心代码不用处理调度策略细节。</p>
+<p>这些调度类组成一个可扩展的调度模块层级（an extensible hierarchy of scheduler modules）。</p>
+<h2 id="25-group-scheduler-extensions">2.5 进程组调度器扩展（group scheduler extensions）<a class="headerlink" href="#25-group-scheduler-extensions" title="Permanent link">&para;</a></h2>
+<p><code>CONFIG_FAIR_GROUP_SCHED</code> 启用后，会为每个 task group 在对应的 cgroup 目录中创建一个名为 <strong><code>cpu.shares</code></strong> 的文件。</p>
+<h2 id="26-cfs">2.6 CFS 配置项<a class="headerlink" href="#26-cfs" title="Permanent link">&para;</a></h2>
+<p>CFS 的时间粒度是 <strong><code>ns</code></strong>，并不依赖任何 jiffies 或 HZ 信息。 有一个可调优的配置，（需要在编译内核时打开 CONFIG_SCHED_DEBUG）：</p>
+<ul>
+<li>kernel <code>&lt; 5.15</code>: <code>/proc/sys/kernel/sched_min_granularity_ns</code></li>
+<li>kernel <code>&gt;= 5.15</code>: <code>/sys/kernel/debug/sched/min_granularity_ns</code></li>
+</ul>
+<p>可以通过调整这个参数来让调度器从 “desktop”（低延迟）到“server”（高并发）workloads。 默认配置适合的是 desktop workloads。</p>
+<h3 id="_1">例子<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h3>
+<p>下面是个例子，创建进程组，通过 cgroup 文件系统设置 CPU shares，</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># 1. 挂载 cgroup 文件系统</span>
+$<span class="w"> </span>mount<span class="w"> </span>-t<span class="w"> </span>tmpfs<span class="w"> </span>cgroup_root<span class="w"> </span>/sys/fs/cgroup
+$<span class="w"> </span>mkdir<span class="w"> </span>/sys/fs/cgroup/cpu<span class="w">                       </span><span class="c1"># 创建 cpu 目录，用于控制 cpu 资源份额</span>
+$<span class="w"> </span>mount<span class="w"> </span>-t<span class="w"> </span>cgroup<span class="w"> </span>-ocpu<span class="w"> </span>none<span class="w"> </span>/sys/fs/cgroup/cpu
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/sys/fs/cgroup/cpu
+
+<span class="c1"># 2. 创建进程组对应的 cgroup 目录</span>
+$<span class="w"> </span>mkdir<span class="w"> </span>multimedia<span class="w">     </span><span class="c1"># create &quot;multimedia&quot; group of tasks</span>
+$<span class="w"> </span>mkdir<span class="w"> </span>browser<span class="w">        </span><span class="c1"># create &quot;browser&quot; group of tasks</span>
+
+<span class="c1"># 3. 设置进程组的 CPU 份额： multimedia 可以比 browser 多用一倍</span>
+$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="m">2048</span><span class="w"> </span>&gt;<span class="w"> </span>multimedia/cpu.shares
+$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="m">1024</span><span class="w"> </span>&gt;<span class="w"> </span>browser/cpu.shares
+
+<span class="c1"># 4. 启动浏览器进程 firefox 并放到 &quot;browser&quot; 进程组</span>
+$<span class="w"> </span>firefox<span class="w"> </span><span class="p">&amp;</span>
+$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>&lt;firefox_pid&gt;<span class="w"> </span>&gt;<span class="w"> </span>browser/tasks
+
+<span class="c1"># 启动多媒体进程 gmplayer 并放到 &quot;multimedia&quot; 进程组</span>
+$<span class="w"> </span>gmplayer<span class="w"> </span><span class="p">&amp;</span>
+$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>&lt;movie_player_pid&gt;<span class="w"> </span>&gt;<span class="w"> </span>multimedia/tasks
+</code></pre></div>
+<h2 id="27-cpu-config_cfs_bandwidth">2.7 CPU 带宽控制设计（<code>CONFIG_CFS_BANDWIDTH</code>）<a class="headerlink" href="#27-cpu-config_cfs_bandwidth" title="Permanent link">&para;</a></h2>
+<h3 id="_2">新配置项<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h3>
+<p>给 cpu cgroup 引入了两个新配置项：</p>
+<ul>
+<li><strong><code>cpu.cfs_period_us</code></strong>: 周期（period），每个周期单独计算，周期结束之后状态（quota 等）清零；默认 100ms</li>
+<li><strong><code>cpu.cfs_quota_us</code></strong>: 在一个周期里的份额（quota），默认 5ms。</li>
+</ul>
+<p>最大 1s，最小 1ms：</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">u64</span><span class="w"> </span><span class="n">max_cfs_quota_period</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">NSEC_PER_SEC</span><span class="p">;</span><span class="w"> </span><span class="cm">/* 1s */</span>
+<span class="k">const</span><span class="w"> </span><span class="n">u64</span><span class="w"> </span><span class="n">min_cfs_quota_period</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">NSEC_PER_MSEC</span><span class="p">;</span><span class="w"> </span><span class="cm">/* 1ms */</span>
+</code></pre></div>
+<p>此外还有一个统计输出：</p>
+<ul>
+<li><strong><code>cpu.stat</code></strong>：输出 throttling statistics</li>
+</ul>
+<p>后来还引入了一个优化项：</p>
+<ul>
+<li>cpu.cfs_burst_us: the maximum accumulated run-time。上一个进程没用完的份额，可以给下一个 CPU 用。</li>
+</ul>
+<p>默认值：</p>
+<div class="highlight"><pre><span></span><code><span class="na">cpu.cfs_period_us</span><span class="o">=</span><span class="s">100ms</span>
+<span class="na">cpu.cfs_quota_us</span><span class="o">=</span><span class="s">-1</span>
+<span class="na">cpu.cfs_burst_us</span><span class="o">=</span><span class="s">0</span><span class="w">  </span><span class="c1"># 5.15+</span>
+</code></pre></div>
+<h3 id="k8s-pod-cpu-throttle">查看 k8s pod 的 CPU throttle 统计<a class="headerlink" href="#k8s-pod-cpu-throttle" title="Permanent link">&para;</a></h3>
+<p>在一个 k8s node 上查看某个 pod 的 <strong>CPU throttle 统计</strong>：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>cat<span class="w"> </span>/sys/fs/cgroup/cpu/kubepods/pod&lt;pod_id&gt;/cpu.stat
+nr_periods<span class="w"> </span><span class="m">1312889</span>
+nr_throttled<span class="w"> </span><span class="m">100714</span>
+throttled_time<span class="w"> </span><span class="m">22081774986248</span>
+</code></pre></div>
+<h3 id="_3">更多设计细节<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>The skeleton of our approach is as follows:</p>
+<ul>
+<li>We maintain a global pool (per-tg) pool of unassigned quota. Within it we track the bandwidth period, quota per period, and runtime remaining in the current period. As bandwidth is used within a period it is decremented from runtime. Runtime is currently synchronized using a spinlock, in the current implementation there’s no reason this couldn’t be done using atomic ops instead however the spinlock allows for a little more flexibility in experimentation with other schemes.</li>
+<li>When a cfs_rq participating in a bandwidth constrained task_group executes it acquires time in sysctl_sched_cfs_bandwidth_slice (default currently 10ms) size chunks from the global pool, this synchronizes under rq-&gt;lock and is part of the update_curr path.</li>
+<li>Throttled entities are dequeued, we protect against their re-introduction to the scheduling hierarchy via checking for a, per cfs_rq, throttled bit.</li>
+</ul>
+<p>After received a slice, sched_entities in cfs_rq would start running, and keep applying after every slice is used up. If there are no more slices, which means the cfs_rq used up all the allowable quota in this period, it will be throttled, at the meanwhile tasks couldn’t run anymore. The throttling statistics could be checked with Cgroup cpu.stat. After this period, global quota pool will be refreshed and cfs_rq get out of throttled state, tasks continue running.</p>
+</blockquote>
+<h2 id="29">2.9 问题<a class="headerlink" href="#29" title="Permanent link">&para;</a></h2>
+<h3 id="cpu-throttle">CPU throttle 是怎么来的<a class="headerlink" href="#cpu-throttle" title="Permanent link">&para;</a></h3>
+<p>多核情况下：可以在一个核上运行很长时间，也可以在多个核上运行很短时间。 后一种情况会导致进程在很短的时间内用完了全部 quota，在调度周期内剩下的时间里，只能等待。这就是 throttle（关闭阀门，节流）。</p>
+<p>典型场景：多核，多线程（例如线程池）进程。</p>
+<h3 id="_4">上下文切换开销<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h3>
+<p>过载情况下，每个进程能分到的时间片很短，例如 1ms，导致大部分 CPU 开销都花在了上下文切换上。</p>
+<p>上下文切换做的事情：</p>
+<ol>
+<li>保存当前进程或线程的状态；</li>
+<li>恢复下一个进程或线程的状态；</li>
+<li>执行后一个进程。</li>
+</ol>
+<p>如果一个时间片是 6ms，切换占 1ms，那我们还有5ms 可以执行； 如果 1.5ms，那只有 0.5ms 可以执行。</p>
+<p>为了避免这个问题，引入 <code>min_granularity</code>；反过来，这也会影响 sched_latency 的选取。</p>
+<h1 id="3">3 内核实现<a class="headerlink" href="#3" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>SCHED_FIFO/_RR are implemented in sched/rt.c and are as specified by POSIX.</p>
+<p>sched/rt.c implements SCHED_FIFO and SCHED_RR semantics. It uses 100 runqueues (for all 100 RT priority levels, instead of 140 in the previous scheduler) and it needs no expired array.</p>
+</blockquote>
+<h2 id="31-cfs">3.1 CFS 第一版实现<a class="headerlink" href="#31-cfs" title="Permanent link">&para;</a></h2>
+<p>见 <a href="https://www.kernel.org/doc/Documentation/admin-guide/cgroup-v1/cgroups.rst">1</a>，代码不太多。想快速了解整体实现的可以浏览一下。</p>
+<h2 id="32">3.2 核心数据结构<a class="headerlink" href="#32" title="Permanent link">&para;</a></h2>
+<p>接下来的部分都是参考 5.10 代码。</p>
+<p>介绍几个核心的数据结构。</p>
+<h3 id="321-struct-task_struct">3.2.1 <code>struct task_struct</code><a class="headerlink" href="#321-struct-task_struct" title="Permanent link">&para;</a></h3>
+<p>每个进程的结构体表示是 <code>struct task</code>，</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// include/linux/sched.h</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">thread_info</span><span class="w">        </span><span class="n">thread_info</span><span class="p">;</span>
+<span class="w">    </span><span class="k">volatile</span><span class="w"> </span><span class="kt">long</span><span class="w">            </span><span class="n">state</span><span class="p">;</span><span class="w"> </span><span class="cm">/* -1 unrunnable, 0 runnable, &gt;0 stopped: */</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w">                  </span><span class="o">*</span><span class="n">stack</span><span class="p">;</span>
+<span class="w">    </span><span class="n">refcount_t</span><span class="w">             </span><span class="n">usage</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">           </span><span class="n">flags</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Per task flags (PF_*), defined further below: */</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">           </span><span class="n">ptrace</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">on_cpu</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">__call_single_node</span><span class="w">    </span><span class="n">wake_entry</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">            </span><span class="n">cpu</span><span class="p">;</span><span class="w"> </span><span class="cm">/* Current CPU: */</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">            </span><span class="n">wakee_flips</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">           </span><span class="n">wakee_flip_decay_ts</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w">     </span><span class="o">*</span><span class="n">last_wakee</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">recent_used_cpu</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">wake_cpu</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">on_rq</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">prio</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">static_prio</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">                </span><span class="n">normal_prio</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_class</span><span class="w">    </span><span class="o">*</span><span class="n">sched_class</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">          </span><span class="n">se</span><span class="p">;</span><span class="w">             </span><span class="c1">// schedule entity, including vruntime</span>
+<span class="cp">#ifdef CONFIG_CGROUP_SCHED</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_group</span><span class="w">           </span><span class="o">*</span><span class="n">sched_task_group</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="w">    </span><span class="p">...</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>其中有个调度相关的字段是 <code>struct sched_entity se</code>。可以是一个进程、一个进程组或一个用户。</p>
+<h3 id="322-struct-task_group">3.2.2 <code>struct task_group</code><a class="headerlink" href="#322-struct-task_group" title="Permanent link">&para;</a></h3>
+<p>同理，进程组中也有一个 <code>struct sched_entity se</code> 字段：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// https://github.com/torvalds/linux/blob/v5.10/kernel/sched/sched.h#L383</span>
+
+<span class="cm">/* Task group related information */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">task_group</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">cgroup_subsys_state</span><span class="w"> </span><span class="n">css</span><span class="p">;</span>
+
+<span class="cp">#ifdef CONFIG_FAIR_GROUP_SCHED</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">  </span><span class="o">**</span><span class="n">se</span><span class="p">;</span><span class="w"> </span><span class="cm">/* schedulable entities of this group on each CPU */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">cfs_rq</span><span class="w">        </span><span class="o">**</span><span class="n">cfs_rq</span><span class="p">;</span><span class="w"> </span><span class="cm">/* runqueue &quot;owned&quot; by this group on each CPU */</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">          </span><span class="n">shares</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">atomic_long_t</span><span class="w">        </span><span class="n">load_avg</span><span class="w"> </span><span class="n">____cacheline_aligned</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef CONFIG_RT_GROUP_SCHED</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_rt_entity</span><span class="w">    </span><span class="o">**</span><span class="n">rt_se</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rt_rq</span><span class="w">        </span><span class="o">**</span><span class="n">rt_rq</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rt_bandwidth</span><span class="w">    </span><span class="n">rt_bandwidth</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rcu_head</span><span class="w">        </span><span class="n">rcu</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">    </span><span class="n">list</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_group</span><span class="w">    </span><span class="o">*</span><span class="n">parent</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">    </span><span class="n">siblings</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">    </span><span class="n">children</span><span class="p">;</span>
+
+<span class="cp">#ifdef CONFIG_SCHED_AUTOGROUP</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">autogroup</span><span class="w">    </span><span class="o">*</span><span class="n">autogroup</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">cfs_bandwidth</span><span class="w">    </span><span class="n">cfs_bandwidth</span><span class="p">;</span>
+
+<span class="cp">#ifdef CONFIG_UCLAMP_TASK_GROUP</span>
+<span class="w">    </span><span class="cm">/* The two decimal precision [%] value requested from user-space */</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">        </span><span class="n">uclamp_pct</span><span class="p">[</span><span class="n">UCLAMP_CNT</span><span class="p">];</span>
+<span class="w">    </span><span class="cm">/* Clamp values requested for a task group */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">uclamp_se</span><span class="w">    </span><span class="n">uclamp_req</span><span class="p">[</span><span class="n">UCLAMP_CNT</span><span class="p">];</span>
+<span class="w">    </span><span class="cm">/* Effective clamp values used for a task group */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">uclamp_se</span><span class="w">    </span><span class="n">uclamp</span><span class="p">[</span><span class="n">UCLAMP_CNT</span><span class="p">];</span>
+<span class="cp">#endif</span>
+
+<span class="p">};</span>
+</code></pre></div>
+<h3 id="323-struct-sched_entity">3.2.3 <code>struct sched_entity</code><a class="headerlink" href="#323-struct-sched_entity" title="Permanent link">&para;</a></h3>
+<p>scheduling entities 通过一个红黑树组织到一起，根据 <code>vruntime</code> 排序，通过 <code>cfs_rq</code> 来管理.</p>
+<p>所以 virtual runtime（<code>vruntime</code>）就定义在这个结构体里面，单位是 <code>ns</code>，</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// https://github.com/torvalds/linux/blob/v5.10/include/linux/sched.h#L451</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">load_weight</span><span class="w">      </span><span class="n">load</span><span class="p">;</span><span class="w"> </span><span class="c1">// For load-balancing</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rb_node</span><span class="w">          </span><span class="n">run_node</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">        </span><span class="n">group_node</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">            </span><span class="n">on_rq</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">u64</span><span class="w">                </span><span class="n">exec_start</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">                </span><span class="n">sum_exec_runtime</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">                </span><span class="n">vruntime</span><span class="p">;</span><span class="w">              </span><span class="c1">// unit: ns</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">                </span><span class="n">prev_sum_exec_runtime</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">u64</span><span class="w">                </span><span class="n">nr_migrations</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_statistics</span><span class="w">        </span><span class="n">statistics</span><span class="p">;</span>
+
+<span class="cp">#ifdef CONFIG_FAIR_GROUP_SCHED</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">                   </span><span class="n">depth</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">  </span><span class="o">*</span><span class="n">parent</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">cfs_rq</span><span class="w">        </span><span class="o">*</span><span class="n">cfs_rq</span><span class="p">;</span><span class="w"> </span><span class="c1">// rq on which this entity is (to be) queued</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">cfs_rq</span><span class="w">        </span><span class="o">*</span><span class="n">my_q</span><span class="p">;</span><span class="w">   </span><span class="c1">// rq &quot;owned&quot; by this entity/group</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">         </span><span class="n">runnable_weight</span><span class="p">;</span><span class="w"> </span><span class="cm">/* cached value of my_q-&gt;h_nr_running */</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="c1">// Per entity load average tracking.</span>
+<span class="w">    </span><span class="c1">// Put into separate cache line so it does not collide with read-mostly values above.</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_avg</span><span class="w">        </span><span class="n">avg</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>有了这个字段，就能精确地通过时间戳来保证一个任务应该获得的 “expected CPU time”。</p>
+<p>前面已经提到，CFS 就是基于 <code>p-&gt;se.vruntime</code> 来选择（调度）进程的，逻辑非常简单： <strong>永远选择 <code>p-&gt;se.vruntime</code> 最小</strong>（说明这个进程到目前为止累积执行的时间最少）<strong>的进程来运行</strong>。 CFS 会不断尝试均衡各进程的 CPU 时间，尽量接近“理想多任务 CPU”。</p>
+<h3 id="324-struct-cfs_rq">3.2.4 <code>struct cfs_rq</code><a class="headerlink" href="#324-struct-cfs_rq" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><span class="c1">// https://github.com/torvalds/linux/blob/v5.10/kernel/sched/sched.h#L518</span>
+
+<span class="cm">/* CFS-related fields in a runqueue (rq) */</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">cfs_rq</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">load_weight</span><span class="w">    </span><span class="n">load</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">        </span><span class="n">nr_running</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">        </span><span class="n">h_nr_running</span><span class="p">;</span><span class="w">      </span><span class="cm">/* SCHED_{NORMAL,BATCH,IDLE} */</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">int</span><span class="w">        </span><span class="n">idle_h_nr_running</span><span class="p">;</span><span class="w"> </span><span class="cm">/* SCHED_IDLE */</span>
+
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">exec_clock</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">min_vruntime</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">min_vruntime_copy</span><span class="p">;</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rb_root_cached</span><span class="w">    </span><span class="n">tasks_timeline</span><span class="p">;</span><span class="w"> </span><span class="c1">// rbtree</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     * &#39;curr&#39; points to currently running entity on this cfs_rq.</span>
+<span class="cm">     * It is set to NULL otherwise (i.e when none are currently running).</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">    </span><span class="o">*</span><span class="n">curr</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">    </span><span class="o">*</span><span class="n">next</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">    </span><span class="o">*</span><span class="n">last</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">    </span><span class="o">*</span><span class="n">skip</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     * CFS load tracking</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_avg</span><span class="w">    </span><span class="n">avg</span><span class="p">;</span>
+<span class="cp">#ifndef CONFIG_64BIT</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">load_last_update_time_copy</span><span class="p">;</span>
+<span class="cp">#endif</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">raw_spinlock_t</span><span class="w">    </span><span class="n">lock</span><span class="w"> </span><span class="n">____cacheline_aligned</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">int</span><span class="w">        </span><span class="n">nr</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">    </span><span class="n">load_avg</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">    </span><span class="n">util_avg</span><span class="p">;</span>
+<span class="w">        </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">    </span><span class="n">runnable_avg</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="n">removed</span><span class="p">;</span>
+
+<span class="cp">#ifdef CONFIG_FAIR_GROUP_SCHED</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">        </span><span class="n">tg_load_avg_contrib</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w">            </span><span class="n">propagate</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">long</span><span class="w">            </span><span class="n">prop_runnable_sum</span><span class="p">;</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     *   h_load = weight * f(tg)</span>
+<span class="cm">     *</span>
+<span class="cm">     * Where f(tg) is the recursive weight fraction assigned to</span>
+<span class="cm">     * this group.</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="kt">long</span><span class="w">        </span><span class="n">h_load</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">last_h_load_update</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_entity</span><span class="w">    </span><span class="o">*</span><span class="n">h_load_next</span><span class="p">;</span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_FAIR_GROUP_SCHED */</span>
+
+<span class="cp">#ifdef CONFIG_FAIR_GROUP_SCHED</span>
+<span class="w">    </span><span class="c1">//  the main per-CPU runqueue structure, which cfs_rq would attached to</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w">        </span><span class="o">*</span><span class="n">rq</span><span class="p">;</span><span class="w">    </span><span class="cm">/* CPU runqueue to which this cfs_rq is attached */</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     * leaf cfs_rqs are those that hold tasks (lowest schedulable entity in</span>
+<span class="cm">     * a hierarchy). Non-leaf lrqs hold other higher schedulable entities</span>
+<span class="cm">     * (like users, containers etc.)</span>
+<span class="cm">     *</span>
+<span class="cm">     * leaf_cfs_rq_list ties together list of leaf cfs_rq&#39;s in a CPU.</span>
+<span class="cm">     * This list is used during load balance.</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">            </span><span class="n">on_list</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">    </span><span class="n">leaf_cfs_rq_list</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_group</span><span class="w">    </span><span class="o">*</span><span class="n">tg</span><span class="p">;</span><span class="w">    </span><span class="cm">/* group that &quot;owns&quot; this runqueue */</span>
+
+<span class="cp">#ifdef CONFIG_CFS_BANDWIDTH</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">            </span><span class="n">runtime_enabled</span><span class="p">;</span>
+<span class="w">    </span><span class="n">s64</span><span class="w">            </span><span class="n">runtime_remaining</span><span class="p">;</span>
+
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">throttled_clock</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">throttled_clock_task</span><span class="p">;</span>
+<span class="w">    </span><span class="n">u64</span><span class="w">            </span><span class="n">throttled_clock_task_time</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">            </span><span class="n">throttled</span><span class="p">;</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">            </span><span class="n">throttle_count</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">list_head</span><span class="w">    </span><span class="n">throttled_list</span><span class="p">;</span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_CFS_BANDWIDTH */</span>
+<span class="cp">#endif </span><span class="cm">/* CONFIG_FAIR_GROUP_SCHED */</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>其中的 CFS 红黑树：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// include/linux/rbtree.h</span>
+
+<span class="c1">// Leftmost-cached rbtrees.</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">rb_root_cached</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rb_root</span><span class="w">  </span><span class="n">rb_root</span><span class="p">;</span>
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">rb_node</span><span class="w"> </span><span class="o">*</span><span class="n">rb_leftmost</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre></div>
+<p>在 cfs_rq 中声明了这个 rbtree 变量：</p>
+<p>CFS 维护了 <code>rq-&gt;cfs.min_vruntime</code> 值，这是一个单调递增值，跟踪 runqueue 所有进程中最小的 vruntime。</p>
+<ul>
+<li>系统完成的总 work 量用 <code>min_vruntime</code> 表示，新激活的进程，会用这个值来初始化，放到 rbtree 尽量最左边；</li>
+<li>runqueue 中的总 running 进程数量用 <code>rq-&gt;cfs.load</code> 表示，是 runqueue 中所有进程的 weights 总和；</li>
+</ul>
+<p>总结一下 CFS 的工作原理：</p>
+<ul>
+<li>runs a task a bit, 当进程被调度（或 scheduler tick 到来时），更新这个进程的 CPU usage： 这个进程使用的物理 CPU 时间会累加到 <code>p-&gt;se.vruntime</code>；</li>
+<li>当 <code>p-&gt;se.vruntime</code> （加上一个很小的”granularity” distance，以避免过度调度进程，trash the cache）大到已经不是最左侧节点时， 新的最左侧节点就会被选中，当前进程被强占（current task is preempted）。</li>
+</ul>
+<h3 id="325-struct-sched_class">3.2.5 <code>struct sched_class</code><a class="headerlink" href="#325-struct-sched_class" title="Permanent link">&para;</a></h3>
+<p>Scheduling class 是通过 <code>struct sched_class</code> 实现的，</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// kernel/sched/sched.h</span>
+
+<span class="k">struct</span><span class="w"> </span><span class="nc">sched_class</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">uclamp_enabled</span><span class="p">;</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">enqueue_task</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">dequeue_task</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">yield_task</span><span class="p">)</span><span class="w">   </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">yield_to_task</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">check_preempt_curr</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="p">(</span><span class="o">*</span><span class="n">pick_next_task</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">put_prev_task</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">set_next_task</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">first</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">balance</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">prev</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">rq_flags</span><span class="w"> </span><span class="o">*</span><span class="n">rf</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">int</span><span class="w">  </span><span class="p">(</span><span class="o">*</span><span class="n">select_task_rq</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">task_cpu</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">sd_flag</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">flags</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">migrate_task_rq</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">new_cpu</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">task_woken</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">this_rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">task</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">set_cpus_allowed</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">cpumask</span><span class="w"> </span><span class="o">*</span><span class="n">newmask</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">rq_online</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">rq_offline</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">task_tick</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">queued</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">task_fork</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">task_dead</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">);</span>
+
+<span class="w">    </span><span class="cm">/*</span>
+<span class="cm">     * The switched_from() call is allowed to drop rq-&gt;lock, therefore we</span>
+<span class="cm">     * cannot assume the switched_from/switched_to pair is serliazed by</span>
+<span class="cm">     * rq-&gt;lock. They are however serialized by p-&gt;pi_lock.</span>
+<span class="cm">     */</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">switched_from</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">this_rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">task</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">switched_to</span><span class="p">)</span><span class="w">  </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">this_rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">task</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">prio_changed</span><span class="p">)</span><span class="w"> </span><span class="p">(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">this_rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">task</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">oldprio</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">unsigned</span><span class="w"> </span><span class="nf">int</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">get_rr_interval</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">,</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">task</span><span class="p">);</span>
+
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">update_curr</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">rq</span><span class="w"> </span><span class="o">*</span><span class="n">rq</span><span class="p">);</span>
+
+<span class="cp">#define TASK_SET_GROUP        0</span>
+<span class="cp">#define TASK_MOVE_GROUP        1</span>
+
+<span class="cp">#ifdef CONFIG_FAIR_GROUP_SCHED</span>
+<span class="w">    </span><span class="kt">void</span><span class="w"> </span><span class="p">(</span><span class="o">*</span><span class="n">task_change_group</span><span class="p">)(</span><span class="k">struct</span><span class="w"> </span><span class="nc">task_struct</span><span class="w"> </span><span class="o">*</span><span class="n">p</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">type</span><span class="p">);</span>
+<span class="cp">#endif</span>
+<span class="p">}</span><span class="w"> </span><span class="n">__aligned</span><span class="p">(</span><span class="n">STRUCT_ALIGNMENT</span><span class="p">);</span><span class="w"> </span><span class="cm">/* STRUCT_ALIGN(), vmlinux.lds.h */</span>
+</code></pre></div>
+<p>初始化：</p>
+<div class="highlight"><pre><span></span><code><span class="c1">// kernel/sched/fair.c</span>
+
+<span class="cm">/*</span>
+<span class="cm"> * All the scheduling class methods:</span>
+<span class="cm"> */</span>
+<span class="k">const</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">sched_class</span><span class="w"> </span><span class="n">fair_sched_class</span>
+<span class="w">    </span><span class="n">__section</span><span class="p">(</span><span class="s">&quot;__fair_sched_class&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">.</span><span class="n">enqueue_task</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">enqueue_task_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">dequeue_task</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">dequeue_task_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">yield_task</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">yield_task_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">yield_to_task</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">yield_to_task_fair</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">check_preempt_curr</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">check_preempt_wakeup</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">pick_next_task</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">__pick_next_task_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">put_prev_task</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">put_prev_task_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">set_next_task</span><span class="w">          </span><span class="o">=</span><span class="w"> </span><span class="n">set_next_task_fair</span><span class="p">,</span>
+
+<span class="cp">#ifdef CONFIG_SMP</span>
+<span class="w">    </span><span class="p">.</span><span class="n">balance</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">balance_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">select_task_rq</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">select_task_rq_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">migrate_task_rq</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">migrate_task_rq_fair</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">rq_online</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">rq_online_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">rq_offline</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">rq_offline_fair</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">task_dead</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">task_dead_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">set_cpus_allowed</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">set_cpus_allowed_common</span><span class="p">,</span>
+<span class="cp">#endif</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">task_tick</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">task_tick_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">task_fork</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">task_fork_fair</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">prio_changed</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">prio_changed_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">switched_from</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">switched_from_fair</span><span class="p">,</span>
+<span class="w">    </span><span class="p">.</span><span class="n">switched_to</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">switched_to_fair</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">get_rr_interval</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">get_rr_interval_fair</span><span class="p">,</span>
+
+<span class="w">    </span><span class="p">.</span><span class="n">update_curr</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">update_curr_fair</span><span class="p">,</span>
+
+<span class="cp">#ifdef CONFIG_FAIR_GROUP_SCHED</span>
+<span class="w">    </span><span class="p">.</span><span class="n">task_change_group</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">task_change_group_fair</span><span class="p">,</span>
+<span class="cp">#endif</span>
+
+<span class="cp">#ifdef CONFIG_UCLAMP_TASK</span>
+<span class="w">    </span><span class="p">.</span><span class="n">uclamp_enabled</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span>
+<span class="cp">#endif</span>
+<span class="p">};</span>
+</code></pre></div>
+<h2 id="33-cfs-cpu">3.3 CFS CPU 带宽控制实现<a class="headerlink" href="#33-cfs-cpu" title="Permanent link">&para;</a></h2>
+<p>内核文档：<a href="https://docs.kernel.org/scheduler/sched-bwc.html">CFS bandwidth control</a>。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>cat<span class="w"> </span>/proc/sys/kernel/sched_cfs_bandwidth_slice_us
+<span class="m">5000</span>
+
+$<span class="w"> </span>sysctl<span class="w"> </span>-a<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>cfs_
+kernel.sched_cfs_bandwidth_slice_us<span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="m">5000</span>
+</code></pre></div>
+<p>第一版实现： <a href="https://github.com/torvalds/linux/commit/ab84d31e15502fb626169ba2663381e34bf965b2">https://github.com/torvalds/linux/commit/ab84d31e15502fb626169ba2663381e34bf965b2</a></p>
+<div class="highlight"><pre><span></span><code><span class="nl">sched</span><span class="p">:</span><span class="w"> </span><span class="n">Introduce</span><span class="w"> </span><span class="n">primitives</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">account</span><span class="w"> </span><span class="k">for</span><span class="w"> </span><span class="n">CFS</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">tracking</span>
+<span class="n">In</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">patch</span><span class="w"> </span><span class="n">we</span><span class="w"> </span><span class="n">introduce</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">notion</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">CFS</span><span class="w"> </span><span class="n">bandwidth</span><span class="p">,</span><span class="w"> </span><span class="n">partitioned</span><span class="w"> </span><span class="n">into</span>
+<span class="n">globally</span><span class="w"> </span><span class="n">unassigned</span><span class="w"> </span><span class="n">bandwidth</span><span class="p">,</span><span class="w"> </span><span class="n">and</span><span class="w"> </span><span class="n">locally</span><span class="w"> </span><span class="n">claimed</span><span class="w"> </span><span class="n">bandwidth</span><span class="p">.</span>
+
+<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">per</span><span class="w"> </span><span class="n">task_group</span><span class="p">,</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="n">represents</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="n">of</span><span class="w"> </span><span class="n">unclaimed</span>
+<span class="w">   </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">cfs_rqs</span><span class="w"> </span><span class="n">can</span><span class="w"> </span><span class="n">allocate</span><span class="w"> </span><span class="n">from</span><span class="p">.</span>
+<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">The</span><span class="w"> </span><span class="n">local</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">tracked</span><span class="w"> </span><span class="n">per</span><span class="o">-</span><span class="n">cfs_rq</span><span class="p">,</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">represents</span><span class="w"> </span><span class="n">allotments</span><span class="w"> </span><span class="n">from</span>
+<span class="w">   </span><span class="n">the</span><span class="w"> </span><span class="n">global</span><span class="w"> </span><span class="n">pool</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">assigned</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="n">specific</span><span class="w"> </span><span class="n">cpu</span><span class="p">.</span>
+
+<span class="n">Bandwidth</span><span class="w"> </span><span class="n">is</span><span class="w"> </span><span class="n">managed</span><span class="w"> </span><span class="n">via</span><span class="w"> </span><span class="n">cgroupfs</span><span class="p">,</span><span class="w"> </span><span class="n">adding</span><span class="w"> </span><span class="n">two</span><span class="w"> </span><span class="n">new</span><span class="w"> </span><span class="n">interfaces</span><span class="w"> </span><span class="n">to</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">cpu</span><span class="w"> </span><span class="n">subsystem</span><span class="o">:</span>
+<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cpu</span><span class="p">.</span><span class="n">cfs_period_us</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="n">period</span><span class="w"> </span><span class="n">in</span><span class="w"> </span><span class="n">usecs</span>
+<span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">cpu</span><span class="p">.</span><span class="n">cfs_quota_us</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">the</span><span class="w"> </span><span class="n">cpu</span><span class="w"> </span><span class="n">bandwidth</span><span class="w"> </span><span class="p">(</span><span class="n">in</span><span class="w"> </span><span class="n">usecs</span><span class="p">)</span><span class="w"> </span><span class="n">that</span><span class="w"> </span><span class="n">this</span><span class="w"> </span><span class="n">tg</span><span class="w"> </span><span class="n">will</span><span class="w"> </span><span class="n">be</span><span class="w"> </span><span class="n">allowed</span>
+<span class="w">   </span><span class="n">to</span><span class="w"> </span><span class="n">consume</span><span class="w"> </span><span class="n">over</span><span class="w"> </span><span class="n">period</span><span class="w"> </span><span class="n">above</span><span class="p">.</span>
+</code></pre></div>
+<ul>
+<li>cpu.cfs_period_us: 周期（period），每个周期单独计算，周期结束之后状态（quota 等）清零；默认 100ms</li>
+<li>cpu.cfs_quota_us: 在一个周期里的份额（quota），默认 5ms。</li>
+</ul>
+<p>最大 1s，最小 1ms：</p>
+<p>```c
+  const u64 max_cfs_quota_period = 1 * NSEC_PER_SEC; /* 1s <em>/
+  const u64 min_cfs_quota_period = 1 * NSEC_PER_MSEC; /</em> 1ms */
+  static int tg_set_cfs_bandwidth(struct task_group *tg, u64 period, u64 quota)
+    {
+        int i;
+        struct cfs_bandwidth *cfs_b = tg_cfs_bandwidth(tg);
+        static DEFINE_MUTEX(mutex);</p>
+<div class="highlight"><pre><span></span><code>    if (tg == &amp;root_task_group)
+        return -EINVAL;
+
+    /*
+     * Ensure we have at some amount of bandwidth every period.  This is
+     * to prevent reaching a state of large arrears when throttled via
+     * entity_tick() resulting in prolonged exit starvation.
+     */
+    if (quota &lt; min_cfs_quota_period || period &lt; min_cfs_quota_period)
+        return -EINVAL;
+
+    /*
+     * Likewise, bound things on the otherside by preventing insane quota
+     * periods.  This also allows us to normalize in computing quota
+     * feasibility.
+     */
+    if (period &gt; max_cfs_quota_period)
+        return -EINVAL;
+
+    mutex_lock(&amp;mutex);
+    raw_spin_lock_irq(&amp;cfs_b-&gt;lock);
+    cfs_b-&gt;period = ns_to_ktime(period);
+    cfs_b-&gt;quota = quota;
+    raw_spin_unlock_irq(&amp;cfs_b-&gt;lock);
+
+    for_each_possible_cpu(i) {
+        struct cfs_rq *cfs_rq = tg-&gt;cfs_rq[i];
+        struct rq *rq = rq_of(cfs_rq);
+
+        raw_spin_lock_irq(&amp;rq-&gt;lock);
+        cfs_rq-&gt;runtime_enabled = quota != RUNTIME_INF;
+        cfs_rq-&gt;runtime_remaining = 0;
+        raw_spin_unlock_irq(&amp;rq-&gt;lock);
+    }
+    mutex_unlock(&amp;mutex);
+
+    return 0;
+}
+</code></pre></div>
+<h1 id="4">4 使用<a class="headerlink" href="#4" title="Permanent link">&para;</a></h1>
+<h2 id="41-throttle">4.1 模拟 throttle 场景<a class="headerlink" href="#41-throttle" title="Permanent link">&para;</a></h2>
+<p>用 <a href="https://gist.github.com/bobrik/2030ff040fad360327a5fab7a09c4ff1#file-cfs-go">Overly aggressive CFS</a> 中的程序测试 CFS CPU throttle：</p>
+<div class="highlight"><pre><span></span><code><span class="kn">package</span><span class="w"> </span><span class="nx">main</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="p">(</span>
+<span class="w">    </span><span class="s">&quot;crypto/sha512&quot;</span>
+<span class="w">    </span><span class="s">&quot;flag&quot;</span>
+<span class="w">    </span><span class="s">&quot;log&quot;</span>
+<span class="w">    </span><span class="s">&quot;syscall&quot;</span>
+<span class="w">    </span><span class="s">&quot;time&quot;</span>
+<span class="p">)</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nx">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">sleep</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">Duration</span><span class="p">(</span><span class="s">&quot;sleep&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;sleep between iterations&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">interations</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">flag</span><span class="p">.</span><span class="nx">Int</span><span class="p">(</span><span class="s">&quot;iterations&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;number of iterations&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="nx">flag</span><span class="p">.</span><span class="nx">Parse</span><span class="p">()</span>
+
+<span class="w">    </span><span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Second</span><span class="p">)</span>
+
+<span class="w">    </span><span class="nx">b</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">()</span>
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="w"> </span><span class="p">&lt;</span><span class="w"> </span><span class="o">*</span><span class="nx">interations</span><span class="p">;</span><span class="w"> </span><span class="nx">i</span><span class="o">++</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">s</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">()</span>
+<span class="w">        </span><span class="nx">burn</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Millisecond</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">5</span><span class="p">)</span>
+<span class="w">        </span><span class="nx">e</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">().</span><span class="nx">Sub</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span>
+
+<span class="w">        </span><span class="nx">log</span><span class="p">.</span><span class="nx">Printf</span><span class="p">(</span><span class="s">&quot;[%d] burn took %dms, real time so far: %dms, cpu time so far: %dms&quot;</span><span class="p">,</span><span class="w"> </span><span class="nx">i</span><span class="p">,</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">e</span><span class="p">),</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">time</span><span class="p">.</span><span class="nx">Since</span><span class="p">(</span><span class="nx">b</span><span class="p">)),</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">usage</span><span class="p">()))</span>
+<span class="w">        </span><span class="nx">time</span><span class="p">.</span><span class="nx">Sleep</span><span class="p">(</span><span class="o">*</span><span class="nx">sleep</span><span class="p">)</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nx">ms</span><span class="p">(</span><span class="nx">duration</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">int</span><span class="p">(</span><span class="nx">duration</span><span class="p">.</span><span class="nx">Nanoseconds</span><span class="p">()</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">1000</span><span class="p">)</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nx">burn</span><span class="p">(</span><span class="nx">duration</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">s</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Now</span><span class="p">()</span>
+
+<span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nx">sum</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">sha512</span><span class="p">.</span><span class="nx">New</span><span class="p">()</span>
+<span class="w">        </span><span class="nx">sum</span><span class="p">.</span><span class="nx">Write</span><span class="p">([]</span><span class="nb">byte</span><span class="p">(</span><span class="s">&quot;banana&quot;</span><span class="p">))</span>
+<span class="w">        </span><span class="nx">sum</span><span class="p">.</span><span class="nx">Sum</span><span class="p">([]</span><span class="kt">byte</span><span class="p">{})</span>
+
+<span class="w">        </span><span class="k">if</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Since</span><span class="p">(</span><span class="nx">s</span><span class="p">)</span><span class="w"> </span><span class="p">&gt;</span><span class="w"> </span><span class="nx">duration</span><span class="w"> </span><span class="p">{</span>
+<span class="w">            </span><span class="k">break</span>
+<span class="w">        </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="p">}</span>
+
+<span class="kd">func</span><span class="w"> </span><span class="nx">usage</span><span class="p">()</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nx">r</span><span class="w"> </span><span class="o">:=</span><span class="w"> </span><span class="nx">syscall</span><span class="p">.</span><span class="nx">Rusage</span><span class="p">{}</span>
+<span class="w">    </span><span class="nx">syscall</span><span class="p">.</span><span class="nx">Getrusage</span><span class="p">(</span><span class="nx">syscall</span><span class="p">.</span><span class="nx">RUSAGE_SELF</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="nx">r</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">time</span><span class="p">.</span><span class="nx">Duration</span><span class="p">(</span><span class="nx">r</span><span class="p">.</span><span class="nx">Stime</span><span class="p">.</span><span class="nx">Nano</span><span class="p">()</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="nx">r</span><span class="p">.</span><span class="nx">Utime</span><span class="p">.</span><span class="nx">Nano</span><span class="p">())</span>
+<span class="p">}</span>
+</code></pre></div>
+<p>程序每个 iteration 会执行 5ms，然后 sleep 一段时间。</p>
+<p>用 docker container 来执行，避免污染本机配置。</p>
+<p><code>period=100ms,quota=5m,sleep=10ms</code> 情况下，不会产生 throttle：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>dk<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:<span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="w"> </span>-w<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="w"> </span>golang:1.19.4<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>cfs.go<span class="w"> </span>-iterations<span class="w"> </span><span class="m">20</span><span class="w"> </span>-sleep<span class="w"> </span>10ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:50:35<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>5ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>7ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:50:35<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>20ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>12ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:50:35<span class="w"> </span><span class="o">[</span><span class="m">2</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>37ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>17ms
+...
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:50:35<span class="w"> </span><span class="o">[</span><span class="m">18</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>338ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>102ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:50:35<span class="w"> </span><span class="o">[</span><span class="m">19</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>355ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>108ms
+</code></pre></div>
+<p><code>period=100ms,quota=25m,sleep=10ms</code> 情况下，会产生 throttle：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>dk<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-it<span class="w"> </span>--cpu-quota<span class="w"> </span><span class="m">25000</span><span class="w"> </span>--cpu-period<span class="w"> </span><span class="m">100000</span><span class="w"> </span>-v<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>:<span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="w"> </span>-w<span class="w"> </span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="w"> </span>golang:1.19.4<span class="w"> </span>go<span class="w"> </span>run<span class="w"> </span>cfs.go<span class="w"> </span>-iterations<span class="w"> </span><span class="m">20</span><span class="w"> </span>-sleep<span class="w"> </span>10ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">0</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>5ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>6ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">1</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>11ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>35ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>19ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">2</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>51ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>24ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">3</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>20ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>83ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>28ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">4</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>100ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>33ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">5</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>115ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>38ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">6</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>131ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>43ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">7</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>147ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>49ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">8</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>24ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>182ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>51ms
+<span class="m">2023</span>/02/05<span class="w"> </span><span class="m">09</span>:48:38<span class="w"> </span><span class="o">[</span><span class="m">9</span><span class="o">]</span><span class="w"> </span>burn<span class="w"> </span>took<span class="w"> </span>5ms,<span class="w"> </span>real<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>197ms,<span class="w"> </span>cpu<span class="w"> </span><span class="nb">time</span><span class="w"> </span>so<span class="w"> </span>far:<span class="w"> </span>56ms
+...
+</code></pre></div>
+<h2 id="42-k8s">4.2 k8s<a class="headerlink" href="#42-k8s" title="Permanent link">&para;</a></h2>
+<p>研究这些东西是为了更好理解一些容器问题。</p>
+<h1 id="_5">参考资料<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h1>
+<ol>
+<li>CFS 第一版实现， <a href="https://github.com/torvalds/linux/blob/v2.6.23/kernel/sched_fair.c">kernel/sched_fair.c</a>，kernel v2.6.23, 2007</li>
+<li><a href="https://github.com/torvalds/linux/blob/v5.10/Documentation/scheduler/sched-design-CFS.rst">CFS scheduler design (kernel 5.10)</a>, kernel doc, 2023</li>
+<li><a href="https://lwn.net/Articles/844976/">The burstable CFS bandwidth controller</a>, lwn.net, 2021</li>
+<li><a href="https://lwn.net/Articles/428230/">CFS bandwidth control</a>, lwn.net, 2011</li>
+<li><a href="https://storage.googleapis.com/pub-tools-public-publication-data/pdf/36669.pdf">CPU bandwidth control for CFS</a>, google, 2009</li>
+<li><a href="https://medium.com/@maxwell9215/cfs-bandwidth-control-warmup-b03af4cc1cc4">CPU bandwidth control warmup</a>, 2021</li>
+<li><a href="https://gist.github.com/bobrik/2030ff040fad360327a5fab7a09c4ff1#file-cfs-go">Overly aggressive CFS</a>, 2018</li>
+<li><a href="https://medium.com/geekculture/process-scheduling-in-linux-592028a5d545">Process Scheduling In Linux</a>, 2021</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/01mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.indexes", "navigation.expand", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "header.autohide", "announce.dismiss", "toc.integrate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5090c770.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js"></script>
+      
+    
+  </body>
+</html>

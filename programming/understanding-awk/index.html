@@ -1,0 +1,3933 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="I will be using Awk to look at book reviews and pick my next book to read. I will start with short Awk one-liners and build towards a simple 33 line program that ranks books by the 19 million reviews on Amazon.com.">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/programming/understanding-awk/">
+      
+      
+        <link rel="prev" href="../pure-bash-bible/">
+      
+      
+        <link rel="next" href="../../tips/bash-tips/">
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS 订阅" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="已更新内容的 RSS 订阅" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+    
+    
+      
+        <title>Understanding AWK - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#understanding-awk" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Understanding AWK
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="分享" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bigdata/ambari-cli/" class="md-tabs__link">
+          
+  
+    
+  
+  Bigdata
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../courses/commands-in-sbin/" class="md-tabs__link">
+          
+  
+    
+  
+  Courses
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../database/maridb-ax-setup/" class="md-tabs__link">
+          
+  
+    
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-tabs__link">
+          
+  
+    
+  
+  Kubernetes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../misc/Latex%20Math%20Symbols/" class="md-tabs__link">
+          
+  
+    
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../design-restful-api-with-python-and-flask/" class="md-tabs__link">
+          
+  
+    
+  
+  Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../tips/bash-tips/" class="md-tabs__link">
+          
+  
+    
+  
+  Tips
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-tabs__link">
+          
+  
+    
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Bigdata
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Bigdata
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ambari-cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Ambari API 来操作 Hadoop 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/flink-cdc-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flink SQL CDC 实践以及一致性分析
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-hive-with-spark/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating Apache Hive with Apache Spark
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-phoenix-with-kerberos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoenix 集成 HBase 并支持 Kerberos 认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ipa-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/kerberos-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MIT Kerberos  安装及维护手册
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    马蜂窝数据仓库设计与实践
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/presto-with-ssl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Presto SSL 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/zookeeper-optimize/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    zookeeper集群应对万级并发的调优
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Courses
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Courses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/commands-in-sbin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux 命令学习
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/linux-cfs-scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux CFS 调度器：原理、设计与内核实现
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/pg9_high_performance_notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《PostgreSQL 9 High Performance》读书笔记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Mysql lecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Mysql lecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第一部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第二部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第三部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第四部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第五部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Time series analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Time series analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/01-basic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基础篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/02-primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    初级篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/03-advance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    进阶篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/04-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    应用篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/05-complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    补完篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/maridb-ax-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MariaDB AX 安装测试简记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/mysql-cluster-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MySQL Cluster 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-11g-imp-and-exp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 11g 导入导出基本操作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-silent-installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 静默安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/percona-cluster-with-haproxy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HAProxy + Percona XtraDB Cluster 部署
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/setup-a-clickhouse-cluster-on-one-node/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在一个节点上部署 ClickHouse 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/why-mysql8-slower-than-mysql57/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Kubernetes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Kubernetes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    外部机器如何直接直接访问 kubernetes 集群内服务
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/calico-node-troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calico Node 无法启动的排查
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/collect-k8s-log-with-filebeat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基于 ELK 的 日志收集与自动索引创建
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/coredns-support-hosts-file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoreDNS 支持解析宿主机的 hosts 文件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/deep-dive-into-k8s-internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用奇怪的方式构建简单 k8s 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/kubernetes-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 kubeadm 安装 kubernetes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/take-flannel-to-calico/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrate kubernetes cluster from Flannel to Calico
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Misc
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Misc
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/Latex%20Math%20Symbols/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用于 LateX 的数学符号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/git-from-zero-to-hero/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git从入门到应付日常工作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/gitlab-ci-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    gitlab-ci.yml 详解
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/osint-introduce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    超级情报手机工具库：开源验证和调查工具及使用方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_8" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Programming
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Programming
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../design-restful-api-with-python-and-flask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Python 和 Flask 设计 RESTful API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../programming-with-vim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    无插件Vim编程技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../pure-bash-bible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pure Bash Bible
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#understanding-awk" class="md-nav__link">
+    <span class="md-ellipsis">
+      Understanding AWK
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#background" class="md-nav__link">
+    <span class="md-ellipsis">
+      Background
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Background">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Plan
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-is-awk" class="md-nav__link">
+    <span class="md-ellipsis">
+      What Is Awk
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="What Is Awk">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#how-to-install-gawk" class="md-nav__link">
+    <span class="md-ellipsis">
+      How To Install gawk
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-print" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Print
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk Print">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-awk-field-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve learned: Awk Field Variables
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-sample-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Sample Data
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk Sample Data">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#disk-space-warning" class="md-nav__link">
+    <span class="md-ellipsis">
+      ❗ Disk Space Warning
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-book-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      The Book Data
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#printing-book-data" class="md-nav__link">
+    <span class="md-ellipsis">
+      Printing Book Data
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#field-separators" class="md-nav__link">
+    <span class="md-ellipsis">
+      Field Separators
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Field Separators">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-awk-field-separators" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve learned: Awk Field Separators
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-pattern-match-with-regular-expressions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Pattern Match With Regular Expressions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk Pattern Match With Regular Expressions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-awk-pattern-matching" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve learned: Awk Pattern Matching
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-printf" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk printf
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk printf">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-printf-and-built-ins" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve Learned: printf and Built-ins
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-begin-and-end-actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk BEGIN and END Actions
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk BEGIN and END Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-awks-begin-end-and-variables" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve learned: Awk’s BEGIN, END and Variables
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#fun-awk-one-liners" class="md-nav__link">
+    <span class="md-ellipsis">
+      Fun Awk One-Liners
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-scripting-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Scripting Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk Scripting Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#side-note-begin-fs" class="md-nav__link">
+    <span class="md-ellipsis">
+      Side Note: BEGIN FS
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-average-example" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Average Example
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk Average Example">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-calling-awk-from-a-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve learned: Calling Awk From a File
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Arrays
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk Arrays">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-awk-associative-arrays" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve learned: Awk Associative Arrays
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-if-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk If Else
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Awk If Else">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#what-ive-learned-awk-if-else" class="md-nav__link">
+    <span class="md-ellipsis">
+      What I’ve Learned: Awk If Else
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#awk-sort-by-values" class="md-nav__link">
+    <span class="md-ellipsis">
+      Awk Sort by Values
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#conclusion" class="md-nav__link">
+    <span class="md-ellipsis">
+      Conclusion
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Conclusion">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#whats-your-awk-trick-or-book-pick" class="md-nav__link">
+    <span class="md-ellipsis">
+      What’s your Awk Trick or Book Pick?
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_9" >
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Tips
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Tips
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/bash-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BASH 的一些技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/batch-convert-word-to-pdf/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows 下批量转换 word 文档为 pdf 的方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/change-keyboard-layout-in-ubuntu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ubuntu 下修改键盘映射
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/git-internals-objects-branches-create-repo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/git-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    git 不常见的操作技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/how-to-create-dummy-rpm-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速创建一个虚假 RPM 包
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-change-git-author/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to change git author name and email
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-delete-old-images-from-nexus-registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    如何删除 nexus 私服上的 Docker 镜像
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/howto-save-tmux-session/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to save tmux session
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/learn-seaborn-with-10min/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    十分钟掌握 Seaborn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/matplotlib-support-chinese/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Python 中 matplotlib 图支持中文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/move-running-process-into-tmux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    把一个运行的进程放到 tmux 会话中
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/rpm-tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rpm 包管理基本技能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/sed-one-line-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/setup-gitlab-ci-for-android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Gitlab CI For Android
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/ssh-three-key-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssh的三板斧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/ssh-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tips/wechat-contacts-backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    微信通讯录备份
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Troubleshooting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TCPDump Capture HTTP GET/POST requests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/deep-in-tcp-connect/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    详解 TCP 半连接队列与全连接队列
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/docker-run-no-space-left/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker 运行容器报磁盘空间不足的错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/fix-ora-00227/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    修复 Oracle ORA-00227 错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Oracle JDK 1.6 TLSv1.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+        <a href="../../tags/#tag:awk" class="md-tag">awk</a>
+      
+    
+  </nav>
+
+
+
+  <h1>Understanding AWK</h1>
+
+<h2 id="understanding-awk">Understanding AWK<a class="headerlink" href="#understanding-awk" title="Permanent link">&para;</a></h2>
+<h2 id="background">Background<a class="headerlink" href="#background" title="Permanent link">&para;</a></h2>
+<p>I have a confession to make: I don’t know how to use Awk. Or at least I didn’t know how to use it before I started writing this article. I would hear people mention Awk and how often they used it, and I was pretty certain I was missing out on some minor superpower.</p>
+<p>Like this little off hand comment by <a href="https://www.youtube.com/watch?v=2wZ1pCpJUIM">Bryan Cantrill</a>:</p>
+<blockquote>
+<p>I write three or four Awk programs a day. And these are one-liners. These super quick programs.</p>
+</blockquote>
+<p>It turns out Awk is pretty simple. It has only a couple of conventions and only a small amount of syntax. As a result, it’s straightforward to learn, and once you understand it, it will come in handy more often than you’d think.</p>
+<p>So in this article, I will teach myself, and you, the basics of Awk. <strong>If you read through the article and maybe even try an example or two, you should have no problem writing Awk scripts by the end of it.</strong> And you probably don’t even need to install anything because Awk is everywhere.</p>
+<h3 id="the-plan">The Plan<a class="headerlink" href="#the-plan" title="Permanent link">&para;</a></h3>
+<p>I will be using Awk to look at book reviews and pick my next book to read. I will start with short Awk one-liners and build towards a simple 33 line program that ranks books by the 19 million reviews on Amazon.com.</p>
+<h2 id="what-is-awk">What Is Awk<a class="headerlink" href="#what-is-awk" title="Permanent link">&para;</a></h2>
+<p>Awk is a record processing tool written by Aho, Kernighan, and Weinberger in 1977. Its name is an acronym of their names.</p>
+<p>They created it following the success of the line processing tools <code>sed</code> and <code>grep</code>. Awk was initially an experiment by the authors into whether text processing tools could be extended to deal with numbers. If grep lets you search for lines, and sed lets you do replacements in lines then awk was designed to let you do calculations on lines. It will be clear what that means once I take us through some examples.</p>
+<h3 id="how-to-install-gawk">How To Install <code>gawk</code><a class="headerlink" href="#how-to-install-gawk" title="Permanent link">&para;</a></h3>
+<blockquote>
+<p>The biggest reason to learn Awk is that it’s on pretty much every single linux distribution. You might not have perl or Python. You <em>will</em> have Awk. Only the most minimal of minimal linux systems will exclude it. Even busybox includes awk. That’s how essential it’s viewed.</p>
+<p><a href="https://news.ycombinator.com/item?id=28447825">cogman10</a></p>
+</blockquote>
+<p>Awk is part of the Portable Operating System Interface (POSIX). This means it’s already on your MacBook and your Linux server. There are several versions of Awk, but for the basics, whatever Awk you have will do.</p>
+<p>If you can run this, you can do the rest of this tutorial:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk --version
+  GNU Awk 5.1.0, API: 3.0 (GNU MPFR 4.1.0, GNU MP 6.2.1)
+  Copyright (C) 1989, 1991-2020 Free Software Foundation.
+</code></pre></div>
+<p>If you are doing something more involved with Awk, take the time to install GNU Awk (<code>gawk</code>). I did this using Homebrew (<code>brew install gawk</code>). Windows users can get gawk using chocolatey (<code>choco install gawk</code>). If you are on Linux, you already have it.</p>
+<h2 id="awk-print">Awk Print<a class="headerlink" href="#awk-print" title="Permanent link">&para;</a></h2>
+<p>By default, Awk expects to receive its input on standard in and output its results to standard out. Thus, the simplest thing you can do in Awk is print a line of input.</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;one two three&quot; | awk &#39;{ print }&#39;
+one two three
+</code></pre></div>
+<p>Note the braces. This syntax will start to make sense after you see a couple of examples.</p>
+<p>You can selectively choose columns (which Awk calls fields):</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;one two three&quot; | awk &#39;{ print $1 }&#39;
+one
+$ echo &quot;one two three&quot; | awk &#39;{ print $2 }&#39;
+two
+$ echo &quot;one two three&quot; | awk &#39;{ print $3 }&#39;
+three
+</code></pre></div>
+<p>You may have been expecting the first column to be <code>$0</code> and not <code>$1</code>, but <code>$0</code> is something different:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;one two three&quot; | awk &#39;{ print $0 }&#39;
+one two three
+</code></pre></div>
+<p>It is the entire line! Incidentally, Awk refers to each line as a record and each column as a field.</p>
+<p>I can do this across multiple lines:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;
+ one two three
+ four five six&quot; \
+ | awk &#39;{ print $1 }&#39;
+one
+four
+</code></pre></div>
+<p>And I can print more than one column:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;
+ one two three
+ four five six&quot; \
+| awk &#39;{ print $1, $2 }&#39;
+one two
+four five
+</code></pre></div>
+<p>Awk also includes <code>$NF</code> for accessing the last column:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;
+ one two three
+ four five six&quot; \
+| awk &#39;{ print $NF }&#39;
+three
+six
+</code></pre></div>
+<h3 id="what-ive-learned-awk-field-variables">What I’ve learned: Awk Field Variables<a class="headerlink" href="#what-ive-learned-awk-field-variables" title="Permanent link">&para;</a></h3>
+<p>Awk creates a variable for each field (column) in a record (line) (<code>$1</code>, <code>$2</code> … <code>$NF</code>). <code>$0</code> refers to the whole record.</p>
+<p>You can print out fields like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;{ print $1, $2, $7 }&#39;
+</code></pre></div>
+<h2 id="awk-sample-data">Awk Sample Data<a class="headerlink" href="#awk-sample-data" title="Permanent link">&para;</a></h2>
+<p>To move beyond simple printing, I need some sample data. I will use the book portion of the <a href="https://s3.amazonaws.com/amazon-reviews-pds/tsv/index.txt">amazon product reviews dataset</a> for the rest of this tutorial.</p>
+<blockquote>
+<p>This dataset contains product reviews and metadata from Amazon, including 142.8 million reviews spanning May 1996 - July 2014.</p>
+<p>Amazon Review Data Set</p>
+</blockquote>
+<p>You can grab the book portion of it like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ curl https://s3.amazonaws.com/amazon-reviews-pds/tsv/ ↩
+amazon_reviews_us_Books_v1_00.tsv.gz | /
+  gunzip -c &gt;&gt; / 
+  bookreviews.tsv
+</code></pre></div>
+<p>If you want to follow along with the entire dataset, repeat this for each of the three book files (<code>v1_00</code>, <code>v1_01</code>, <code>v1_02</code>).</p>
+<h3 id="disk-space-warning">❗ Disk Space Warning<a class="headerlink" href="#disk-space-warning" title="Permanent link">&para;</a></h3>
+<p>The above file is over six gigs unzipped. If you grab all three, you will be up to fifteen gigs of disk space. If you don’t have much space, you can play along by grabbing the first ten thousand rows of the first file:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ curl https://s3.amazonaws.com/amazon-reviews-pds/tsv/ ↩
+amazon_reviews_us_Books_v1_00.tsv.gz \
+  | gunzip -c \
+  | head -n 10000 \
+  &gt; bookreviews.tsv
+</code></pre></div>
+<h3 id="the-book-data">The Book Data<a class="headerlink" href="#the-book-data" title="Permanent link">&para;</a></h3>
+<p>Once you’ve grabbed that data, you should have Amazon book review data that looks like this:</p>
+<div class="highlight"><pre><span></span><code>marketplace customer_id review_id product_id product_parent product_title product_category star_rating helpful_votes total_votes vine verified_purchase review_headline review_body review_date
+US 22480053 R28HBXXO1UEVJT 0843952016 34858117 The Rising Books 5 0 0 N N Great Twist on Zombie Mythos I&#39;ve known about this one for a long time, but just finally got around to reading it for the first time. I enjoyed it a lot!  What I liked the most was how it took a tired premise and breathed new life into it by creating an entirely new twist on the zombie mythos. A definite must read! 2012-05-03
+</code></pre></div>
+<p>Each row in this file represents the record of one book review. Amazon lays out the fields like this:</p>
+<div class="highlight"><pre><span></span><code>Data FormatDATA COLUMNS:
+01  marketplace       - 2 letter country code of the marketplace where the ↩
+ review was written.
+02  customer_id       - Random identifier that can be used to aggregate reviews↩
+ written by a single author.
+03  review_id         - The unique ID of the review.
+04  product_id        - The unique Product ID the review pertains to. 
+05  product_parent    - Random identifier that can be used to aggregate ↩ 
+reviews for the same product.
+06  product_title     - Title of the product.
+07  product_category  - Broad product category that can be used to group ↩
+reviews 
+08  star_rating       - The 1-5 star rating of the review.
+09  helpful_votes     - Number of helpful votes.
+10  total_votes       - Number of total votes the review received.
+11  vine              - Review was written as part of the Vine program.
+12  verified_purchase - The review is on a verified purchase.
+13  review_headline   - The title of the review.
+14  review_body       - The review text.
+15  review_date       - The date the review was written.
+</code></pre></div>
+<h3 id="printing-book-data">Printing Book Data<a class="headerlink" href="#printing-book-data" title="Permanent link">&para;</a></h3>
+<p>I can now test out my field printing skills on a bigger file. I can start by printing fields that I care about, like the marketplace:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;{ print $1 }&#39; bookreviews.tsv | head 
+marketplace
+US
+US
+US
+US
+US
+US
+US
+US
+US
+</code></pre></div>
+<p>Or the customer_id:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;{ print $2 }&#39; bookreviews.tsv | head 
+customer_id
+22480053
+44244451
+20357422
+13235208
+26301786
+27780192
+13041546
+51692331
+23108524
+</code></pre></div>
+<p>However, when I try to print out the title, things do not go well:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;{ print $6 }&#39; bookreviews.tsv | head 
+product_title
+The
+Sticky
+Black
+Direction
+Until
+Unfinished
+The
+Good
+Patterns
+</code></pre></div>
+<p>To fix this, I need to configure my field separators.</p>
+<h2 id="field-separators">Field Separators<a class="headerlink" href="#field-separators" title="Permanent link">&para;</a></h2>
+<p>By default, Awk assumes that the fields in a record are whitespace delimited<a href="https://earthly.dev/blog/awk-examples/#fn1">1</a>. I can change the field separator to use tabs using the <code>awk -F</code> option:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;{ print $6 }&#39; bookreviews.tsv | head 
+product_title
+The Rising
+Sticky Faith Teen Curriculum with DVD: 10 Lessons to Nurture Faith Beyond High 
+Black Passenger Yellow Cabs: Of Exile And Excess In Japan
+Direction and Destiny in the Birth Chart
+Until the Next Time
+Unfinished Business
+The Republican Brain: The Science of Why They Deny Science- and Reality
+Good Food: 101 Cakes &amp; Bakes
+Patterns and Quilts (Mathzones)
+</code></pre></div>
+<h3 id="what-ive-learned-awk-field-separators">What I’ve learned: Awk Field Separators<a class="headerlink" href="#what-ive-learned-awk-field-separators" title="Permanent link">&para;</a></h3>
+<p>Awk assumes that the fields in a record are whitespace delimited.</p>
+<p>You can change this using the <code>-F</code> option like this</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;{ print $6 }&#39;
+</code></pre></div>
+<p>I can also work backward from the last position forward by subtracting from <code>NF</code>.</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;{ print $NF &quot;\t&quot; $(NF-2)}&#39; bookreviews.tsv | head 
+review_date     review_headline
+2012-05-03      Great Twist on Zombie Mythos
+2012-05-03      Helpful and Practical
+2012-05-03      Paul
+2012-05-03      Direction and Destiny in the Birth Chart
+2012-05-03      This was Okay
+2012-05-03      Excellent read!!!
+2012-05-03      A must read for science thinkers
+2012-05-03      Chocoholic heaven
+2012-05-03      Quilt Art Projects for Children
+</code></pre></div>
+<p><strong>Side Note: NF and NR</strong></p>
+<p><code>$NF</code> seems like an unusual name for printing the last column, right? But actually, <code>NF</code> is a variable holding the <em>Number of Fields</em> in a record. So I’m just using its value as an index to refer to the last field.</p>
+<p>I can print the actual value like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;{ print NF }&#39; bookreviews.tsv | head  
+15
+15
+15
+15
+15
+15
+15
+15
+15
+15
+</code></pre></div>
+<p>Another variable Awk offers up for use is <code>NR</code>, the <em>number of records</em> so far. <code>NR</code> is handy when I need to print line numbers:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;{ print NR &quot; &quot; $(NF-2) }&#39; bookreviews.tsv | head  
+1 review_headline
+2 Great Twist on Zombie Mythos
+3 Helpful and Practical
+4 Paul
+5 Direction and Destiny in the Birth Chart
+6 This was Okay
+7 Excellent read!!!
+8 A must read for science thinkers
+9 Chocoholic heaven
+10 Quilt Art Projects for Children
+</code></pre></div>
+<h2 id="awk-pattern-match-with-regular-expressions">Awk Pattern Match With Regular Expressions<a class="headerlink" href="#awk-pattern-match-with-regular-expressions" title="Permanent link">&para;</a></h2>
+<p>Everything I’ve done so far has applied to every line in our file, but the real power of Awk comes from pattern matching. And you can give Awk a pattern to match each line on like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;aa
+        bb
+        cc&quot; | awk &#39;/bb/&#39;
+bb
+</code></pre></div>
+<p>You could replace <code>grep</code> this way. You can also combine this with the field access and printing we’ve done so far:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;aa 10
+        bb 20
+        cc 30&quot; | awk &#39;/bb/ { print $2 }&#39;
+20
+</code></pre></div>
+<p>Using this knowledge, I can easily grab reviews by book title and print the book title(<code>$6</code>) and review score(<code>$8</code>).</p>
+<p>The reviews I’m going to focus on today are for the book ‘The Hunger Games’. I’m choosing it because it’s part of a series with many reviews and I recall liking the movie. So I’m wondering if I should read it.</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;/Hunger Games/ { print $6, $8  }&#39; bookreviews.tsv | head
+The Hunger Games (Book 1) 5
+The Hunger Games Trilogy Boxed Set 5
+The Hunger Games Trilogy: The Hunger Games / Catching Fire / Mockingjay 5
+Catching Fire |Hunger Games|2 4
+The Hunger Games (Book 1) 5
+Catching Fire |Hunger Games|2 5
+The Hunger Games Trilogy: The Hunger Games / Catching Fire / Mockingjay 5
+Blackout 3
+The Hunger Games Trilogy: The Hunger Games / Catching Fire / Mockingjay 4
+Tabula Rasa 3
+</code></pre></div>
+<p>I should be able to pull valuable data from these reviews, but first there is a problem. I’m getting reviews from more than one book here. <code>/Hunger Games/</code>matches anywhere in the line and I’m getting all kinds of ‘Hunger Games’ books returned. I’m even getting books that mention “Hunger Games” in the review text:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;/Hunger Games/ { print $6 }&#39; bookreviews.tsv | sort | uniq    
+Birthmarked
+Blood Red Road
+Catching Fire (The Hunger Games)
+Divergent
+Enclave
+Fire (Graceling Realm Books)
+Futuretrack 5
+Girl in the Arena
+...
+</code></pre></div>
+<p>I can fix this by using the <code>product_id</code> field to pattern match on:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;$4 == &quot;0439023483&quot; { print $6 }&#39; bookreviews.tsv | sort |  uniq 
+The Hunger Games (The Hunger Games, Book 1)
+</code></pre></div>
+<p>I want to calculate the average review score for ‘The Hunger Games’, but first, let’s take a look at the review_date (<code>$15</code>), the review_headline (<code>$13</code>), and the star_rating (<code>$8</code>) of our Hunger Games reviews, to get a feel for the data:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;$4 == &quot;0439023483&quot; { print $15 &quot;\t&quot; $13 &quot;\t&quot; $8}&#39; \
+    bookreviews.tsv | head 
+2015-08-19      Five Stars      5
+2015-08-17      Five Stars      5
+2015-07-23      Great read      5
+2015-07-05      Awesome 5
+2015-06-28      Epic start to an epic series    5
+2015-06-21      Five Stars      5
+2015-04-19      Five Stars      5
+2015-04-12      i lile the book 3
+2015-03-28      What a Great Read, i could not out it down   5
+2015-03-28      Five Stars      5
+</code></pre></div>
+<p>Look at those star ratings. Yes, the book is getting many 5-star reviews, but more importantly, the layout of my text table looks horrible: the width of the review titles is breaking the layout.</p>
+<p>To fix this, I need to switch from using <code>print</code> to using <code>printf</code>.</p>
+<h3 id="what-ive-learned-awk-pattern-matching">What I’ve learned: Awk Pattern Matching<a class="headerlink" href="#what-ive-learned-awk-pattern-matching" title="Permanent link">&para;</a></h3>
+<p>I’ve learned that an awk action, like <code>{ print $4}</code>, can be preceded by a pattern, like <code>/regex/</code>. Without the pattern, the action runs on all lines.</p>
+<p>You can use a simple regular expression for the pattern. In which case it matches anywhere in the line, like <code>grep</code>:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;/hello/ { print &quot;This line contains hello&quot;, $0}&#39;
+</code></pre></div>
+<p>Or you can match within a specific field:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;$4~/hello/ { print &quot;This field contains hello&quot;, $4}&#39;
+</code></pre></div>
+<p>Or you can exact match a field:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;$4 == &quot;hello&quot; { print &quot;This field is hello:&quot;, $4}&#39;
+</code></pre></div>
+<h2 id="awk-printf">Awk <code>printf</code><a class="headerlink" href="#awk-printf" title="Permanent link">&para;</a></h2>
+<p><code>printf</code> works like it does in the C and uses a format string and a list of values. You can use <code>%s</code> to print the next string value.</p>
+<p>So my <code>print $15 "\t" $13 "\t" $8</code> becomes <code>printf "%s \t %s \t %s", $15, $13, $8</code>.</p>
+<p>From there I can add right padding and fix my layout by changing <code>%s</code> to <code>%-Ns</code>where <code>N</code> is my desired column width:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; \
+   &#39;$4 == &quot;0439023483&quot; { printf &quot;%s \t %-20s \t %s \n&quot;, $15, $13, $8}&#39;  \
+   bookreviews.tsv | head 
+2015-08-19       Five Stars              5 
+2015-08-17       Five Stars              5 
+2015-07-23       Great read              5 
+2015-07-05       Awesome                 5 
+2015-06-28       Epic start to an epic series    5 
+2015-06-21       Five Stars              5 
+2015-04-19       Five Stars              5 
+2015-04-12       i lile the book         3 
+2015-03-28       What a Great Read, i could not out it down   5 
+2015-03-28       Five Stars              5 
+</code></pre></div>
+<p>This table is pretty close to what I’d want. However, some of the titles are just too long. I can shorten them to 20 characters with <code>substr($13,1,20)</code>.</p>
+<p>Putting it all together and I get:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; \
+ &#39;$4 == &quot;0439023483&quot; { 
+    printf &quot;%s \t %-20s \t %s \n&quot;,$15,substr($13,1,20),$8
+  }&#39; \
+ bookreviews.tsv | head
+2015-08-19       Five Stars              5 
+2015-08-17       Five Stars              5 
+2015-07-23       Great read              5 
+2015-07-05       Awesome                 5 
+2015-06-28       Epic start to an epi    5 
+2015-06-21       Five Stars              5 
+2015-04-19       Five Stars              5 
+2015-04-12       i lile the book         3 
+2015-03-28       What a Great Read, i    5 
+2015-03-28       Five Stars              5 
+</code></pre></div>
+<p>Alright, I think at this point, I’m ready to move on to star calculations.</p>
+<h3 id="what-ive-learned-printf-and-built-ins">What I’ve Learned: <code>printf</code> and Built-ins<a class="headerlink" href="#what-ive-learned-printf-and-built-ins" title="Permanent link">&para;</a></h3>
+<p>If you need to print out a table, Awk lets you use <code>printf</code> and built-ins like <code>substr</code> to format your output.</p>
+<p>It ends up looking something like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;{ printf &quot;%s \t %-5s&quot;, $1, substr($2,1,5) }&#39;
+</code></pre></div>
+<p><code>printf</code> works much like C’s <code>printf</code>. You can use <code>%s</code> to insert a string into the format string, and other flags let you the set width or precision. For more information on <code>printf</code> or other built-ins, you can consult an Awk reference document.</p>
+<h2 id="awk-begin-and-end-actions">Awk <code>BEGIN</code> and <code>END</code> Actions<a class="headerlink" href="#awk-begin-and-end-actions" title="Permanent link">&para;</a></h2>
+<p>I want to calculate the average rating for book reviews in this data set. To do that, I need to use a variable. However, I don’t need to declare the variable or its type. I can just use it:</p>
+<p>I can add up and print out a running total of review_stars (<code>$8</code>) like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;{ total = total + $8; print total }&#39; bookreviews.tsv | head 
+0
+5
+10
+...
+</code></pre></div>
+<p>And to turn this into an average, I can use <code>NR</code> to get the total amount of records and <code>END</code> to run an action at the end of the processing.</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;\t&#39; &#39;
+    { total = total + $8 }
+END { print &quot;Average book review:&quot;, total/NR, &quot;stars&quot; }
+&#39; bookreviews.tsv | head 
+Average book review is 4.24361 stars
+</code></pre></div>
+<p>I can also use <code>BEGIN</code> to run an action before Awk starts processing records.</p>
+<div class="highlight"><pre><span></span><code>&gt;_ $ awk -F &#39;\t&#39; &#39;
+BEGIN { print &quot;Calculating Average ...&quot; } 
+      { total = total + $8 }
+END   { print &quot;Average book review:&quot;, total/NR, &quot;stars&quot; }
+&#39; bookreviews.tsv 
+Calculating Average ...
+Average book review is 4.24361 stars
+</code></pre></div>
+<h3 id="what-ive-learned-awks-begin-end-and-variables">What I’ve learned: Awk’s <code>BEGIN</code>, <code>END</code> and Variables<a class="headerlink" href="#what-ive-learned-awks-begin-end-and-variables" title="Permanent link">&para;</a></h3>
+<p>Awk provides two special patterns, <code>BEGIN</code> and <code>END</code>. You can use them to run actions before and after processing the records. For example, this is how you would initialize data, print headers and footer, or do any start-up or tear-down stuff in Awk.</p>
+<p>It ends up looking like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk &#39;
+BEGIN { print &quot;start up&quot; }
+      { print &quot;line match&quot; }
+END   { print &quot;tear down&quot; }&#39;
+</code></pre></div>
+<p>You can also easily use variables in Awk. No declaration is needed.</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -F &#39;{ total = total + $8 }&#39;
+</code></pre></div>
+<h2 id="fun-awk-one-liners">Fun Awk One-Liners<a class="headerlink" href="#fun-awk-one-liners" title="Permanent link">&para;</a></h2>
+<p>Before we leave the world of one-liners behind, I reached out to my friends to ask when they use Awk day-to-day. Here are some of the examples I got back.</p>
+<p>Printing files with a human readable size:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ ls -lh | awk &#39;{ print $5,&quot;\t&quot;, $9 }&#39;  
+7.8M     The_AWK_Programming_Language.pdf
+6.2G     bookreviews.tsv
+</code></pre></div>
+<p>Getting the containerID of running docker containers:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ docker ps -a |  awk &#39;{ print $1 }&#39;
+CONTAINER
+08488f220f76
+3b7fc673649f
+</code></pre></div>
+<p>You can combine that last one with a regex to focus on a line you care about. Here I stop <code>postgres</code>, regardless of its tag name:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ docker stop &quot;$(docker ps -a |  awk &#39;/postgres/{ print $1 }&#39;)&quot;
+</code></pre></div>
+<p>You get the idea. If you have a table of space-delimited text returned by some tool then Awk can easily slice and dice it.</p>
+<h2 id="awk-scripting-examples">Awk Scripting Examples<a class="headerlink" href="#awk-scripting-examples" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>If you pick your constraints you can make a particular envelope of uses easy and ones you don’t care about hard. Awk’s choice to be a per line processor, with optional sections for processing before all lines and after all lines is self-limiting but it defines a useful envelope of use.</p>
+<p><a href="https://news.ycombinator.com/item?id=13455678">Michael Feathers</a></p>
+</blockquote>
+<p>In my mind, once an Awk program spans multiple lines, it’s time to consider putting it into a file.</p>
+<p><strong>Side Note: Why Awk Scripting</strong></p>
+<p>Once we move beyond one-liners, a natural question is <em>why</em>. As in ‘Why not use Python? Isn’t it good at this type of thing?’</p>
+<p>I have a couple of answers for that.</p>
+<p>First, Awk is great for writing programs that are, at their core, a glorified for loop over some input. If that is what you are doing, and the control flow is limited, using Awk will be more concise than Python.</p>
+<p>Second, if you need to rewrite your Awk program into Python at some point, so be it. It’s not going to be more than 100 lines of code, and the translation process will be straightforward.</p>
+<p>Third, why not? Learning a new tool can be fun.</p>
+<p>We’ve now crossed over from one-liners into Awk scripting. With Awk, the transition is smooth. I can now embed Awk into a bash script:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ cat average
+exec awk -F &#39;\t&#39; &#39;
+    { total = total + $8 }
+END { print &quot;Average book review is&quot;, total/NR, &quot;stars&quot; } 
+&#39; $1
+&gt;_$ average bookreviews.tsv
+Average book review is 4.2862 stars
+</code></pre></div>
+<p>Or I can use a shebang (<code>#!</code>):</p>
+<div class="highlight"><pre><span></span><code>average.awk#!/usr/bin/env -S gawk -f
+
+BEGIN { FS = &quot;\t&quot; }
+{ total = total + $8 }
+END { print &quot;Average book $6 review is&quot;, total/NR, &quot;stars&quot; } 
+</code></pre></div>
+<p>And run it like this</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ ./average.awk bookreviews.tsv
+</code></pre></div>
+<p>Or you can also pass it to awk directly using <code>-f</code>:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -f average.awk bookreviews.tsv
+</code></pre></div>
+<h3 id="side-note-begin-fs">Side Note: BEGIN FS<a class="headerlink" href="#side-note-begin-fs" title="Permanent link">&para;</a></h3>
+<p>If you use a shebang or pass to Awk directly, it’s easiest to set the file separator using <code>FS = "\t"</code> in the <code>BEGIN</code> action.</p>
+<div class="highlight"><pre><span></span><code>&gt;_BEGIN { FS = &quot;\t&quot; }
+</code></pre></div>
+<h2 id="awk-average-example">Awk Average Example<a class="headerlink" href="#awk-average-example" title="Permanent link">&para;</a></h2>
+<p>At this point, I should be ready to start calculating review scores for The Hunger Games:</p>
+<div class="highlight"><pre><span></span><code>exec awk -F &#39;\t&#39; &#39;
+$4 == &quot;0439023483&quot; { title=$6; count = count + 1; total = total + $8 }
+END { 
+      print &quot;The Average book review for&quot;, title, &quot;is&quot;, total/count, &quot;stars&quot; 
+    }  
+&#39; $1
+</code></pre></div>
+<p>Now that I’m in a file, I can format this out a bit better so its easier to read:</p>
+<div class="highlight"><pre><span></span><code>average.awk$4 == &quot;0439023483&quot; { 
+  title=$6
+  count = count + 1; 
+  total = total + $8 
+}
+END { 
+  printf &quot;Book: %-5s\n&quot;, title
+  printf &quot;Average Rating: %.2f\n&quot;, total/count 
+}  
+</code></pre></div>
+<p>Either way, I get this output:</p>
+<div class="highlight"><pre><span></span><code>Book: The Hunger Games (The Hunger Games, Book 1)
+Average Rating: 4.67%       
+</code></pre></div>
+<h3 id="what-ive-learned-calling-awk-from-a-file">What I’ve learned: Calling Awk From a File<a class="headerlink" href="#what-ive-learned-calling-awk-from-a-file" title="Permanent link">&para;</a></h3>
+<p>Once you are beyond a single line, it makes sense to put your Awk script into a file.</p>
+<p>You can then call you program using the <code>-f</code>option</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -f file.awk input
+</code></pre></div>
+<p>Using a shebang :</p>
+<div class="highlight"><pre><span></span><code>&gt;_#!/usr/bin/env -S gawk -f
+</code></pre></div>
+<p>or by using a bash <code>exec</code> command:</p>
+<div class="highlight"><pre><span></span><code>&gt;_exec awk -F &#39;\t&#39; &#39;print $0&#39; $1
+</code></pre></div>
+<h2 id="awk-arrays">Awk Arrays<a class="headerlink" href="#awk-arrays" title="Permanent link">&para;</a></h2>
+<p>I’d like to know if the series stays strong or if it’s a single great book that the author stretched out into a trilogy. If the reviews decline quickly, then that is not a good sign. I should be able to see which book was rated the best and which was the worst. Let’s find out.</p>
+<p>If I were going to calculate the averages in Python, I would loop over the list of reviews and use a dictionary to track the total stars and total reviews for each.</p>
+<p>In Awk I can do the same:</p>
+<div class="highlight"><pre><span></span><code>hungergames.awkBEGIN { FS = &quot;\t&quot; }
+$6~/\(The Hunger Games(, Book 1)?\)$/ { 
+  title[$6]=$6
+  count[$6]= count[$6] + 1
+  total[$6]= total[$6] + $8
+}
+END { 
+    for (i in count) {
+        printf &quot;---------------------------------------\n&quot;
+        printf &quot;%s\n&quot;, title[i]
+        printf &quot;---------------------------------------\n&quot;
+        printf &quot;Ave: %.2f\t Count: %s \n\n&quot;, total[i]/count[i], count[i]  
+    }
+}
+</code></pre></div>
+<p>Running:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ awk -f hungergames.awk bookreviews.tsv
+---------------------------------------
+The Hunger Games (The Hunger Games, Book 1)
+---------------------------------------
+Ave: 4.55        Count: 1497 
+
+---------------------------------------
+Mockingjay (The Hunger Games)
+---------------------------------------
+Ave: 3.77        Count: 3801 
+
+---------------------------------------
+Catching Fire (The Hunger Games)
+---------------------------------------
+Ave: 4.52        Count: 2205 
+
+---------------------------------------
+</code></pre></div>
+<p>And look at that, the first book in the series was the most popular. And the last book, Mockingjay was much less popular. So that isn’t a good sign.</p>
+<p>Let me look at another trilogy to see if this gradual decrease in rankings is common or The Hunger Games specific:</p>
+<div class="highlight"><pre><span></span><code>hungergames.awkBEGIN { FS = &quot;\t&quot; }
+$6~/\(The Lord of the Rings, Book .\)$/ {  # &lt;-- changed this line
+  title[$6]=$6
+  count[$6]= count[$6] + 1
+  total[$6]= total[$6] + $8
+}
+END { 
+    for (i in title) {
+        printf &quot;---------------------------------------\n&quot;
+        printf &quot;%s\n&quot;, title[i]
+        printf &quot;---------------------------------------\n&quot;
+        printf &quot;Ave: %.2f\t Count: %s \n\n&quot;, total[i]/count[i], count[i]  
+    }
+}
+</code></pre></div>
+<p>Which results in:</p>
+<div class="highlight"><pre><span></span><code>---------------------------------------
+The Return of the King (The Lord of the Rings, Book 3)
+---------------------------------------
+Ave: 4.79        Count: 38 
+
+---------------------------------------
+The Two Towers (The Lord of the Rings, Book 2)
+---------------------------------------
+Ave: 4.64        Count: 56 
+
+---------------------------------------
+The Fellowship of the Ring (The Lord of the Rings, Book 1)
+---------------------------------------
+Ave: 4.60        Count: 93  
+</code></pre></div>
+<p>Lord of the Rings has a different pattern. The books are all in a pretty tight range. The number of reviews is also much smaller, so it’s hard to say for sure that “The Return Of the King” is the best book, but it certainly looks that way.</p>
+<h3 id="what-ive-learned-awk-associative-arrays">What I’ve learned: Awk Associative Arrays<a class="headerlink" href="#what-ive-learned-awk-associative-arrays" title="Permanent link">&para;</a></h3>
+<p>Awk has associative arrays built it, and you can use them in much the same way you would use Python dictionaries.</p>
+<div class="highlight"><pre><span></span><code>arr[&quot;key1&quot;] = &quot;one&quot;
+arr[&quot;key2&quot;] = &quot;two&quot;
+arr[&quot;key3&quot;] = &quot;three&quot;
+</code></pre></div>
+<p>You can then use a for loop to iterate over them:</p>
+<div class="highlight"><pre><span></span><code>for (i in arr){
+    print i, arr[i]
+}
+key1 one
+key2 two
+key3 three
+</code></pre></div>
+<p>Not bad for a language written in 1977!</p>
+<h2 id="awk-if-else">Awk <code>If</code> <code>Else</code><a class="headerlink" href="#awk-if-else" title="Permanent link">&para;</a></h2>
+<p>I hate how every book on Amazon has a star rating between 3.0 and 4.5 stars. It makes it hard to judge purely based on numbers. So let’s rescale things in terms of the average. Maybe if I normalize the reviews, it will be easier to determine how good or bad the 3.77 average for Mockingjay is.</p>
+<p>First, I need to calculate the global average but adding up the total and average for every row:</p>
+<div class="highlight"><pre><span></span><code>hungergames.awk{
+    # Global Average
+    g_count = g_count + 1
+    g_total = g_total + $8 
+}
+</code></pre></div>
+<p>Then I calculate the global average:</p>
+<div class="highlight"><pre><span></span><code>hungergames.awEND { 
+    g_score = g_total/g_count 
+    ...
+}    
+</code></pre></div>
+<p>Once I have this, I can score books based on how higher or lower they are than the average. All I need to do is add some if statements to my <code>END</code> pattern to accomplish this:</p>
+<div class="highlight"><pre><span></span><code>hungergames.awkEND { 
+    g_score = g_total/g_count 
+    for (i in count) {
+        score = total[i]/count[i]
+        printf &quot;%-30s\t&quot;, substr(title[i],1,30)
+        if (score - g_score &gt; .5)
+            printf &quot;👍👍👍&quot; 
+        else if (score - g_score &gt; .25)
+            printf &quot;👍👍&quot; 
+        else if (score - g_score &gt; 0)
+            printf &quot;👍&quot; 
+        else if (g_score - score  &gt; 1)
+            printf &quot;👎👎👎&quot; 
+        else if (g_score - score  &gt; .5)
+            printf &quot;👎👎&quot; 
+        else if (g_score - score  &gt; 0)
+            printf &quot;👎&quot;
+        printf &quot;\n&quot;
+    }
+}
+</code></pre></div>
+<p>The values for partitioning are just a guess, but it makes it easier for me to understand the rankings:</p>
+<div class="highlight"><pre><span></span><code>The Hunger Games (The Hunger G  👍
+Catching Fire: The Official Il  👍👍👍
+Mockingjay (The Hunger Games)   👎👎
+
+The Two Towers (The Lord of th  👍👍
+The Fellowship of the Ring (Th  👍👍
+The Return of the King (The Lo  👍👍👍
+</code></pre></div>
+<p>It looks like Mockingjay, at least on Amazon and in this dataset, was not well received.</p>
+<p>You can easily modify this script to query for books ad hoc:</p>
+<div class="highlight"><pre><span></span><code>averageexec gawk -F &#39;\t&#39; &#39;
+{
+    # Global Average
+    g_count = g_count + 1
+    g_total = g_total + $8 
+    PROCINFO[&quot;sorted_in&quot;] = &quot;@val_num_asc&quot;
+}
+$6~/^.*&#39;+&quot;$1&quot;+&#39;.*$/ { # &lt;-- Take match as input
+  title[$6]=$6
+  count[$6]= count[$6] + 1
+  total[$6]= total[$6] + $8
+}
+END { 
+    PROCINFO[&quot;sorted_in&quot;] = &quot;@val_num_desc&quot;
+    g_score = g_total/g_count 
+    for (i in count) {
+        score = total[i]/count[i]
+        printf &quot;%-50s\t&quot;, substr(title[i],1,50)
+        if (score - g_score &gt; .4)
+            printf &quot;👍👍👍&quot; 
+        else if (score - g_score &gt; .25)
+            printf &quot;👍👍&quot; 
+        else if (score - g_score &gt; 0)
+            printf &quot;👍&quot; 
+        else if (g_score - score  &gt; 1)
+            printf &quot;👎👎👎&quot; 
+        else if (g_score - score  &gt; .5)
+            printf &quot;👎👎&quot; 
+        else if (g_score - score  &gt; 0)
+            printf &quot;👎&quot;
+        printf &quot;\n&quot;
+    }
+}
+&#39; bookreviews.tsv | head -n 1
+</code></pre></div>
+<p>And then run it like this:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ ./average &quot;Left Hand of Darkness&quot;
+The Left Hand of Darkness (Ace Science Fiction)         👎
+$ ./average &quot;Neuromancer&quot;          
+Neuromancer                                             👎👎
+$ ./average &quot;The Lifecycle of Software Objects&quot;
+The Lifecycle of Software Objects                       👎
+</code></pre></div>
+<p>These are all great books, so I’m starting to question the taste of Amazon reviewers.</p>
+<p>I want to test one more thing, though: how do the most popular books rate? Maybe popular books get lots of reviews, and that pushes them below the overall average?</p>
+<h3 id="what-ive-learned-awk-if-else">What I’ve Learned: Awk If Else<a class="headerlink" href="#what-ive-learned-awk-if-else" title="Permanent link">&para;</a></h3>
+<p>Awk has branching using <code>if</code> and <code>else</code> statements. It works exactly like you might expect it to:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ echo &quot;1\n 2\n 3\n 4\n 5\n 6&quot; | awk &#39;{
+        if (NR % 2) 
+            print &quot;odd&quot;
+        else
+            print $0
+        }&#39;
+odd
+2
+odd
+4
+odd
+6
+</code></pre></div>
+<h2 id="awk-sort-by-values">Awk Sort by Values<a class="headerlink" href="#awk-sort-by-values" title="Permanent link">&para;</a></h2>
+<p>Awk (specifically gawk) allows you easily configure your iteration order using a magic variable called <code>PROCINFO["sorted_in"]</code>. This means that if I change our program to sort by value and drop the filtering, then I will be able to see the top reviewed books:</p>
+<div class="highlight"><pre><span></span><code>top_booksexec gawk -F &#39;\t&#39; &#39;
+{
+    # Global Average
+    g_count = g_count + 1
+    g_total = g_total + $8 
+    title[$6]=$6
+    count[$6]= count[$6] + 1
+    total[$6]= total[$6] + $8
+}
+END { 
+    PROCINFO[&quot;sorted_in&quot;] = &quot;@val_num_desc&quot; # &lt;-- Print in value order
+    g_score = g_total/g_count 
+    for (i in count) {
+        score = total[i]/count[i]
+        printf &quot;%-50s\t&quot;, substr(title[i],1,50)
+        if (score - g_score &gt; .4)
+            printf &quot;👍👍👍&quot; 
+        else if (score - g_score &gt; .25)
+            printf &quot;👍👍&quot; 
+        else if (score - g_score &gt; 0)
+            printf &quot;👍&quot; 
+        else if (g_score - score  &gt; 1)
+            printf &quot;👎👎👎&quot; 
+        else if (g_score - score  &gt; .5)
+            printf &quot;👎👎&quot; 
+        else if (g_score - score  &gt; 0)
+            printf &quot;👎&quot;
+        printf &quot;\n&quot;
+    }
+}
+&#39; bookreviews.tsv 
+</code></pre></div>
+<p>Running it:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ ./top_books | head
+Harry Potter And The Sorcerer&#39;s Stone                 👍👍
+Fifty Shades of Grey                                  👎👎
+The Hunger Games (The Hunger Games, Book 1)           👍
+The Hobbit                                            👍
+Twilight                                              👎
+Jesus Calling: Enjoying Peace in His Presence         👍👍👍
+Unbroken: A World War II Story of Survival, Resili    👍👍👍
+The Shack: Where Tragedy Confronts Eternity           👎
+Divergent                                             👍
+Gone Girl                                             👎👎
+</code></pre></div>
+<p>It looks like about half (6 /10) of the most reviewed books were more popular than average. So I can’t blame Mockingjay’s low score on its popularity. I think I’ll have to take a pass on the series or at least that book.</p>
+<h2 id="conclusion">Conclusion<a class="headerlink" href="#conclusion" title="Permanent link">&para;</a></h2>
+<blockquote>
+<p>A good programmer uses the most powerful tool to do a job. A great programmer uses the least powerful tool that does the job.</p>
+<p><a href="https://news.ycombinator.com/item?id=28445692">vyuh</a></p>
+</blockquote>
+<p>Awk has more to it than this. There are more built-in variables and built-in functions. It has range patterns and substitution rules, and you can easily use it to modify content, not just add things up.</p>
+<p>If you want to learn more about Awk, <a href="https://www.amazon.ca/AWK-Programming-Language-Alfred-Aho/dp/020107981X/">The Awk Programming Language</a> is the definitive book. It covers the language in depth. It also covers how to build a small programming language in Awk, how to build a database in Awk, and some other fun projects.</p>
+<p>Even Amazon thinks its great:</p>
+<div class="highlight"><pre><span></span><code>&gt;_$ ./average &quot;The AWK &quot;          
+The AWK Programming Language                            👍👍
+</code></pre></div>
+<p>Also, if you’re the type of person who’s not afraid to do things on the command line then you might like Earthly:</p>
+<p>While you’re here:</p>
+<p><a href="https://earthly.dev/">Earthly</a> is the effortless CI/CD framework. 
+Develop CI/CD pipelines locally and run them anywhere!</p>
+<h3 id="whats-your-awk-trick-or-book-pick">What’s your Awk Trick or Book Pick?<a class="headerlink" href="#whats-your-awk-trick-or-book-pick" title="Permanent link">&para;</a></h3>
+<p>I hope this introduction gave you enough Awk for 90% of your use-cases though. If you come up with any clever Awk tricks yourself or if you have strong opinions on what I should read next, let me know Twitter <a href="https://twitter.com/adamgordonbell"><code>@AdamGordonBell</code></a>:</p>
+<blockquote>
+<p>AWK is a Swiss Army knife of text processing.</p>
+<p>I knew it was powerful but I'd never known how to use it.</p>
+<p>So I took some time to learn the basics. Here is what you need to know: 🧵</p>
+<p>— Adam Gordon Bell 🤓 (</p>
+<p><a class="magiclink magiclink-github magiclink-mention" href="https://github.com/adamgordonbell" title="GitHub User: adamgordonbell">@adamgordonbell</a></p>
+<p>)</p>
+<p>September 30, 2021</p>
+</blockquote>
+<ol>
+<li><a href="https://learnbyexample.github.io/learn_gnuawk/cover.html">Sundeep Agarwal</a> pointed out on <a href="https://www.reddit.com/r/programming/comments/pyjy65/understanding_awk/">reddit</a> that Awk does more than this: “By default, awk does more than split the input on spaces. It splits based on one or more sequence of space or tab or newline characters. In addition, any of these three characters at the start or end of input gets trimmed and won’t be part of field contents. Newline characters come into play if the record separator results in newline within the record content.”<a href="https://earthly.dev/blog/awk-examples/#fnref1">↩︎</a></li>
+</ol>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/01mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.indexes", "navigation.expand", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "header.autohide", "announce.dismiss", "toc.integrate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5090c770.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js"></script>
+      
+    
+  </body>
+</html>

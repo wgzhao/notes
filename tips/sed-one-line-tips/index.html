@@ -1,0 +1,3311 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="SED 单行脚本快速参考">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/tips/sed-one-line-tips/">
+      
+      
+        <link rel="prev" href="../rpm-tutorial/">
+      
+      
+        <link rel="next" href="../setup-gitlab-ci-for-android/">
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS 订阅" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="已更新内容的 RSS 订阅" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+    
+    
+      
+        <title>SED 单行脚本快速参考 - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sed" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SED 单行脚本快速参考
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="分享" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bigdata/ambari-cli/" class="md-tabs__link">
+          
+  
+    
+  
+  Bigdata
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../courses/commands-in-sbin/" class="md-tabs__link">
+          
+  
+    
+  
+  Courses
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../database/maridb-ax-setup/" class="md-tabs__link">
+          
+  
+    
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-tabs__link">
+          
+  
+    
+  
+  Kubernetes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../misc/Latex%20Math%20Symbols/" class="md-tabs__link">
+          
+  
+    
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-tabs__link">
+          
+  
+    
+  
+  Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../bash-tips/" class="md-tabs__link">
+          
+  
+    
+  
+  Tips
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-tabs__link">
+          
+  
+    
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Bigdata
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Bigdata
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ambari-cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Ambari API 来操作 Hadoop 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/flink-cdc-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flink SQL CDC 实践以及一致性分析
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-hive-with-spark/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating Apache Hive with Apache Spark
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-phoenix-with-kerberos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoenix 集成 HBase 并支持 Kerberos 认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ipa-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/kerberos-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MIT Kerberos  安装及维护手册
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    马蜂窝数据仓库设计与实践
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/presto-with-ssl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Presto SSL 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/zookeeper-optimize/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    zookeeper集群应对万级并发的调优
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Courses
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Courses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/commands-in-sbin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux 命令学习
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/linux-cfs-scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux CFS 调度器：原理、设计与内核实现
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/pg9_high_performance_notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《PostgreSQL 9 High Performance》读书笔记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Mysql lecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Mysql lecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第一部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第二部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第三部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第四部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第五部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Time series analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Time series analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/01-basic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基础篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/02-primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    初级篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/03-advance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    进阶篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/04-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    应用篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/05-complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    补完篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/maridb-ax-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MariaDB AX 安装测试简记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/mysql-cluster-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MySQL Cluster 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-11g-imp-and-exp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 11g 导入导出基本操作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-silent-installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 静默安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/percona-cluster-with-haproxy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HAProxy + Percona XtraDB Cluster 部署
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/setup-a-clickhouse-cluster-on-one-node/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在一个节点上部署 ClickHouse 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/why-mysql8-slower-than-mysql57/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Kubernetes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Kubernetes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    外部机器如何直接直接访问 kubernetes 集群内服务
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/calico-node-troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calico Node 无法启动的排查
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/collect-k8s-log-with-filebeat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基于 ELK 的 日志收集与自动索引创建
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/coredns-support-hosts-file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoreDNS 支持解析宿主机的 hosts 文件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/deep-dive-into-k8s-internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用奇怪的方式构建简单 k8s 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/kubernetes-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 kubeadm 安装 kubernetes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/take-flannel-to-calico/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrate kubernetes cluster from Flannel to Calico
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Misc
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Misc
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/Latex%20Math%20Symbols/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用于 LateX 的数学符号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/git-from-zero-to-hero/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git从入门到应付日常工作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/gitlab-ci-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    gitlab-ci.yml 详解
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/osint-introduce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    超级情报手机工具库：开源验证和调查工具及使用方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Programming
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Programming
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Python 和 Flask 设计 RESTful API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/programming-with-vim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    无插件Vim编程技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/pure-bash-bible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pure Bash Bible
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/understanding-awk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Tips
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Tips
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bash-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BASH 的一些技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batch-convert-word-to-pdf/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows 下批量转换 word 文档为 pdf 的方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../change-keyboard-layout-in-ubuntu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ubuntu 下修改键盘映射
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-internals-objects-branches-create-repo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    git 不常见的操作技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-dummy-rpm-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速创建一个虚假 RPM 包
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-change-git-author/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to change git author name and email
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-delete-old-images-from-nexus-registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    如何删除 nexus 私服上的 Docker 镜像
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-save-tmux-session/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to save tmux session
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn-seaborn-with-10min/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    十分钟掌握 Seaborn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matplotlib-support-chinese/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Python 中 matplotlib 图支持中文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../move-running-process-into-tmux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    把一个运行的进程放到 tmux 会话中
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rpm-tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rpm 包管理基本技能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      文本间隔：
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      编号：
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      文本转换和替代：
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      选择性地显示特定行：
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_5" class="md-nav__link">
+    <span class="md-ellipsis">
+      选择性地删除特定行：
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#_6" class="md-nav__link">
+    <span class="md-ellipsis">
+      特殊应用：
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup-gitlab-ci-for-android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Gitlab CI For Android
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-three-key-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssh的三板斧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat-contacts-backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    微信通讯录备份
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Troubleshooting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TCPDump Capture HTTP GET/POST requests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/deep-in-tcp-connect/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    详解 TCP 半连接队列与全连接队列
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/docker-run-no-space-left/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker 运行容器报磁盘空间不足的错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/fix-ora-00227/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    修复 Oracle ORA-00227 错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Oracle JDK 1.6 TLSv1.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+        <a href="../../tags/#tag:sed" class="md-tag">sed</a>
+      
+    
+  </nav>
+
+
+
+<h1 id="sed">SED 单行脚本快速参考<a class="headerlink" href="#sed" title="Permanent link">&para;</a></h1>
+<p>在以下地址可找到本文档的最新（英文）版本：
+   <a href="http://sed.sourceforge.net/sed1line.txt">http://sed.sourceforge.net/sed1line.txt</a>
+   <a href="http://www.pement.org/sed/sed1line.txt">http://www.pement.org/sed/sed1line.txt</a></p>
+<p>其他语言版本：</p>
+<ul>
+<li>中文  <a href="http://sed.sourceforge.net/sed1line_zh-CN.html">http://sed.sourceforge.net/sed1line_zh-CN.html</a></li>
+<li>捷克语 <a href="http://sed.sourceforge.net/sed1line_cz.html">http://sed.sourceforge.net/sed1line_cz.html</a></li>
+<li>荷语   <a href="http://sed.sourceforge.net/sed1line_nl.html">http://sed.sourceforge.net/sed1line_nl.html</a></li>
+<li>法语   <a href="http://sed.sourceforge.net/sed1line_fr.html">http://sed.sourceforge.net/sed1line_fr.html</a></li>
+<li>德语   <a href="http://sed.sourceforge.net/sed1line_de.html">http://sed.sourceforge.net/sed1line_de.html</a></li>
+<li>葡语   <a href="http://sed.sourceforge.net/sed1line_pt-BR.html">http://sed.sourceforge.net/sed1line_pt-BR.html</a></li>
+</ul>
+<h2 id="_1">文本间隔：<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h2>
+<p><strong>在每一行后面增加一空行</strong> </p>
+<p><code>sed G</code></p>
+<p><strong>将原来的所有空行删除并在每一行后面增加一空行</strong>。</p>
+<p><code>sed '/^$/d;G'</code> # 这样在输出的文本中每一行后面将有且只有一空行。</p>
+<p><strong>在每一行后面增加两行空行</strong></p>
+<p><code>sed 'G;G'</code></p>
+<p><strong>将第一个脚本所产生的所有空行删除（即删除所有偶数行）</strong></p>
+<p><code>sed 'n;d'</code></p>
+<p><strong>在匹配式样“regex”的行之前插入一空行</strong></p>
+<p><code>sed '/regex/{x;p;x;}'</code></p>
+<p><strong>在匹配式样“regex”的行之后插入一空行</strong></p>
+<p><code>sed '/regex/G'</code></p>
+<p><strong>在匹配式样“regex”的行之前和之后各插入一空行</strong></p>
+<p><code>sed '/regex/{x;p;x;G;}'</code></p>
+<h2 id="_2">编号：<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>为文件中的每一行进行编号（简单的左对齐方式）。这里使用了“制表符”（tab，见本文末尾关于'\t'的用法的描述）而不是空格来对齐边缘。
+    <code>sed = filename | sed 'N;s/\n/\t/'</code></p>
+</li>
+<li>
+<p>对文件中的所有行编号（行号在左，文字右端对齐）。</p>
+<p><code>sed = filename | sed 'N; s/^/     /; s/ *\(.\{6,\}\)\n/\1  /'</code></p>
+</li>
+<li>
+<p>对文件中的所有行编号，但只显示非空白行的行号。
+ <code>sed '/./=' filename | sed '/./N; s/\n/ /'</code></p>
+</li>
+<li>
+<p>计算行数 （模拟 "wc -l"）
+ <code>sed -n '$='</code></p>
+</li>
+</ol>
+<h2 id="_3">文本转换和替代：<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>Unix环境：转换DOS的新行符（CR/LF）为Unix格式。</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s1">&#39;s/.$//&#39;</span><span class="w"> </span><span class="c1"># 假设所有行以CR/LF结束</span>
+sed<span class="w"> </span><span class="s1">&#39;s/^M$//&#39;</span><span class="w">   </span><span class="c1"># 在bash/tcsh中，将按Ctrl-M改为按Ctrl-V</span>
+sed<span class="w"> </span><span class="s1">&#39;s/\x0D$//&#39;</span><span class="w"> </span><span class="c1"># ssed、gsed 3.02.80，及更高版本```  </span>
+</code></pre></div>
+</li>
+<li>
+<p>Unix环境：转换Unix的新行符（LF）为DOS格式。</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s2">&quot;s/</span>$<span class="s2">/`echo -e \\\r`/&quot;</span><span class="w"> </span><span class="c1"># 在ksh下所使用的命令</span>
+sed<span class="w"> </span><span class="s1">&#39;s/$&#39;</span><span class="s2">&quot;/`echo \\\r`/&quot;</span><span class="w">  </span><span class="c1"># 在bash下所使用的命令`  </span>
+sed<span class="w"> </span><span class="s2">&quot;s/</span>$<span class="s2">/`echo \\\r`/&quot;</span><span class="w">   </span><span class="c1"># 在zsh下所使用的命令</span>
+sed<span class="w"> </span><span class="s1">&#39;s/$/\r/&#39;</span><span class="w">        </span><span class="c1"># gsed 3.02.80 及更高版本```</span>
+</code></pre></div>
+</li>
+<li>
+<p>DOS环境：转换Unix新行符（LF）为DOS格式。</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s2">&quot;s/</span>$<span class="s2">//&quot;</span><span class="w">    </span><span class="c1"># 方法 1</span>
+sed<span class="w"> </span>-n<span class="w"> </span>p<span class="w">       </span><span class="c1"># 方法 2</span>
+</code></pre></div>
+</li>
+<li>
+<p>DOS环境：转换DOS新行符（CR/LF）为Unix格式。</p>
+<p>下面的脚本只对 <code>UnxUtils sed 4.0.7</code> 及更高版本有效。要识别UnxUtils版本的
+sed可以通过其特有的 <code>--text</code> 选项。你可以使用帮助选项（<code>--help</code>）看
+其中有无一个“--text”项以此来判断所使用的是否是UnxUtils版本。其它DOS
+版本的的sed则无法进行这一转换。但可以用 <code>tr</code>来实现这一转换。</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s2">&quot;s/\r//&quot;</span><span class="w"> </span>infile<span class="w"> </span>&gt;outfile<span class="w">  </span><span class="c1"># UnxUtils sed &gt; 4.0.6</span>
+tr<span class="w"> </span>-d<span class="w"> </span><span class="se">\r</span><span class="w"> </span>&lt;infile<span class="w"> </span>&gt;outfile<span class="w">    </span><span class="c1"># GNU tr &gt;1.21</span>
+</code></pre></div>
+</li>
+<li>
+<p>将每一行前导的“空白字符”（空格，制表符）删除使之左对齐</p>
+<p><code>sed 's/^[ \t]*//'  # 见本文末尾关于'\t'用法的描述</code></p>
+</li>
+<li>
+<p>将每一行拖尾的“空白字符”（空格，制表符）删除</p>
+<p><code>sed 's/[ \t]*$//'   # 见本文末尾关于'\t'用法的描述</code></p>
+</li>
+<li>
+<p>将每一行中的前导和拖尾的空白字符删除</p>
+<p><code>sed 's/^[ \t]*//;s/[ \t]*$//'</code></p>
+</li>
+<li>
+<p>在每一行开头处插入5个空格（使全文向右移动5个字符的位置）</p>
+<p><code>sed 's/^/     /'</code></p>
+</li>
+<li>
+<p>以79个字符为宽度，将所有文本右对齐</p>
+<p><code>sed -e :a -e 's/^.\{1,78\}$/ &amp;/;ta'  # 78个字符外加最后的一个空格</code></p>
+</li>
+<li>
+<p>以79个字符为宽度，使所有文本居中。在方法1中，为了让文本居中每一行的前头和后头都填充了空格。 在方法2中，在居中文本的过程中只在文本的前面填充空格，并且最终这些空格将有一半会被删除。此外每一行的后头并未填充空格。</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w">  </span>-e<span class="w"> </span>:a<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;s/^.\{1,77\}$/ &amp; /;ta&#39;</span><span class="w">                     </span><span class="c1"># 方法1</span>
+sed<span class="w">  </span>-e<span class="w"> </span>:a<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;s/^.\{1,77\}$/ &amp;/;ta&#39;</span><span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;s/\( *\)\1/\1/&#39;</span><span class="w">  </span><span class="c1"># 方法2</span>
+</code></pre></div>
+</li>
+<li>
+<p>在每一行中查找字串“foo”，并将找到的“foo”替换为“bar”</p>
+<p><div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s1">&#39;s/foo/bar/&#39;</span><span class="w">   </span><span class="c1"># 只替换每一行中的第一个“foo”字串</span>
+sed<span class="w"> </span><span class="s1">&#39;s/foo/bar/4&#39;</span><span class="w">  </span><span class="c1"># 只替换每一行中的第四个“foo”字串</span>
+sed<span class="w"> </span><span class="s1">&#39;s/foo/bar/g&#39;</span><span class="w">  </span><span class="c1"># 将每一行中的所有“foo”都换成“bar”</span>
+sed<span class="w"> </span><span class="s1">&#39;s/\(.*\)foo\(.*foo\)/\1bar\2/&#39;</span><span class="w"> </span><span class="c1"># 替换倒数第二个“foo”</span>
+sed<span class="w"> </span><span class="s1">&#39;s/\(.*\)foo/\1bar/&#39;</span><span class="w"> </span><span class="c1"># 替换最后一个“foo”</span>
+</code></pre></div>
+ 12. 只在行中出现字串“baz”的情况下将“foo”替换成“bar”</p>
+<p><code>sed '/baz/s/foo/bar/g'</code></p>
+</li>
+<li>
+<p>将“foo”替换成“bar”，并且只在行中未出现字串“baz”的情况下替换</p>
+<p><code>sed '/baz/!s/foo/bar/g'</code></p>
+</li>
+<li>
+<p>不管是 "scarlet", "ruby" 还是 "puce"，一律换成 "red"</p>
+<p><div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s1">&#39;s/scarlet/red/g;s/ruby/red/g;s/puce/red/g&#39;</span><span class="w">  </span><span class="c1">#对多数的sed都有效</span>
+gsed<span class="w"> </span><span class="s1">&#39;s/scarlet\|ruby\|puce/red/g&#39;</span><span class="w">               </span><span class="c1"># 只对GNU sed有效</span>
+</code></pre></div>
+ 15. 倒置所有行，第一行成为最后一行，依次类推（模拟“tac”）。
+ 由于某些原因，使用下面命令时HHsed v1.5会将文件中的空行删除</p>
+<p><div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s1">&#39;1!G;h;$!d&#39;</span><span class="w">               </span><span class="c1"># 方法1`</span>
+sed<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;1!G;h;$p&#39;</span><span class="w">             </span><span class="c1"># 方法2`</span>
+</code></pre></div>
+ 16. 将行中的字符逆序排列，第一个字成为最后一字，……（模拟“rev”）
+ <code>sed '/\n/!G;s/\(.\)\(.*\n\)/&amp;\2\1/;//D;s/.//'</code></p>
+</li>
+<li>
+<p>将每两行连接成一行（类似“paste”）
+ <code>sed '$!N;s/\n/ /'</code></p>
+</li>
+<li>
+<p>如果当前行以反斜杠“\”结束，则将下一行并到当前行末尾
+ 并去掉原来行尾的反斜杠
+    <code>sed -e :a -e '/\\$/N; s/\\\n//; ta'</code></p>
+</li>
+<li>
+<p>如果当前行以等号开头，将当前行并到上一行末尾并以单个空格代替原来行头的“=”
+ <code>sed -e :a -e '$!N;s/\n=/ /;ta' -e 'P;D'</code></p>
+</li>
+<li>
+<p>为数字字串增加逗号分隔符号，将“1234567”改为“1,234,567”
+ <code>gsed ':a;s/\B[0-9]\{3\}\&gt;/,&amp;/;ta'                     # GNU sed</code>
+    <code>sed -e :a -e 's/\(.*[0-9]\)\([0-9]\{3\}\)/\1,\2/;ta'  # 其他sed</code></p>
+</li>
+<li>
+<p>为带有小数点和负号的数值增加逗号分隔符（GNU sed）
+ <code>gsed -r ':a;s/(^|[^0-9.])([0-9]+)([0-9]{3})/\1\2,\3/g;ta'</code></p>
+</li>
+<li>
+<p>在每5行后增加一空白行 （在第5，10，15，20，等行后增加一空白行）
+ <code>gsed '0~5G'     # 只对GNU sed有效</code>
+    <code>sed 'n;n;n;n;G;' # 其他sed</code></p>
+</li>
+</ol>
+<h2 id="_4">选择性地显示特定行：<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>显示文件中的前10行 （模拟“head”的行为）
+ sed 10q</p>
+</li>
+<li>
+<p>显示文件中的第一行 （模拟“head -1”命令）
+ sed q</p>
+</li>
+<li>
+<p>显示文件中的最后10行 （模拟“tail”）
+ <code>sed -e :a -e '$q;N;11,$D;ba'</code></p>
+</li>
+<li>
+<p>显示文件中的最后2行（模拟“tail -2”命令）
+ <code>sed '$!N;$!D</code>'</p>
+</li>
+<li>
+<p>显示文件中的最后一行（模拟“tail -1”）
+ <code>sed '$!d'        # 方法1</code>
+    <code>sed -n '$p'      # 方法2</code></p>
+</li>
+<li>
+<p>显示文件中的倒数第二行
+ <code>sed -e '$!{h;d;}' -e x              # 当文件中只有一行时，输入空行</code>
+    <code>sed -e '1{$q;}' -e '$!{h;d;}' -e x  # 当文件中只有一行时，显示该行</code>
+    <code>sed -e '1{$d;}' -e '$!{h;d;}' -e x  # 当文件中只有一行时，不输出</code></p>
+</li>
+<li>
+<p>只显示匹配正则表达式的行（模拟“grep”）
+ <code>sed -n '/regexp/p'               # 方法1</code>
+    <code>sed '/regexp/!d'                 # 方法2</code></p>
+</li>
+<li>
+<p>只显示“不”匹配正则表达式的行（模拟“grep -v”）
+ <code>sed -n '/regexp/!p'   # 方法1，与前面的命令相对应</code>
+    <code>sed '/regexp/d'       # 方法2，类似的语法</code></p>
+</li>
+<li>
+<p>查找“regexp”并将匹配行的上一行显示出来，但并不显示匹配行
+ <code>sed -n '/regexp/{g;1!p;};h'</code></p>
+</li>
+<li>
+<p>查找“regexp”并将匹配行的下一行显示出来，但并不显示匹配行
+ <code>sed -n '/regexp/{n;p;}'</code></p>
+</li>
+<li>
+<p>显示包含“regexp”的行及其前后行，并在第一行之前加上“regexp”所在行的行号 （类似“grep -A1 -B1”）
+ <code>sed -n -e '/regexp/{=;x;1!p;g;$!N;p;D;}' -e h</code></p>
+</li>
+<li>
+<p>显示包含“AAA”、“BBB”或“CCC”的行（任意次序）
+ <code>sed '/AAA/!d; /BBB/!d; /CCC/!d'  # 字串的次序不影响结果</code></p>
+</li>
+<li>
+<p>显示包含“AAA”、“BBB”和“CCC”的行（固定次序）
+ <code>sed '/AAA.*BBB.*CCC/!d'</code></p>
+</li>
+<li>
+<p>显示包含“AAA”“BBB”或“CCC”的行 （模拟“egrep”）
+<code>sed -e '/AAA/b' -e '/BBB/b' -e '/CCC/b' -e d    # 多数sed</code>
+ <code>gsed '/AAA\|BBB\|CCC/!d'   # 对GNU sed有效</code></p>
+</li>
+<li>
+<p>显示包含“AAA”的段落 （段落间以空行分隔）
+  HHsed v1.5 必须在“x;”后加入“G;”，接下来的3个脚本都是这样
+   <code>sed -e '/./{H;$!d;}' -e 'x;/AAA/!d;'</code></p>
+</li>
+<li>
+<p>显示包含“AAA”“BBB”和“CCC”三个字串的段落 （任意次序）
+ <code>sed -e '/./{H;$!d;}' -e 'x;/AAA/!d;/BBB/!d;/CCC/!d'</code></p>
+</li>
+<li>
+<p>显示包含“AAA”、“BBB”、“CCC”三者中任一字串的段落 （任意次序）
+ <code>sed -e '/./{H;$!d;}' -e 'x;/AAA/b' -e '/BBB/b' -e '/CCC/b' -e d</code>
+    <code>gsed '/./{H;$!d;};x;/AAA\|BBB\|CCC/b;d'         # 只对GNU sed有效</code></p>
+</li>
+<li>
+<p>显示包含65个或以上字符的行
+ <code>sed -n '/^.\{65\}/p'</code></p>
+</li>
+<li>
+<p>显示包含65个以下字符的行
+ <code>sed -n '/^.\{65\}/!p'  # 方法1，与上面的脚本相对应</code>
+    <code>sed '/^.\{65\}/d'      # 方法2，更简便一点的方法</code></p>
+</li>
+<li>
+<p>显示部分文本——从包含正则表达式的行开始到最后一行结束
+ <code>sed -n '/regexp/,$p'</code></p>
+</li>
+<li>
+<p>显示部分文本——指定行号范围（从第8至第12行，含8和12行）
+      <div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;8,12p&#39;</span><span class="w">                   </span><span class="c1"># 方法1</span>
+sed<span class="w"> </span><span class="s1">&#39;8,12!d&#39;</span><span class="w">                     </span><span class="c1"># 方法2</span>
+</code></pre></div></p>
+</li>
+<li>
+<p>显示第52行</p>
+<p><div class="highlight"><pre><span></span><code>sed<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;52p&#39;</span><span class="w">                     </span><span class="c1"># 方法1</span>
+sed<span class="w"> </span><span class="s1">&#39;52!d&#39;</span><span class="w">                       </span><span class="c1"># 方法2</span>
+sed<span class="w"> </span><span class="s1">&#39;52q;d&#39;</span><span class="w">                      </span><span class="c1"># 方法3, 处理大文件时更有效率</span>
+</code></pre></div>
+1. 从第3行开始，每7行显示一次    </p>
+<p><div class="highlight"><pre><span></span><code>gsed<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;3~7p&#39;</span><span class="w">                   </span><span class="c1"># 只对GNU sed有效</span>
+sed<span class="w"> </span>-n<span class="w"> </span><span class="s1">&#39;3,${p;n;n;n;n;n;n;}&#39;</span><span class="w">     </span><span class="c1"># 其他sed</span>
+</code></pre></div>
+1. 显示两个正则表达式之间的文本（包含）</p>
+<p><code>sed -n '/Iowa/,/Montana/p'       # 区分大小写方式</code></p>
+</li>
+</ol>
+<h2 id="_5">选择性地删除特定行：<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h2>
+<ol>
+<li>显示通篇文档，除了两个正则表达式之间的内容</li>
+</ol>
+<p><code>sed '/Iowa/,/Montana/d'</code></p>
+<ol>
+<li>删除文件中相邻的重复行（模拟“uniq”）只保留重复行中的第一行，其他行删除</li>
+</ol>
+<p><code>sed '$!N; /^\(.*\)\n\1$/!P; D'</code></p>
+<ol>
+<li>
+<p>删除文件中的重复行，不管有无相邻。注意hold space所能支持的缓存大小，或者使用GNU sed。
+ sed -n 'G; s/\n/&amp;&amp;/; /^<span class="arithmatex">\([ -~]*\n\)</span>.*\n\1/d; s/\n//; h; P'</p>
+</li>
+<li>
+<p>删除除重复行外的所有行（模拟“uniq -d”）
+ <code>sed '$!N; s/^\(.*\)\n\1$/\1/; t; D'</code></p>
+</li>
+<li>
+<p>删除文件中开头的10行
+ sed '1,10d'</p>
+</li>
+<li>
+<p>删除文件中的最后一行
+ sed '$d'</p>
+</li>
+<li>
+<p>删除文件中的最后两行
+ <code>sed 'N;$!P;$!D;$d'</code></p>
+</li>
+<li>
+<p>删除文件中的最后10行
+ <code>sed -e :a -e '$d;N;2,10ba' -e 'P;D'   # 方法1</code>
+    <code>sed -n -e :a -e '1,10!{P;N;D;};N;ba'  # 方法2</code></p>
+</li>
+<li>
+<p>删除8的倍数行
+ gsed '0~8d'        # 只对GNU sed有效
+    sed 'n;n;n;n;n;n;n;d;'  # 其他sed</p>
+</li>
+<li>
+<p>删除匹配式样的行
+ sed '/pattern/d'                      # 删除含pattern的行。当然pattern
+                                       # 可以换成任何有效的正则表达式</p>
+</li>
+<li>
+<p>删除文件中的所有空行（与“grep '.' ”效果相同）
+ sed '/^$/d'                           # 方法1
+    sed '/./!d'                           # 方法2</p>
+</li>
+<li>
+<p>只保留多个相邻空行的第一行。并且删除文件顶部和尾部的空行。</p>
+</li>
+<li>
+<p>（模拟“cat -s”）
+ <code>sed '/./,/^$/!d'        #方法1，删除文件顶部的空行，允许尾部保留一空行</code>
+    <code>sed '/^$/N;/\n$/D'      #方法2，允许顶部保留一空行，尾部不留空行</code></p>
+</li>
+<li>
+<p>只保留多个相邻空行的前两行。
+ <code>sed '/^$/N;/\n$/N;//D'</code></p>
+</li>
+<li>
+<p>删除文件顶部的所有空行
+ sed '/./,$!d'</p>
+</li>
+<li>
+<p>删除文件尾部的所有空行
+ <code>sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'  # 对所有sed有效</code>
+    <code>sed -e :a -e '/^\n*$/N;/\n$/ba'        # 同上，但只对 gsed 3.02.*有效</code></p>
+</li>
+<li>
+<p>删除每个段落的最后一行
+ <code>sed -n '/^$/{p;h;};/./{x;/./p;}'</code></p>
+</li>
+</ol>
+<h2 id="_6">特殊应用：<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h2>
+<ol>
+<li>
+<p>移除手册页（man page）中的nroff标记。在Unix System V或bash shell下使用'echo'命令时可能需要加上 -e 选项。
+ <code>sed "s/.`echo \\\b`//g"    # 外层的双括号是必须的（Unix环境）</code>
+    <code>sed 's/.^H//g'             # 在bash或tcsh中, 按 Ctrl-V 再按 Ctrl-H</code>
+    <code>sed 's/.\x08//g'    # sed 1.5，GNU sed，ssed所使用的十六进制的表示方法</code></p>
+</li>
+<li>
+<p>提取新闻组或 e-mail 的邮件头
+ <code>sed '/^$/q' # 删除第一行空行后的所有内容</code></p>
+</li>
+<li>
+<p>提取新闻组或 e-mail 的正文部分
+ <code>sed '1,/^$/d'  # 删除第一行空行之前的所有内容</code></p>
+</li>
+<li>
+<p>从邮件头提取“Subject”（标题栏字段），并移除开头的“Subject:”字样
+ <code>sed '/^Subject: */!d; s///;q'</code></p>
+</li>
+<li>
+<p>从邮件头获得回复地址
+ <code>sed '/^Reply-To:/q; /^From:/h; /./d;g;q'</code></p>
+</li>
+<li>
+<p>获取邮件地址。在上一个脚本所产生的那一行邮件头的基础上进一步的将非电邮地址的部分剃除。（见上一脚本）
+ <code>sed 's/ *(.*)//; s/&gt;.*//; s/.*[:&lt;] *//'</code></p>
+</li>
+<li>
+<p>在每一行开头加上一个尖括号和空格（引用信息）
+ <code>sed 's/^/&gt; /'</code></p>
+</li>
+<li>
+<p>将每一行开头处的尖括号和空格删除（解除引用）
+ <code>sed 's/^&gt; //'</code></p>
+</li>
+<li>
+<p>移除大部分的HTML标签（包括跨行标签）
+ <code>sed -e :a -e 's/&lt;[^&gt;]*&gt;//g;/&lt;/N;//ba'</code></p>
+</li>
+<li>
+<p>将分成多卷的uuencode文件解码。移除文件头信息，只保留uuencode编码部分。文件必须以特定顺序传给sed。下面第一种版本的脚本可以直接在命令行下输入；第二种版本则可以放入一个带执行权限的shell脚本中。（由Rahul Dhesi的一个脚本修改而来。）
+ <code>sed '/^end/,/^begin/d' file1 file2 ... fileX | uudecode   # vers. 1</code>
+    <code>sed '/^end/,/^begin/d' "$@" | uudecode                    # vers. 2</code></p>
+</li>
+<li>
+<p>将文件中的段落以字母顺序排序。段落间以（一行或多行）空行分隔。GNU sed使用字元“\v”来表示垂直制表符，这里用它来作为换行符的占位符——当然你也可以用其他未在文件中使用的字符来代替它。</p>
+<div class="highlight"><pre><span></span><code>sed<span class="w"> </span><span class="s1">&#39;/./{H;d;};x;s/\n/={NL}=/g&#39;</span><span class="w"> </span>file<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;1s/={NL}=//;s/={NL}=/\n/g&#39;</span>
+gsed<span class="w"> </span><span class="s1">&#39;/./{H;d};x;y/\n/\v/&#39;</span><span class="w"> </span>file<span class="w"> </span><span class="p">|</span><span class="w"> </span>sort<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;1s/\v//;y/\v/\n/&#39;</span>
+</code></pre></div>
+</li>
+</ol>
+<p>使用 <code>SED：Sed</code> 接受一个或多个编辑命令，并且每读入一行后就依次应用这些命令。
+当读入第一行输入后，sed对其应用所有的命令，然后将结果输出。接着再读入第二行输入，对其应用所有的命令……并重复这个过程。上一个例子中sed由标准输入设备（即命令解释器，通常是以管道输入的形式）获得输入。在命令行给出一个或多个文件名作为参数时，这些文件取代标准输入设备成为sed的输入。sed的输出将被送到标准输出（显示器）。因此：</p>
+<div class="highlight"><pre><span></span><code><span class="w"> </span>cat<span class="w"> </span>filename<span class="w"> </span><span class="p">|</span><span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;10q&#39;</span><span class="w">         </span><span class="c1"># 使用管道输入</span>
+<span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;10q&#39;</span><span class="w"> </span>filename<span class="w">               </span><span class="c1"># 同样效果，但不使用管道输入</span>
+<span class="w"> </span>sed<span class="w"> </span><span class="s1">&#39;10q&#39;</span><span class="w"> </span>filename<span class="w"> </span>&gt;<span class="w"> </span>newfile<span class="w">     </span><span class="c1"># 将输出转移（重定向）到磁盘上</span>
+</code></pre></div>
+<p>要了解sed命令的使用说明，包括如何通过脚本文件（而非从命令行）来使用这些命令，请参阅《sed &amp; awk》第二版，作者Dale Dougherty和Arnold Robbins（O'Reilly，1997；<a href="http://www.ora.com">http://www.ora.com</a>），《UNIX Text Processing》，作者
+Dale Dougherty 和 Tim O'Reilly（Hayden Books，1987）或者是Mike Arst写的教程——压缩包的名称是“<code>U-SEDIT2.ZIP</code>（在许多站点上都找得到）。 </p>
+<p>要发掘sed的潜力，则必须对 <code>正则表达式</code> 有足够的理解。正则表达式的资料可以看
+《Mastering Regular Expressions》作者Jeffrey Friedl（O'reilly 1997）。<br />
+Unix系统所提供的手册页（“man”）也会有所帮助（试一下这些命令 <code>man sed</code>、<code>man regexp</code>，或者看 <code>man ed</code> 中关于正则表达式的部分），但手册提供的信息比较“抽象”——这也是它一直为人所诟病的。不过，它本来就不是用来教初学者如何使用sed或正则表达式的教材，而只是为那些熟悉这些工具的人提供的一些文本参考。</p>
+<p>括号语法：前面的例子对sed命令基本上都使用单引号（<code>'...'</code>）而非双引号（<code>"..."</code>）这是因为sed通常是在Unix平台上使用。单引号下，Unix的shell（命令解释器）不会对美元符（ $）和后引号（<code>...</code>）进行解释和执行。而在双引号下美元符会被展开为变量或参数的值，后引号中的命令被执行并以输出的结果代替后引号中的内容。而在 <code>csh</code> 及其衍生的 shell 中使用感叹号（ !）时需要在其前面加上转义用的反斜杠（就像这样：!）以保证上面所使用的例子能正常运行（包括使用单引号的情况下）。DOS版本的Sed则一律使用双引号（"..."）而不是引号来圈起命令。</p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/01mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.indexes", "navigation.expand", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "header.autohide", "announce.dismiss", "toc.integrate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5090c770.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js"></script>
+      
+    
+  </body>
+</html>

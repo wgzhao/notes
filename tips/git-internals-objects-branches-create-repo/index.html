@@ -1,0 +1,3401 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="本文形象地解释了git 的三种对象意义，以及如何使用低级命令来初始化和提交内容">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/tips/git-internals-objects-branches-create-repo/">
+      
+      
+        <link rel="prev" href="../change-keyboard-layout-in-ubuntu/">
+      
+      
+        <link rel="next" href="../git-tips/">
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS 订阅" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="已更新内容的 RSS 订阅" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+    
+    
+      
+        <title>Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库 - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#git" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="分享" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bigdata/ambari-cli/" class="md-tabs__link">
+          
+  
+    
+  
+  Bigdata
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../courses/commands-in-sbin/" class="md-tabs__link">
+          
+  
+    
+  
+  Courses
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../database/maridb-ax-setup/" class="md-tabs__link">
+          
+  
+    
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-tabs__link">
+          
+  
+    
+  
+  Kubernetes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../misc/Latex%20Math%20Symbols/" class="md-tabs__link">
+          
+  
+    
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-tabs__link">
+          
+  
+    
+  
+  Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../bash-tips/" class="md-tabs__link">
+          
+  
+    
+  
+  Tips
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-tabs__link">
+          
+  
+    
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Bigdata
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Bigdata
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ambari-cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Ambari API 来操作 Hadoop 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/flink-cdc-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flink SQL CDC 实践以及一致性分析
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-hive-with-spark/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating Apache Hive with Apache Spark
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-phoenix-with-kerberos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoenix 集成 HBase 并支持 Kerberos 认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ipa-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/kerberos-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MIT Kerberos  安装及维护手册
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    马蜂窝数据仓库设计与实践
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/presto-with-ssl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Presto SSL 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/zookeeper-optimize/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    zookeeper集群应对万级并发的调优
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Courses
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Courses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/commands-in-sbin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux 命令学习
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/linux-cfs-scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux CFS 调度器：原理、设计与内核实现
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/pg9_high_performance_notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《PostgreSQL 9 High Performance》读书笔记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Mysql lecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Mysql lecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第一部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第二部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第三部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第四部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第五部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Time series analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Time series analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/01-basic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基础篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/02-primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    初级篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/03-advance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    进阶篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/04-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    应用篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/05-complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    补完篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/maridb-ax-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MariaDB AX 安装测试简记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/mysql-cluster-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MySQL Cluster 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-11g-imp-and-exp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 11g 导入导出基本操作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-silent-installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 静默安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/percona-cluster-with-haproxy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HAProxy + Percona XtraDB Cluster 部署
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/setup-a-clickhouse-cluster-on-one-node/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在一个节点上部署 ClickHouse 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/why-mysql8-slower-than-mysql57/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Kubernetes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Kubernetes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    外部机器如何直接直接访问 kubernetes 集群内服务
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/calico-node-troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calico Node 无法启动的排查
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/collect-k8s-log-with-filebeat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基于 ELK 的 日志收集与自动索引创建
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/coredns-support-hosts-file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoreDNS 支持解析宿主机的 hosts 文件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/deep-dive-into-k8s-internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用奇怪的方式构建简单 k8s 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/kubernetes-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 kubeadm 安装 kubernetes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/take-flannel-to-calico/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrate kubernetes cluster from Flannel to Calico
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Misc
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Misc
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/Latex%20Math%20Symbols/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用于 LateX 的数学符号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/git-from-zero-to-hero/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git从入门到应付日常工作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/gitlab-ci-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    gitlab-ci.yml 详解
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/osint-introduce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    超级情报手机工具库：开源验证和调查工具及使用方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Programming
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Programming
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Python 和 Flask 设计 RESTful API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/programming-with-vim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    无插件Vim编程技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/pure-bash-bible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pure Bash Bible
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/understanding-awk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Tips
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Tips
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bash-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BASH 的一些技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batch-convert-word-to-pdf/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows 下批量转换 word 文档为 pdf 的方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../change-keyboard-layout-in-ubuntu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ubuntu 下修改键盘映射
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+    
+  </span>
+  
+
+      </a>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    git 不常见的操作技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-dummy-rpm-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速创建一个虚假 RPM 包
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-change-git-author/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to change git author name and email
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-delete-old-images-from-nexus-registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    如何删除 nexus 私服上的 Docker 镜像
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-save-tmux-session/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to save tmux session
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn-seaborn-with-10min/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    十分钟掌握 Seaborn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matplotlib-support-chinese/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Python 中 matplotlib 图支持中文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../move-running-process-into-tmux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    把一个运行的进程放到 tmux 会话中
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rpm-tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rpm 包管理基本技能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sed-one-line-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup-gitlab-ci-for-android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Gitlab CI For Android
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-three-key-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssh的三板斧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat-contacts-backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    微信通讯录备份
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Troubleshooting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TCPDump Capture HTTP GET/POST requests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/deep-in-tcp-connect/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    详解 TCP 半连接队列与全连接队列
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/docker-run-no-space-left/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker 运行容器报磁盘空间不足的错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/fix-ora-00227/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    修复 Oracle ORA-00227 错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Oracle JDK 1.6 TLSv1.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+        <a href="../../tags/#tag:git" class="md-tag">git</a>
+      
+    
+  </nav>
+
+
+
+<h1 id="git">Git 内部原理图解——对象、分支以及如何从零开始建仓库<a class="headerlink" href="#git" title="Permanent link">&para;</a></h1>
+<p>文本来自 <a href="https://www.freecodecamp.org/chinese/news/git-internals-objects-branches-create-repo/">这里</a>，英文原文来自 <a href="https://www.freecodecamp.org/news/git-internals-objects-branches-create-repo/">这里</a></p>
+<p>我在学习和实践的过程中对原文略有修改。</p>
+<p>以下实验均在 MacOS 13.5 以及  git <code>2.39.2</code> 版本下进行。</p>
+<p>我们中的许多人每天都在使用 <code>git</code>，但是有多少人知道它的内部是怎么运作的呢？</p>
+<p>例如我们使用 <code>git commit</code> 时发生了什么？提交（commit）与提交之间保存的是什么？两次提交之间难道只是文件的差异（diff）吗？如果是，这个差异是如何编码的？还是说每次提交都会保存一个当前仓库的完整快照（snapshot）呢？我们使用 <code>git init</code> 时到底发生了什么？</p>
+<p>很多 <code>git</code> 的使用者都不知道这几个问题的答案，但这又有什么关系呢？</p>
+<p>首先，作为专业人员，我们应当努力弄清楚手中使用的工具，尤其是那些我们一直都在使用的——比如 <code>git</code>。</p>
+<p>但是我深刻地意识到，理解 Git 的工作原理在很多情况下都非常有用——不管是解决合并冲突、进行有趣的变基（rebase）操作，还是在某些东西变得有点不对劲的时候。</p>
+<p>如果你有足够的 <code>git</code> 经验，对 <code>git pull</code>、<code>git push</code>、<code>git add</code> 或 <code>git commit</code>这些命令得心应手，你会从本文中获益。</p>
+<p>不过，为了确保我们在 <code>git</code> 的原理（尤其是本文上下所使用的术语）上步调一致，我们将从概览开始。</p>
+<p>我也在 YouTube 上传了一个涵盖本文所有内容的系列视频——欢迎<a href="https://www.youtube.com/playlist?list=PL9lx0DXCC4BNUby5H58y6s2TQVLadV8v7">在此</a>观看。</p>
+<h1 id="_1">本教程的内容<a class="headerlink" href="#_1" title="Permanent link">&para;</a></h1>
+<p>我们将对日常使用的 <code>git</code> 的内部运行原理有一个比较深入的理解。</p>
+<p>我们会从对象（object）——<strong>blob</strong>、<strong>树对象（tree）</strong> 和 <strong>提交对象（commit）</strong> 开始，然后简单讨论一下 <strong>分支（branch）</strong> 及其实现方式，之后会深入 <strong>工作目录（working directory）</strong>、<strong>暂存区（staging area）</strong> 和 <strong>仓库（repository）</strong>。</p>
+<p>我们会确保理解了这些术语是与我们用来创建新仓库的那些命令之间是如何关联的。</p>
+<p>接下来，我们会从零开始创建一个仓库——不使用 <code>git init</code>、<code>git add</code> 或 <code>git commit</code>。这会在我们使用 <code>git</code> 的过程中，<strong>加深我们对其内部正在发生的事情的理解</strong>。</p>
+<p>我们也会创建新的分支、在分支间切换，再进行一些提交——全程不使用 <code>git branch</code> 或 <code>git checkout</code>。</p>
+<p>在本文结束之前，<strong>你会觉得自己真的 *理解了* <code>git</code></strong>。你准备好了吗？😎</p>
+<blockquote>
+<p>译者注：建议读者配合 <a href="https://git-scm.com/book/zh/v2/Git-内部原理-底层命令与上层命令">Git 内部原理</a>阅读本文。</p>
+</blockquote>
+<h1 id="git-blobtree-commit">Git 对象——blob、tree 和 commit<a class="headerlink" href="#git-blobtree-commit" title="Permanent link">&para;</a></h1>
+<blockquote>
+<p>译者注：译文中的 <strong>数据对象</strong>、<strong>树对象</strong> 和 <strong>提交对象</strong> 指的就是 blob、tree 和 commit 这三者。因为 Git 官网的文档<a href="https://git-scm.com/book/zh/v2/Git-内部原理-Git-对象">Git 内部原理 - Git 对象</a>对三者进行了这样的翻译，本文是为了与其保持一致。但由于 blob 一词的特殊性，译文会直接保留原词，而不是将其翻译为“数据对象”。</p>
+</blockquote>
+<p>将 <code>git</code> 看成一个文件系统（尤其是该系统的实时快照）是很有用的。</p>
+<p>一个文件系统从 <em>根目录（root directory）</em> 开始（在基于 UNIX 的系统中是 <code>/</code>），通常也会包含其它的目录（例如 <code>/usr</code> 或 <code>/bin</code>）。这些目录会包含其它的目录和（或）文件（例如 <code>/usr/1.txt</code>）。</p>
+<p>在 <code>git</code> 中，文件的内容存储在一些被称为 <strong>blob</strong> （二进制大对象）的对象中。</p>
+<p><strong>blob</strong> 与文件的不同在于，文件还会包含元数据（meta-data）。例如一个文件会“记住”它的创建时间，如果你把它移动到另一个目录，它的创建时间是不会改变的。</p>
+<p>相反，<strong>blob</strong> 只是内容——数据的二进制流。除了内容以外，<strong>blob</strong> 不会记录它的创建时间、名字或任何其它东西。</p>
+<p><code>git</code> 中的 <strong>blob</strong> 通过 <a href="https://en.wikipedia.org/wiki/SHA-1">SHA-1 哈希值</a> 唯一标识。SHA-1 哈希值由 20 个字节（byte）组成，通常表示成 40 个十六进制形式的字符。在这篇文章中，我们有时只会展示这个哈希值的前几个字符。</p>
+<p><img alt="Blob 有对应的 SHA-1 哈希值" src="https://camo.githubusercontent.com/e0180213af0d75b24faafcea0265b7fa14c90341f4d17044d6f695fc2cda21a1/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33342e706e67" /></p>
+<p>在 <code>git</code> 中，<strong>树对象（tree）</strong> 相当于目录。一个 <strong>树对象</strong> 基本上就是一个目录列表，它引用着 <strong>blob</strong> 和其它的 <strong>树对象</strong>。</p>
+<p><strong>树对象</strong> 也用 SHA-1 哈希值唯一标识，它通过其它对象（<strong>blob</strong> 或 <strong>树对象</strong>）的 SHA-1 哈希值引用它们。</p>
+<p><img alt="树对象是一个目录列表" src="https://camo.githubusercontent.com/cc836ce5be699267deee2d1dfdada0040e4068e24a59b824cad1884ecef78a8a/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33352e706e67" /></p>
+<p>注意 <strong>CAFE7</strong> 这个 <strong>树对象</strong> 指向了 <strong>blob F92A0</strong>（<em>pic.png</em>），在另一个 <strong>树对象</strong> 中，同一个 <strong>blob</strong> 可能会有不同的名字。</p>
+<p><img alt="树对象可能包含子树对象和其它 blob" src="https://camo.githubusercontent.com/22e34c5f938f535779437e01bbe15ca87ab3ea0addb1650f3c24fa9d856d2d16/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33362e706e67" /></p>
+<p>上面这张图相当于一个文件系统，这个文件系统有一个根目录，根目录下有一个位于 <code>/test.js</code> 的文件和一个名为 <code>/docs</code> 的目录，<code>/docs</code> 目录下有两个文件：<code>/docs/pic.png</code> 和 <code>/docs/1.txt</code>。</p>
+<p>现在是时候捕获该文件系统的一个快照了，把那个时刻存在的所有文件连同它们的内容保存下来。</p>
+<p>在 <code>git</code> 中，一个快照就是一个 <strong>提交（commit）</strong>。一个 <strong>提交</strong> 对象包括一个指向主要 <strong>树对象</strong>（根目录）的指针和一些像 <strong>提交者</strong>、<strong>提交信息</strong> 和 <strong>提交时间</strong> 这样的元数据。</p>
+<p>在大多数情况下，一个 <strong>提交</strong> 还会有一个或多个父 <strong>提交</strong>——之前的快照。当然，**提交**对象也通过它们的 SHA-1 哈希值唯一标识。这些哈希值就是我们使用 <code>git log</code> 命令时看到的那些哈希值。</p>
+<p><img alt="提交对象是某个时刻的快照。它引用着树的根节点。由于这是第一次提交，它没有父节点" src="https://camo.githubusercontent.com/293d2604d198c04ee6124c5342ae6225f3614ee24e509b372fcdc25adf1159d5/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33372e706e67" /></p>
+<p>每个 <strong>提交</strong> 都持有 <em>完整的快照</em>，并不只是与之前 <strong>提交</strong> 之前的差异。</p>
+<p>那么它是怎么工作的呢？难道它不代表我们每次提交都必须保存很多数据吗？</p>
+<p>让我们来看看改变一个文件的内容会发生什么。我们编辑 <code>1.txt</code>，加一个感叹号——也就是把文件的内容由 <code>HELLO WORLD</code> 变为 <code>HELLO WORLD!</code>。</p>
+<p>这个改变意味着我们会有一个新的 <strong>blob</strong>，它有新的 SHA-1 哈希值。这是有意义的，因为 <code>sha1("HELLO WORLD")</code> 与 <code>sha1("HELLO WORLD!")</code> 并不相同。</p>
+<p><img alt="改变 blob 会得到新的 SHA-1 值" src="https://camo.githubusercontent.com/803ffa1082a137a3314e90c042c4dcbd5c3abde1b8f3e69aaacdeeba822164a6/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33382e706e67" /></p>
+<p>由于我们得到了一个新的哈希值，所以对应 <strong>树对象</strong> 的目录也会改变。毕竟，我们的 <strong>树对象</strong> 不再指向 <strong>blob 73D8A</strong> 了，而是指向了 <strong>blob 62E7A</strong>。当我们改变 <strong>树对象</strong> 的内容时，我们也改变了它的哈希值。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33392e706e67" src="https://camo.githubusercontent.com/b80e5342dd3871c8e8db1af02160ff7ba1a509d8d3f1e5b30e951f1530709dc0/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d33392e706e67" />blob 变了，指向它的树对象也需要变</p>
+<p>现在，由于原来那个 <strong>树对象</strong> 的哈希值已经不同了，我们也需要改变它的 <strong>父树对象</strong>——后者不再指向 <strong>tree CAFE7**了，而是指向了 **tree 246001</strong>。最终，<strong>父树对象</strong> 也会有一个新的哈希值。</p>
+<p><img alt="根节点也变了，它的哈希值也变了" src="https://camo.githubusercontent.com/43ae3b3c1d2930600f6e1eb8ce0a175700bb23f1a2941351b42dbb63f6f41a3f/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34302e706e67" /></p>
+<p>几乎做好创建一个新 <strong>提交</strong> 对象的准备了，我们好像会再一次保存很多的数据——整个文件系统。但是真的有必要这么做吗？</p>
+<p>实际上，一些对象（尤其是 <strong>blob</strong> 对象）相比起之前的提交来说没有任何改变——<strong>blob F92A0**仍然原封不动，**blob F00D1</strong> 也一样。</p>
+<p>这就是其中的秘诀——只有对象改变了，我们才再次保存它。在这个例子中，我们不需要再次保存 <strong>blob F92A0</strong> 和 <strong>blob F00b1</strong>。我们只需要通过它们的哈希值引用它们，然后我们可以创建 <strong>提交</strong> 对象。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34312e706e67" src="https://camo.githubusercontent.com/e586eff3853acfe86cf448c8d0aeff9f5d6f4a3a6ae4f5b180a6ed01f381b61e/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34312e706e67" />那些没有丝毫变化的 blob 是通过它们的哈希值被引用的</p>
+<p>由于这次 <strong>提交</strong> 不是第一次 <strong>提交</strong>，所以它有一个父节点——<strong>commit A1337</strong>。</p>
+<h4 id="git_1">回顾一下，我们介绍了三种 git 对象：<a class="headerlink" href="#git_1" title="Permanent link">&para;</a></h4>
+<ul>
+<li><strong>blob</strong>——文件的内容。</li>
+<li><strong>树对象</strong>——一个（由 <strong>blob</strong> 和 <strong>树对象</strong> 组成的）目录列表。</li>
+<li><strong>提交对象</strong>——工作树的一个快照。</li>
+</ul>
+<p>让我们思考一下这些对象的哈希值吧。如果我写了 <code>git is awesome!</code> 并从它创建了一个 <strong>blob</strong>。你也在自己的系统上这么做，我们会有相同的哈希值吗？</p>
+<p>答案是肯定的。因为这两个 <strong>blob</strong> 有相同的内容，自然也会有相同的 SHA-1 哈希值。</p>
+<p>如果我创建了一个引用 <code>git is awesome!</code> 这个 <strong>blob</strong> 的 <strong>树对象</strong> ，赋给它一个特定的名字和元数据，你也在自己的系统上重复我的操作。我们会有相同的哈希值吗？</p>
+<p>答案还是肯定的。因为这两个 <strong>树对象</strong> 是相同的，它们会有同样的哈希值。</p>
+<p>如果我创建了一个指向那个 <strong>树对象</strong> 的 <strong>提交对象</strong>，提交信息为 <code>Hello</code>，你也在自己的系统上重复了一遍这个操作，结果会怎样呢？我们的哈希值还会相同吗？</p>
+<p>这个时候的答案是否定的。即使我们的 <strong>提交对象</strong> 指向了相同的 <strong>树对象</strong>，它们也会有不同的 <strong>提交详情</strong>——时间、提交者，等等。</p>
+<h1 id="git_2">Git 中的分支<a class="headerlink" href="#git_2" title="Permanent link">&para;</a></h1>
+<p><strong>分支（branch）只不过是提交对象的命名引用</strong>。</p>
+<blockquote>
+<p>译者注：分支引用的是 <strong>提交对象</strong>，为了简单起见，下文在谈分支时，有时候会将 <strong>提交对象</strong> 简称为 <strong>提交</strong>。</p>
+</blockquote>
+<p>我们可以一直用 SHA-1 哈希值引用一个 <strong>提交</strong>，但是人们通常喜欢以其他形式命名对象。<strong>分支</strong> 恰好是引用 <strong>提交</strong> 的一种方式，实际上也只是这样。</p>
+<p>在大多数仓库中，主线开发都是在一个叫做 <code>master</code> 的分支上完成的。<code>master</code> 只是一个名字，它是在我们使用 <code>git init</code> 命令的时候被创建的。正因为如此，它被广泛使用。然而，它并不特别，我们可以用任何我们喜欢的名字代替它。</p>
+<p>通常，分支指向的是当前开发线上的最近一次 <strong>提交</strong>。</p>
+<p><img alt="分支只不过提交的命名引用" src="https://camo.githubusercontent.com/efa001a19d15c01a1eced1ceb1d581b9eb5f20f78a726fa922d1b125c0a9955a/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34322e706e67" /></p>
+<p>我们通常使用 <code>git branch</code> 命令创建一个新分支，而我们实际创建的却是另一个指针（pointer）。假设我们使用 <code>git branch test</code> 命令创建了一个名为 <code>test</code> 的分支，我们实际上是创建了另一个指针，它指向当前分支上的同一 <strong>提交</strong>。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34332e706e67" src="https://camo.githubusercontent.com/cd47885461841a143014b3eef8697e32d9de2eb97e26bd56b22db7d49103e43d/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34332e706e67" />使用 <code>git branch</code> 创建另一个指针</p>
+<p><code>git</code> 是怎么知道我们当前所在的分支呢？答案是它维护了一个名为 <code>HEAD</code> 的特殊指针。通常情况下，<code>HEAD</code> 会指向一个分支，这个分支指向一个 <strong>提交</strong>。有时候，<code>HEAD</code> 也能直接指向一个 <strong>提交</strong>，不过这不是我们的重点。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34342e706e67" src="https://camo.githubusercontent.com/f0dcc32c65098ca48c7974af49466103d2e49622110a4097021dcfcbd4b9ce97/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34342e706e67" />HEAD 指向我们当前所在的分支</p>
+<blockquote>
+<p>译者注：活动分支（active branch）指的是我们当前所在的分支，也就是 <code>HEAD</code> 指向的分支。</p>
+</blockquote>
+<p>要将活动分支切换到 <code>test</code>，我们可以使用命令 <code>git checkout test</code>。现在我们已经能猜到这条命令真正做的事情了——它只不过是把 <code>HEAD</code> 指向的分支改成了 <code>test</code>。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34352e706e67" src="https://camo.githubusercontent.com/5c0cda513d9f2961c3d2e6f7c0b5b9294f4db8fe93a02c24264722ea0f2e5456/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34352e706e67" /><code>git checkout test</code> 改变 <code>HEAD</code> 指向的分支</p>
+<p>在创建 <code>test</code> 分支之前，我们也可以使用 <code>git checkout -b test</code>，这条命令等价于先运行 <code>git branch test</code> 创建分支，再运行 <code>git checkout test</code> 使 <code>HEAD</code> 指向新的分支。</p>
+<p>如果我们做了一些改动并使用 <code>git commit</code> 创建了一个新 <strong>提交</strong> 呢？这个新 <strong>提交</strong> 会被添加到哪个分支上呢？</p>
+<p>答案是 <code>test</code> 分支，因为它是当前的活动分支（因为 <code>HEAD</code> 指向了它）。之后，<code>test</code>指针会移动至新添加的 <strong>提交</strong> 上。注意 <code>HEAD</code> 仍然指向 <code>test</code>。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34362e706e67" src="https://camo.githubusercontent.com/716a0062270c2a698d47f30f5f75a0eb7eeaf0acd4f48a25101a41cf4a2b72d8/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34362e706e67" />每次执行 <code>git commit</code> 命令都会让分支的指针移动到新创建的提交上</p>
+<p>因此，如果我们使用 <code>git checkout master</code> 回到 master 分支，我们就让 <code>HEAD</code> 的再次指向 <code>master</code> 了。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34372e706e67" src="https://camo.githubusercontent.com/a1eddf190ebc79fd46bd15e6fb9d527e8570eedce43c1f3c6db5f7c61664bb9b/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34372e706e67" /></p>
+<p>如果我们现在创建一个新的 <strong>提交</strong>，它就会被添加到 <code>master</code> 分支，<strong>commit B2424</strong> 会成为新提交的父节点。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34382e706e67" src="https://camo.githubusercontent.com/68a6eb53b0b21ea4bef6189652d31ec9deaca379d4620010050d102795243522/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34382e706e67" /></p>
+<h1 id="git_3">如何在 Git 中记录变化<a class="headerlink" href="#git_3" title="Permanent link">&para;</a></h1>
+<p>通常，我们在 <strong>工作目录（working dir）</strong> 中编写源代码。<strong>工作目录</strong> （或 <strong>工作树（working tree）</strong>）可以是文件系统上的任何一个目录，它关联着一个 <strong>仓库（repository）</strong> 。目录内不仅包含工程的文件夹和文件，还包含一个名为 <code>.git</code> 的目录。稍后我们会再讨论 <code>git</code> 这个目录。</p>
+<p>在做了一些改动之后，我们想把这些改动记录到我们的 <strong>仓库</strong> 中。一个 <strong>仓库</strong> （缩写：<strong>repo</strong>）就是一系列 <strong>提交</strong> 的集合，每个 <strong>提交</strong> 都是工程 <strong>工作树</strong> 的归档。除了我们自己机器上的提交外，仓库也会包含他人机器上的提交。</p>
+<p><strong>仓库</strong> 也包含除代码文件以外的其它东西，例如 <code>HEAD</code> 指针、分支等等。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34392e706e67" src="https://camo.githubusercontent.com/d6ac18d941ed9016c28da6ccfe8d38e286cc883186d3fec2ced29716fc77cd35/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d34392e706e67" /></p>
+<p>你可能使用过的其它和 <code>git</code> 类似工具，但是 <code>git</code> 并不会像其它工具那样直接将变化从 <strong>工作树</strong> 提交到 <strong>仓库</strong>。相反，它会先把这些变化注册到一个被称为 <strong>索引（index）</strong> 或 <strong>暂存区（staging area）</strong> 的地方。</p>
+<p>这两个术语指的都是同一个东西，它们也经常被 <code>git</code> 的文档使用，我们将会在这篇文章中交替使用它们。</p>
+<p>当我们 <code>checkout</code> 到一个分支时，<code>git</code> 会将上一次检出到工作目录中的所有文件填充到 <strong>索引</strong>，它们看起来就像最初被检出时的样子。之后执行 <code>git commit</code> 时， <strong>提交</strong> 会在当前 <strong>索引</strong> 的基础上创建。</p>
+<p><strong>索引</strong> 允许我们精心准备每次 <strong>提交</strong>。举个例子，自上一次 <strong>提交</strong> 以来，我们的 <strong>工作目录**中可能有两个文件发生了变化，但是我们可能只想将其中的一个添加到 **索引</strong>（使用 <code>git add</code>），然后使用 <code>git commit</code> 记录这一个文件的变化。</p>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d35302e706e67" src="https://camo.githubusercontent.com/f1b0275e1a35e382be6a13b3a4f5573b326d902b5762f5dc789149718666508e/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d35302e706e67" /></p>
+<p><strong>工作目录</strong> 下文件的状态不外乎有两种：<strong>已跟踪（tracked）</strong> 或 <strong>未跟踪（untracked）</strong>。</p>
+<p><strong>已跟踪文件</strong> 是指那些 <code>git</code> 已经知道的文件。它们要么已经在上一次快照（<strong>提交</strong>）中，要么已经被 <strong>暂存（staged）</strong>（换句话说，它们已经在 <strong>暂存区</strong> 中）。</p>
+<p><strong>工作目录</strong> 中除已跟踪文件以外的所有其它文件都属于 <strong>未跟踪文件（untracked）</strong>，它们既没有在上次快照（<strong>提交</strong>）中，也没有在 <strong>暂存区</strong> 中。</p>
+<h1 id="_2">创建仓库的常规方式<a class="headerlink" href="#_2" title="Permanent link">&para;</a></h1>
+<p>让我们确认下我们已经理解了“创建**仓库**”时介绍的相关术语。在我们更加深入这个过程之前，这只是一个非常高阶的视角。</p>
+<p>我们用 <code>git init repo_1</code> 初始化一个新的 <strong>仓库</strong>，然后用 <code>cd repo_1</code> 切换到仓库所在目录。借助 <code>tree .git</code> 命令，我们可以看到运行 <code>git init</code> 之后 <code>.git</code> 目录下面出现了很多子目录（<code>/f</code> 表示在 <code>tree</code> 的输出中包含文件）。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>tree<span class="w"> </span>.git
+├──<span class="w"> </span>HEAD
+├──<span class="w"> </span>config
+├──<span class="w"> </span>description
+├──<span class="w"> </span>hooks
+│<span class="w">   </span>├──<span class="w"> </span>applypatch-msg.sample
+│<span class="w">   </span>├──<span class="w"> </span>commit-msg.sample
+│<span class="w">   </span>├──<span class="w"> </span>fsmonitor-watchman.sample
+│<span class="w">   </span>├──<span class="w"> </span>post-update.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-applypatch.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-commit.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-merge-commit.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-push.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-rebase.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-receive.sample
+│<span class="w">   </span>├──<span class="w"> </span>prepare-commit-msg.sample
+│<span class="w">   </span>├──<span class="w"> </span>push-to-checkout.sample
+│<span class="w">   </span>└──<span class="w"> </span>update.sample
+├──<span class="w"> </span>info
+│<span class="w">   </span>└──<span class="w"> </span>exclude
+├──<span class="w"> </span>objects
+│<span class="w">   </span>├──<span class="w"> </span>info
+│<span class="w">   </span>└──<span class="w"> </span>pack
+└──<span class="w"> </span>refs
+<span class="w">    </span>├──<span class="w"> </span>heads
+<span class="w">    </span>└──<span class="w"> </span>tags
+
+<span class="m">9</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">17</span><span class="w"> </span>files
+</code></pre></div>
+<p>让我们在 <code>repo_1</code> 目录中创建一个文件吧：</p>
+<div class="highlight"><pre><span></span><code><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;hello&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>new_file.txt
+</code></pre></div>
+<p>这个文件已经在我们的 <strong>工作目录</strong> 中了。目前，我们还没有将它添加到 <strong>暂存区</strong>，所以它是 <strong>未跟踪</strong> 状态。让我们用 <code>git status</code> 验证一下：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+Untracked<span class="w"> </span>files:
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git add &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>include<span class="w"> </span><span class="k">in</span><span class="w"> </span>what<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>committed<span class="o">)</span>
+<span class="w">    </span>new_file.txt
+
+nothing<span class="w"> </span>added<span class="w"> </span>to<span class="w"> </span>commit<span class="w"> </span>but<span class="w"> </span>untracked<span class="w"> </span>files<span class="w"> </span>present<span class="w"> </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git add&quot;</span><span class="w"> </span>to<span class="w"> </span>track<span class="o">)</span>
+</code></pre></div>
+<p>因为我们没有将新的文件添加到暂存区，所以它还是未跟踪状态，它也没有在之前的提交中</p>
+<p>我们现在用 <code>git add new_file.txt</code> 将这个文件添加到 <strong>暂存区</strong>，再用 <code>git status</code> 验证一下它是否已经被暂存了：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>add<span class="w"> </span>new_file.txt
+$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+Changes<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>committed:
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git rm --cached &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>unstage<span class="o">)</span>
+<span class="w">    </span>new<span class="w"> </span>file:<span class="w">   </span>new_file.txt
+</code></pre></div>
+<p>添加新的文件到暂存区</p>
+<p>我们可现在可以用 <code>git commit</code> 创建一个 <strong>提交</strong>：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>commit<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;First commit&quot;</span>
+<span class="o">[</span>master<span class="w"> </span><span class="o">(</span>root-commit<span class="o">)</span><span class="w"> </span>52ad6ff<span class="o">]</span><span class="w"> </span>First<span class="w"> </span>commit
+<span class="w"> </span><span class="m">1</span><span class="w"> </span>file<span class="w"> </span>changed,<span class="w"> </span><span class="m">1</span><span class="w"> </span>insertion<span class="o">(</span>+<span class="o">)</span>
+<span class="w"> </span>create<span class="w"> </span>mode<span class="w"> </span><span class="m">100644</span><span class="w"> </span>new_file.txt
+</code></pre></div>
+<p><code>.git</code> 目录有变化吗？我们用 <code>tree .git</code> 检查一下：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>tree<span class="w"> </span>.git
+.git
+├──<span class="w"> </span>COMMIT_EDITMSG
+├──<span class="w"> </span>HEAD
+├──<span class="w"> </span>config
+├──<span class="w"> </span>description
+├──<span class="w"> </span>hooks
+│<span class="w">   </span>├──<span class="w"> </span>applypatch-msg.sample
+│<span class="w">   </span>├──<span class="w"> </span>commit-msg.sample
+│<span class="w">   </span>├──<span class="w"> </span>fsmonitor-watchman.sample
+│<span class="w">   </span>├──<span class="w"> </span>post-update.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-applypatch.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-commit.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-merge-commit.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-push.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-rebase.sample
+│<span class="w">   </span>├──<span class="w"> </span>pre-receive.sample
+│<span class="w">   </span>├──<span class="w"> </span>prepare-commit-msg.sample
+│<span class="w">   </span>├──<span class="w"> </span>push-to-checkout.sample
+│<span class="w">   </span>└──<span class="w"> </span>update.sample
+├──<span class="w"> </span>index
+├──<span class="w"> </span>info
+│<span class="w">   </span>└──<span class="w"> </span>exclude
+├──<span class="w"> </span>logs
+│<span class="w">   </span>├──<span class="w"> </span>HEAD
+│<span class="w">   </span>└──<span class="w"> </span>refs
+│<span class="w">       </span>└──<span class="w"> </span>heads
+│<span class="w">           </span>└──<span class="w"> </span>master
+├──<span class="w"> </span>objects
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">52</span>
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>ad6ffd4cd89c9faac6a8ac441fb77334dc5e32
+│<span class="w">   </span>├──<span class="w"> </span>ce
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>013625030ba8dba906f756967f9e9ca394464a
+│<span class="w">   </span>├──<span class="w"> </span>ef
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>313b9746f3ce70818bd76a627e61bb43053e0e
+│<span class="w">   </span>├──<span class="w"> </span>info
+│<span class="w">   </span>└──<span class="w"> </span>pack
+└──<span class="w"> </span>refs
+<span class="w">    </span>├──<span class="w"> </span>heads
+<span class="w">    </span>│<span class="w">   </span>└──<span class="w"> </span>master
+<span class="w">    </span>└──<span class="w"> </span>tags
+
+<span class="m">15</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">25</span><span class="w"> </span>files
+</code></pre></div>
+<p><code>git</code> 目录中的很多东西已经变了</p>
+<p>很明显，很多东西都变了。是时候深入 <code>.git</code> 的结构，理解执行 <code>git init</code>、<code>git add</code> 或 <code>git commit</code> 之后发生的什么事情了。</p>
+<h1 id="_3">是时候上干货了<a class="headerlink" href="#_3" title="Permanent link">&para;</a></h1>
+<p>目前我们已经讲了一些 Git 的基础知识，现在已经做好 <em>Git 上路</em> 的准备了。</p>
+<p>为了深入理解 <code>git</code> 是如何工作的，我们将从零开始创建一个 <strong>仓库</strong>。</p>
+<p>我们不会使用 <code>git init</code>、<code>git add</code> 或 <code>git commit</code>，这会让我们更好地理解这个过程。</p>
+<h1 id="git_4">如何设置 <code>.git</code><a class="headerlink" href="#git_4" title="Permanent link">&para;</a></h1>
+<p>先创建一个新目录，然后在里面运行 <code>git status</code>：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>mkdir<span class="w"> </span>repo_2
+$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>repo_2
+$<span class="w"> </span>git<span class="w"> </span>status
+fatal:<span class="w"> </span>not<span class="w"> </span>a<span class="w"> </span>git<span class="w"> </span>repository<span class="w"> </span><span class="o">(</span>or<span class="w"> </span>any<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>parent<span class="w"> </span>directories<span class="o">)</span>:<span class="w"> </span>.git
+</code></pre></div>
+<p>好吧，因为我们没有 <code>.git</code> 文件夹，<code>git</code> 好像不怎么高兴。我们先把这个目录创建出来：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>mkdir<span class="w"> </span>.git
+$<span class="w"> </span>git<span class="w"> </span>status
+fatal:<span class="w"> </span>not<span class="w"> </span>a<span class="w"> </span>git<span class="w"> </span>repository<span class="w"> </span><span class="o">(</span>or<span class="w"> </span>any<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>parent<span class="w"> </span>directories<span class="o">)</span>:<span class="w"> </span>.git
+</code></pre></div>
+<p>很明显，只创建一个 <code>.git</code> 目录还不够。我们需要往这个目录添加一些东西。</p>
+<p><strong>一个 git 仓库有两个主要组成部分：</strong></p>
+<ol>
+<li>一组对象——<strong>blob</strong>、<strong>树对象</strong> 和 <strong>提交对象</strong>。</li>
+<li>一个命名这些对象的方式——称为 <strong>引用</strong>。</li>
+</ol>
+<blockquote>
+<p>译者注：引用是 Git 中的一个重要概念，读者可以进一步阅读 <a href="https://git-scm.com/book/zh/v2/Git-内部原理-Git-引用">Git 引用</a>。</p>
+</blockquote>
+<p>一个 <strong>仓库</strong> 可能还包含一些其它的东西，比如 git 钩子（hooks）。不过，仓库至少必须要有对象和引用。</p>
+<p>让我们分别为对象和引用（简称：<strong>refs</strong>）各创建一个目录，分别为 <code>.git/objects</code> 和 <code>.git/refs</code>。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>mkdir<span class="w"> </span>.git/<span class="o">{</span>objects,refs<span class="o">}</span>
+$<span class="w"> </span>tree<span class="w"> </span>.git
+.git
+├──<span class="w"> </span>objects
+└──<span class="w"> </span>refs
+
+<span class="m">3</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">0</span><span class="w"> </span>files
+</code></pre></div>
+<p><strong>分支</strong> 是引用的一种，<code>git</code> 内部将 <strong>分支</strong> 称为 <strong>heads</strong>，所以我们会为它们创建一个目录 <code>git/refs/heads</code>。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>mkdir<span class="w"> </span>.git/refs/heads
+$<span class="w"> </span>tree<span class="w"> </span>.git
+.git
+├──<span class="w"> </span>objects
+└──<span class="w"> </span>refs
+<span class="w">    </span>└──<span class="w"> </span>heads
+
+<span class="m">4</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">0</span><span class="w"> </span>files
+</code></pre></div>
+<p>然而 <code>git status</code> 的输出还是纹丝不动：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+fatal:<span class="w"> </span>not<span class="w"> </span>a<span class="w"> </span>git<span class="w"> </span>repository<span class="w"> </span><span class="o">(</span>or<span class="w"> </span>any<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>parent<span class="w"> </span>directories<span class="o">)</span>:<span class="w"> </span>.git
+</code></pre></div>
+<p>在寻找 <strong>仓库</strong> 中的 <strong>提交</strong> 时，<code>git</code> 怎么知道该从何开始呢？我之前解释过，它会寻找 <code>HEAD</code>，而 <code>HEAD</code> 指向着活动分支。</p>
+<p>所以，我们需要创建 <code>HEAD</code>，它是一个位于 <code>.git/HEAD</code> 的文件：<code>$ echo "ref: refs/heads/master" &gt; .git/HEAD</code></p>
+<p>⭐ 所以我们现在知道 <code>HEAD</code> 是如何实现的了——它只是一个文件，文件内容描述了它所指向的分支。</p>
+<p>执行上面的命令以后，<code>git status</code> 似乎改变它的主意了：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;ref: refs/heads/master&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>.git/HEAD
+$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+nothing<span class="w"> </span>to<span class="w"> </span>commit<span class="w"> </span><span class="o">(</span>create/copy<span class="w"> </span>files<span class="w"> </span>and<span class="w"> </span>use<span class="w"> </span><span class="s2">&quot;git add&quot;</span><span class="w"> </span>to<span class="w"> </span>track<span class="o">)</span>
+</code></pre></div>
+<p>HEAD 只不过是一个文件</p>
+<p>注意：虽然我们还没有创建 <code>master</code> 分支，但是 <code>git</code> 相信我们就在这个分支上。之前有讲过，<code>master</code>只是一个名字。如果我们想的话，也可以让 <code>git</code> 认为我们在 <code>banana</code> 分支上：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;ref: refs/heads/banana&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>.git/HEAD
+$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>banana
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+nothing<span class="w"> </span>to<span class="w"> </span>commit<span class="w"> </span><span class="o">(</span>create/copy<span class="w"> </span>files<span class="w"> </span>and<span class="w"> </span>use<span class="w"> </span><span class="s2">&quot;git add&quot;</span><span class="w"> </span>to<span class="w"> </span>track<span class="o">)</span>
+</code></pre></div>
+<p>按照惯例，我们将在本文的剩余部分中切回 <code>master</code> 分支。</p>
+<p>我们已经准备好了 <code>git</code> 目录，现在继续往下，来一次 <strong>提交</strong>（同样地，不使用 <code>git add</code> 或 <code>git commit</code>）。</p>
+<h1 id="git_5">Git 中的底层命令与上层命令<a class="headerlink" href="#git_5" title="Permanent link">&para;</a></h1>
+<p>这个时候，区分 <strong>底层（plumbing）</strong> 和 <strong>上层（poreclain）</strong> 两类 <code>git</code> 命令会对你很有帮助。这两个术语的应用奇怪地来自于马桶（没错，就是🚽）。马桶通常是用陶瓷（porcelain）做的，它的基本结构是管道（plumbing，上水道和下水道）。</p>
+<p>我们可以说上层命令为底层命令提供了一个用户友好的接口。大多数人只会涉及到上层命令。然而，当事情变得（非常）糟糕时，有人可能就会想知道为什么，他们会卷起袖子去检查底层命令。（注意：这些术语并不是我发明的，它们在 <code>git</code> 中的使用非常广泛）。</p>
+<blockquote>
+<p>译者注：读者若想更好的理解这两个术语，建议阅读 <a href="https://git-scm.com/book/zh/v2/Git-内部原理-底层命令与上层命令">Git 内部原理 - 底层命令与上层命令</a>。</p>
+</blockquote>
+<p><code>git</code> 使用这些术语进行类比，从而将用户不常使用的底层命令（plumbing）和那些更友好的高层（porcelain）命令区分开。</p>
+<p>目前，我们已经接触过上层命令——<code>git init</code>、<code>git add</code> 和 <code>git commit</code>。接下来，我们转到底层命令。</p>
+<h1 id="_4">如何创建对象<a class="headerlink" href="#_4" title="Permanent link">&para;</a></h1>
+<p>让我们从创建对象并将其写入 <code>git</code> 的对象数据库开始吧，<code>git</code> 的对象数据库位于 <code>.git/objects</code> 中。第一条底层命令 <code>git hash-object</code> 会让我们将找到 **blob 对象**的 SHA-1 哈希值。方式如下：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;git is awesome&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>git<span class="w"> </span>hash-object<span class="w"> </span>--stdin
+</code></pre></div>
+<p>我们使用 <code>--stdin</code> 告知 <code>git hash-object</code> 从标准输入（standard input）获取输入内容，这将给我们提供相应的哈希值。</p>
+<p>为了真的将该 <strong>blob 对象</strong> 写入 <code>git</code> 的对象数据库，我们可以简单地给 <code>git hash-object</code> 加一个 <code>-w</code> 开关。然后，检查 <code>.git</code> 目录中的内容，看看它们有没有改变。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;git is awesome&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>git<span class="w"> </span>hash-object<span class="w"> </span>--stdin
+118f108d76b16a058db9fcb385a5fd640b54e47a
+$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;git is awesome&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>git<span class="w"> </span>hash-object<span class="w"> </span>--stdin<span class="w"> </span>-w
+118f108d76b16a058db9fcb385a5fd640b54e47a
+$<span class="w"> </span>tree<span class="w"> </span>.git
+.git
+├──<span class="w"> </span>HEAD
+├──<span class="w"> </span>objects
+│<span class="w">   </span>└──<span class="w"> </span><span class="m">11</span>
+│<span class="w">       </span>└──<span class="w"> </span>8f108d76b16a058db9fcb385a5fd640b54e47a
+└──<span class="w"> </span>refs
+<span class="w">    </span>└──<span class="w"> </span>heads
+
+<span class="m">5</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">2</span><span class="w"> </span>files
+</code></pre></div>
+<p>我们现在可以看到，这个 <strong>blob</strong> 的哈希值为 <code>118f...7a</code>， <code>.git/objects</code> 下也多出来了一个名为 <code>11</code> 的目录，目录内有一个名为 <code>8f..7a</code> 的文件。</p>
+<p>所以，<code>git</code> 实际上是使用 SHA-1 哈希值的前两个字符作为目录的名字，剩余字符用作 <strong>blob</strong> 所在文件的文件名。</p>
+<p>为什么要这样呢？考虑一个非常大的仓库，仓库的数据库内存有三十万个对象（<strong>blob 对象</strong>、<strong>树对象</strong> 和 <strong>提交对象</strong>）。从这三十万个哈希值中找出一个值会花些时间，因此，<code>git</code> 将这个问题划分成了 256 份。</p>
+<p>为了查找上面的那个哈希值，<code>git</code> 会先寻找 <code>.git/objects</code> 目录下名为 <code>11</code> 的目录，然后搜索那个目录，这进一步缩小了搜索范围。<code>.git/objects</code> 目录下最多可能会有 256 个子目录（从 <code>00</code> 到 <code>FF</code>）。</p>
+<p>回到生成 <strong>提交对象</strong> 的过程中来，现在我们已经创建了一个对象，它的类型是什么呢？我们可以通过另一个底层命令 <code>git cat-file -t</code> （<code>-t</code> 代表 'type'）瞧一瞧：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-t<span class="w"> </span>118f108d76b16a058db9fcb385a5fd640b54e47a
+blob
+</code></pre></div>
+<p>注意，这里的 SHA-1 值是 <code>118f108d76b16a058db9fcb385a5fd640b54e47a</code>，而不是在 <code>tree</code> 命令看到的 <code>8f108d76b16a058db9fcb385a5fd640b54e47a</code>，如果你使用后者，会得到下面的错误信息：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-t<span class="w"> </span>8f108d76b16a058db9fcb385a5fd640b54e47a
+fatal:<span class="w"> </span>Not<span class="w"> </span>a<span class="w"> </span>valid<span class="w"> </span>object<span class="w"> </span>name<span class="w"> </span>8f108d76b16a058db9fcb385a5fd640b54e47a
+</code></pre></div>
+<p>不出所料，这个对象是一个 <strong>blob</strong>。我们还可以使用 <code>git cat-file -p</code> （<code>-p</code> 代表 'pretty-print'）查看它的内容：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-p<span class="w"> </span>118f108d76b16a058db9fcb385a5fd640b54e47a
+git<span class="w"> </span>is<span class="w"> </span>awesome
+</code></pre></div>
+<p>创建 <strong>blob</strong> 这个过程通常发生在我们将一些东西添加到 <strong>暂存区</strong> 的时候——也就是我们使用 <code>git add</code> 的时候。</p>
+<p>记住：<code>git</code> 是为 <em>整个</em> 暂存的文件创建 <strong>blob</strong>。即使文件中只有修改或添加了一个字符（如同我们在之前的例子红添加 <code>!</code> 一样），该文件也会有一个新的 <strong>blob</strong>，这个 **blob**有着新的哈希值。</p>
+<p><code>git status</code> 会有任何改变吗？</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+nothing<span class="w"> </span>to<span class="w"> </span>commit<span class="w"> </span><span class="o">(</span>create/copy<span class="w"> </span>files<span class="w"> </span>and<span class="w"> </span>use<span class="w"> </span><span class="s2">&quot;git add&quot;</span><span class="w"> </span>to<span class="w"> </span>track<span class="o">)</span>
+</code></pre></div>
+<p>显然没有。向 <code>git</code> 的内部数据库中添加一个 <strong>blob</strong> 对象并不会改变状态，因为 <code>git</code> 在这个阶段是不知道任何已跟踪或未跟踪文件的。</p>
+<p>我们需要跟踪这个文件——把它添加到 <strong>暂存区</strong>。为此，我们可以使用底层命令 <code>git update-index</code>，例如：<code>git update-index --add --cacheinfo &lt;mode&gt;,&lt;sha1&gt; &lt;path&gt;</code>。</p>
+<p>注意：<code>cacheinfo</code> 是一个<a href="https://github.com/git/git/blob/master/Documentation/technical/index-format.txt">git 存储的</a>十六位的文件模式，这个模式遵循 <a href="http://pubs.opengroup.org/onlinepubs/9699919799/basedefs/sys_stat.h.html">POSIX 类型和模式</a> 的布局。这超出了本文讨论的范围。</p>
+<p>运行上述命令会改变 <code>.git</code> 目录的内容：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>update-index<span class="w"> </span>--add<span class="w"> </span>--cacheinfo<span class="w"> </span><span class="m">10064</span>,118f108d76b16a058db9fcb385a5fd640b54e47a,my_file.txt
+$<span class="w"> </span>tree<span class="w"> </span>.git
+.git
+├──<span class="w"> </span>HEAD
+├──<span class="w"> </span>index
+├──<span class="w"> </span>objects
+│<span class="w">   </span>└──<span class="w"> </span><span class="m">11</span>
+│<span class="w">       </span>└──<span class="w"> </span>8f108d76b16a058db9fcb385a5fd640b54e47a
+└──<span class="w"> </span>refs
+<span class="w">    </span>└──<span class="w"> </span>heads
+
+<span class="m">5</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">3</span><span class="w"> </span>files
+</code></pre></div>
+<p>你能发现变化吗？多了一个名为 <code>index</code> 的新文件。这就是著名的 <strong>索引</strong> （或 <strong>暂存区</strong>），它基本上是一个位于 <code>.git/index</code> 中的文件。</p>
+<p>既然 <strong>blob</strong> 已经被添加到了 <strong>索引</strong>，我们希望 <code>git status</code> 看起来会有所不同，像这样：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+Changes<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>committed:
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git rm --cached &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>unstage<span class="o">)</span>
+<span class="w">    </span>new<span class="w"> </span>file:<span class="w">   </span>my_file.txt
+
+Changes<span class="w"> </span>not<span class="w"> </span>staged<span class="w"> </span><span class="k">for</span><span class="w"> </span>commit:
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git add/rm &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>update<span class="w"> </span>what<span class="w"> </span>will<span class="w"> </span>be<span class="w"> </span>committed<span class="o">)</span>
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git restore &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>discard<span class="w"> </span>changes<span class="w"> </span><span class="k">in</span><span class="w"> </span>working<span class="w"> </span>directory<span class="o">)</span>
+<span class="w">    </span>deleted:<span class="w">    </span>my_file.txt
+</code></pre></div>
+<p>真有趣！这里发生了两件事。</p>
+<p>第一件事，我们可以在 <code>changes to be committed</code> 中看到绿色的 <code>new_file.txt</code>。这是因为 <strong>索引</strong> 中有了 <code>new_file.txt</code>，它正等着被提交。</p>
+<p>第二件事，我们可以看到红色的 <code>new_file.txt</code>——因为 <code>git</code> 相信 <code>my_file.txt</code> 这个 <em>文件</em> 已经被删除了，并且它没有被暂存。</p>
+<p>这发生在我们将内容为 <code>git is awesome</code> 的 <strong>blob</strong> 添加到对象数据库中的时候，我们告诉 <strong>索引</strong> ，那个 <strong>blob</strong> 的内容在文件 <code>my_file.txt</code> 中，但是我们从未创建过那个文件。</p>
+<p>通过将那个 <strong>blob</strong> 的内容写入我们文件系统中名为 <code>my_file.txt</code> 的文件，我们可以很容易地解决这个问题：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-p<span class="w"> </span>118f108d76b16a058db9fcb385a5fd640b54e47a<span class="w"> </span>&gt;<span class="w"> </span>my_file.txt
+$<span class="w"> </span>ls<span class="w"> </span>-a
+.<span class="w">           </span>..<span class="w">          </span>.git<span class="w">        </span>my_file.txt
+</code></pre></div>
+<p><img alt="68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d3131392e706e67" src="https://camo.githubusercontent.com/0d4a4af4b155c8955a5103cda67346ba00ccc797e7cbfb000812b0451de421f4/68747470733a2f2f7777772e66726565636f646563616d702e6f72672f6e6577732f636f6e74656e742f696d616765732f323032302f31322f696d6167652d3131392e706e67" /></p>
+<p>执行 <code>git status</code> 后，它将不再出现在红色内容中：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+Changes<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>committed:
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git rm --cached &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>unstage<span class="o">)</span>
+<span class="w">    </span>new<span class="w"> </span>file:<span class="w">   </span>my_file.txt
+</code></pre></div>
+<p>现在是时候从我们的 <strong>暂存区</strong> 创建一个 <strong>提交</strong> 对象了。如上所述，一个 <strong>提交</strong> 对象引用着一个 <strong>树对象</strong>，所以我们需要创建一个 <strong>树对象</strong>。</p>
+<p>我们可以用 <code>git write-tree</code> 做这件事，它会在一个 <strong>树对象</strong> 中记录 <strong>索引</strong> 的内容。当然，我们可以使用 <code>git cat-file -t</code> 进行确认：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>write-tree
+50a4d98955701b83dc67e8c3ace63899f0a2b5d6
+$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-t<span class="w"> </span>50a4d98955701b83dc67e8c3ace63899f0a2b5d6
+tree
+</code></pre></div>
+<p>我们还可以用 <code>git cat-file -p</code> 查看它的内容：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-p<span class="w"> </span>50a4d98955701b83dc67e8c3ace63899f0a2b5d6
+<span class="m">100644</span><span class="w"> </span>blob<span class="w"> </span>118f108d76b16a058db9fcb385a5fd640b54e47a<span class="w">    </span>my_file.txt
+</code></pre></div>
+<p>太棒了！我们创建了一个 <strong>树对象</strong>，现在我们需要创建一个引用这个 <strong>树对象</strong> 的 <strong>提交</strong> 对象。为此，我们可以使用 <code>git commit-tree &lt;tree-hash&gt; -m &lt;commit message&gt;</code>：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>commit-tree<span class="w"> </span>50a4d98955701b83dc67e8c3ace63899f0a2b5d6<span class="w"> </span>-m<span class="w"> </span><span class="s2">&quot;First message&quot;</span>
+3de073b2f6814d111ec1fd96f5b75e9b10df2ef3
+</code></pre></div>
+<p>你现在应该对查看对象类型和打印对象内容的命令感到得心应手了：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-t<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3
+commit
+$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-p<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3
+tree<span class="w"> </span>50a4d98955701b83dc67e8c3ace63899f0a2b5d6
+author<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao@gmail.com&gt;<span class="w"> </span><span class="m">1691152555</span><span class="w"> </span>+0800
+committer<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao@gmail.com&gt;<span class="w"> </span><span class="m">1691152555</span><span class="w"> </span>+0800
+
+First<span class="w"> </span>message
+</code></pre></div>
+<p>注意这个 <strong>提交</strong> 并没有 <strong>父节点</strong>，因为它是第一个 <strong>提交</strong>。当我们添加另一个 <strong>提交</strong> 时，我们就得声明它的 **父节点**了——我们稍后会做这个。</p>
+<p>我们刚得到的哈希值（<code>3de...f3</code>）是一个 <strong>提交对象</strong> 的哈希值。实际上我们非常习惯使用这些哈希值——我们一直都在看它们。注意这个 <strong>提交对象</strong> 拥有一个 <strong>树对象</strong>，树对象有自己的哈希值，不过我们几乎不会显式地指定这个哈希值。</p>
+<p><code>git status</code> 会有所变化吗？</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+
+No<span class="w"> </span>commits<span class="w"> </span>yet
+
+Changes<span class="w"> </span>to<span class="w"> </span>be<span class="w"> </span>committed:
+<span class="w">  </span><span class="o">(</span>use<span class="w"> </span><span class="s2">&quot;git rm --cached &lt;file&gt;...&quot;</span><span class="w"> </span>to<span class="w"> </span>unstage<span class="o">)</span>
+<span class="w">    </span>new<span class="w"> </span>file:<span class="w">   </span>my_file.txt
+</code></pre></div>
+<p>并没有。🤔</p>
+<p>为什么呢？<code>git</code> 需要知道最近一次 <strong>提交</strong>，才能知道文件已经被提交。那么 <code>git</code> 是怎么做的呢？它会去找 <code>HEAD</code>：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>cat<span class="w"> </span>.git/HEAD
+ref:<span class="w"> </span>refs/heads/master
+</code></pre></div>
+<p><code>HEAD</code> 指向 <code>master</code>，但是 <code>master</code> 是什么呢？我们还没有创建它呢。</p>
+<p>如同我们在前面解释的那样，分支只是 <strong>提交对象</strong> 的命名引用。这时，我们想要让 <code>master</code> 指向哈希值为 <code>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3</code> 的 <strong>提交对象</strong>。</p>
+<p>这实现起来很简单，在 <code>.git/refs/heads/master</code> 创建一个文件，文件内容为这个哈希值。像这样：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3<span class="w"> </span>&gt;.git/refs/heads/master
+</code></pre></div>
+<p>⭐ 总而言之，<strong>分支</strong> 只是 <code>.git/refs/heads</code> 中的一个文件，文件内容为该分支所指向的 <strong>提交对象</strong> 的哈希值。</p>
+<p>现在，<code>git status</code> 和 <code>git log</code> 终于欣赏我们的付出了：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span>master
+nothing<span class="w"> </span>to<span class="w"> </span>commit,<span class="w"> </span>working<span class="w"> </span>tree<span class="w"> </span>clean
+
+$<span class="w"> </span>git<span class="w"> </span>log
+commit<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3
+Author:<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao@gmail.com&gt;
+Date:<span class="w">   </span>Fri<span class="w"> </span>Aug<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">20</span>:35:55<span class="w"> </span><span class="m">2023</span><span class="w"> </span>+0800
+
+<span class="w">    </span>First<span class="w"> </span>message
+</code></pre></div>
+<p>我们已经成功创建出了一个 <strong>提交</strong>，全程没有使用上层命令！是不是很酷？🎉</p>
+<h1 id="git_6">与 Git 分支一起工作——背后的故事<a class="headerlink" href="#git_6" title="Permanent link">&para;</a></h1>
+<p>就像我们不借助 <code>git init</code>、<code>git add</code> 或 <code>git commit</code> 创建 <strong>仓库</strong> 和 <strong>提交</strong> 一样，我们将要创建 <strong>分支</strong>，在不同 <strong>分支</strong> 间来回切换，整个过程也不使用上层命令（<code>git branch</code> 或 <code>git checkout</code>）。</p>
+<p>如果你很兴奋，这是完全可以理解的。我也很兴奋 🙂</p>
+<p><strong>咱们开始吧：</strong></p>
+<p>目前我们只有一个名为 <code>master</code> 的分支。要创建另一个名为 <code>test</code> 的分支（等价于执行 <code>git branch test</code>），我需要在 <code>.git/refs/heads</code> 下创建一个名为 <code>test</code> 的文件，文件的内容应该和 <code>master</code> 分支指向的那个 <strong>提交</strong> 的哈希值一致。</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3<span class="w"> </span>&gt;.git/refs/heads/test
+
+$<span class="w"> </span>tree<span class="w"> </span>.git
+.git
+├──<span class="w"> </span>COMMIT_EDITMSG
+├──<span class="w"> </span>HEAD
+├──<span class="w"> </span>index
+├──<span class="w"> </span>logs
+│<span class="w">   </span>├──<span class="w"> </span>HEAD
+│<span class="w">   </span>└──<span class="w"> </span>refs
+│<span class="w">       </span>└──<span class="w"> </span>heads
+│<span class="w">           </span>└──<span class="w"> </span>master
+├──<span class="w"> </span>objects
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">01</span>
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>27164ffb22c8326860a46485a29e46d60c9a00
+│<span class="w">   </span>├──<span class="w"> </span><span class="m">11</span>
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>8f108d76b16a058db9fcb385a5fd640b54e47a
+│<span class="w">   </span>├──<span class="w"> </span>3d
+│<span class="w">   </span>│<span class="w">   </span>└──<span class="w"> </span>e073b2f6814d111ec1fd96f5b75e9b10df2ef3
+│<span class="w">   </span>└──<span class="w"> </span><span class="m">50</span>
+│<span class="w">       </span>└──<span class="w"> </span>a4d98955701b83dc67e8c3ace63899f0a2b5d6
+└──<span class="w"> </span>refs
+<span class="w">    </span>└──<span class="w"> </span>heads
+<span class="w">        </span>├──<span class="w"> </span>master
+<span class="w">        </span>└──<span class="w"> </span><span class="nb">test</span>
+
+<span class="m">11</span><span class="w"> </span>directories,<span class="w"> </span><span class="m">11</span><span class="w"> </span>files
+</code></pre></div>
+<p>如果我们使用 <code>git log</code>，就可以看到 <code>master</code> 和 <code>test</code> 确实是指向同一个 <strong>提交</strong>：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>log
+commit<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3<span class="w"> </span><span class="o">(</span>HEAD<span class="w"> </span>-&gt;<span class="w"> </span>master,<span class="w"> </span><span class="nb">test</span><span class="o">)</span>
+Author:<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao@gmail.com&gt;
+Date:<span class="w">   </span>Fri<span class="w"> </span>Aug<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">20</span>:35:55<span class="w"> </span><span class="m">2023</span><span class="w"> </span>+0800
+
+<span class="w">    </span>First<span class="w"> </span>message
+</code></pre></div>
+<p>我们也切换到新创建的分支吧（等价于执行 <code>git branch test</code>）。为此，我们需要改变 <code>HEAD</code> 的指向，让它指向我们的新分支：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s1">&#39;ref: refs/heads/test&#39;</span><span class="w"> </span>&gt;<span class="w"> </span>.git/HEAD
+$<span class="w"> </span>git<span class="w"> </span>status
+On<span class="w"> </span>branch<span class="w"> </span><span class="nb">test</span>
+nothing<span class="w"> </span>to<span class="w"> </span>commit,<span class="w"> </span>working<span class="w"> </span>tree<span class="w"> </span>clean
+$<span class="w"> </span>git<span class="w"> </span>log
+commit<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3<span class="w"> </span><span class="o">(</span>HEAD<span class="w"> </span>-&gt;<span class="w"> </span>test,<span class="w"> </span>master<span class="o">)</span>
+Author:<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao@gmail.com&gt;
+Date:<span class="w">   </span>Fri<span class="w"> </span>Aug<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">20</span>:35:55<span class="w"> </span><span class="m">2023</span><span class="w"> </span>+0800
+
+<span class="w">    </span>First<span class="w"> </span>message
+</code></pre></div>
+<p>我们可以看到：<code>git status</code> 和 <code>git log</code> 都确认 <code>HEAD</code> 现在指向的是 <code>test</code> 分支（活动分支）。</p>
+<p>我们现在可以使用之前的命令去创建另一个文件，然后将它添加到索引：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;Testing&quot;</span><span class="w"> </span>&gt;<span class="w"> </span>test.txt
+$<span class="w"> </span>git<span class="w"> </span>hash-object<span class="w"> </span>-w<span class="w"> </span>./test.txt
+73709ba6866a30a566a38ca40aa81d5f0928bce0
+$<span class="w"> </span>git<span class="w"> </span>update-index<span class="w"> </span>--add<span class="w"> </span>--cacheinfo<span class="w"> </span><span class="m">10064</span>,73709ba6866a30a566a38ca40aa81d5f0928bce0,test.txt
+$<span class="w"> </span>git<span class="w"> </span>write-tree
+6db3a0b6f110f460d2646540c928be6294d94415
+</code></pre></div>
+<p>我们用上面的命令创建了一个名为 <code>test.txt</code> 的文件，文件内容为 <code>Testing</code>。我们还创建了相应的 <strong>blob</strong>，将它添加了到 <strong>索引</strong>。我们还创建了代表这个 <strong>索引</strong> 的 <strong>树对象</strong>。</p>
+<p>现在是时候创建引用这个 <strong>树对象</strong> 的 <strong>提交</strong> 了。这一次，我们还应该声明这个提交的 <em>父提交</em>，也就是之前的那次 <strong>提交</strong>。我们用 <code>git commit-tree</code> 命令的 <code>-p</code> 开关声明父节点：</p>
+<div class="highlight"><pre><span></span><code>$ git commit-tree 6db3a0b6f110f460d2646540c928be6294d94415 -m &quot;Testing&quot; -p 3de073b2f6814d111ec1fd96f5b75e9b10df2ef3
+d04bf31102f8260e4062e8bfc0571f59a6b8305a
+</code></pre></div>
+<p>可以看到，我们刚刚创建了一个 <strong>提交</strong>，还有它的 <strong>树对象</strong> 和父节点：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>git<span class="w"> </span>cat-file<span class="w"> </span>-p<span class="w"> </span>d04bf31102f8260e4062e8bfc0571f59a6b8305a
+tree<span class="w"> </span>6db3a0b6f110f460d2646540c928be6294d94415
+parent<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3
+author<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao.com&gt;<span class="w"> </span><span class="m">1691153298</span><span class="w"> </span>+0800
+committer<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao.com&gt;<span class="w"> </span><span class="m">1691153298</span><span class="w"> </span>+0800
+
+Testing
+</code></pre></div>
+<p><code>git log</code> 会展示我们的新 <strong>提交</strong> 吗？</p>
+<div class="highlight"><pre><span></span><code>commit<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3<span class="w"> </span><span class="o">(</span>HEAD<span class="w"> </span>-&gt;<span class="w"> </span>test,<span class="w"> </span>master<span class="o">)</span>
+Author:<span class="w"> </span>赵卫国<span class="w"> </span>&lt;zhaoweiguo@lczq.com&gt;
+Date:<span class="w">   </span>Fri<span class="w"> </span>Aug<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">20</span>:35:55<span class="w"> </span><span class="m">2023</span><span class="w"> </span>+0800
+
+<span class="w">    </span>First<span class="w"> </span>message
+</code></pre></div>
+<p>可以看到：<code>git log</code> 并没有展示任何新的东西。为什么呢？🤔 还记得 <code>git log</code> 会跟踪 <strong>分支</strong> ，查找要展示的相关提交吗？它现在给我们展示了 <code>test</code> 和它指向的那个 <strong>提交</strong>，还展示了指向同一个提交的 <code>master</code>。</p>
+<p>没错，我们需要让 <code>test</code> 指向我们的新 <strong>提交</strong>。我们只需要稍微改变一下 <code>.git/refs/heads/test</code> 的内容：</p>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span><span class="nb">echo</span><span class="w"> </span>d04bf31102f8260e4062e8bfc0571f59a6b8305a<span class="w"> </span>&gt;<span class="w"> </span>.git/refs/heads/test
+
+$<span class="w"> </span>git<span class="w"> </span>log
+commit<span class="w"> </span>d04bf31102f8260e4062e8bfc0571f59a6b8305a<span class="w"> </span><span class="o">(</span>HEAD<span class="w"> </span>-&gt;<span class="w"> </span><span class="nb">test</span><span class="o">)</span>
+Author:<span class="w"> </span>wgzhao<span class="w"> </span>&lt;wgzhao.com&gt;
+Date:<span class="w">   </span>Fri<span class="w"> </span>Aug<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">20</span>:48:18<span class="w"> </span><span class="m">2023</span><span class="w"> </span>+0800
+
+<span class="w">    </span>Testing
+
+commit<span class="w"> </span>3de073b2f6814d111ec1fd96f5b75e9b10df2ef3<span class="w"> </span><span class="o">(</span>master<span class="o">)</span>
+Author:<span class="w"> </span>赵卫国<span class="w"> </span>&lt;zhaoweiguo@lczq.com&gt;
+Date:<span class="w">   </span>Fri<span class="w"> </span>Aug<span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">20</span>:35:55<span class="w"> </span><span class="m">2023</span><span class="w"> </span>+0800
+
+<span class="w">    </span>First<span class="w"> </span>message
+</code></pre></div>
+<p>成功了! 🎉🥂</p>
+<p><code>git log</code> 找到 <code>HEAD</code>，<code>HEAD</code> 告诉它去 <code>test</code> 分支，<code>test</code> 分支指向着 <strong>提交</strong><code>d04...05a</code>，这个提交又链接到它的父 <strong>提交</strong> <code>3de...ef3</code>。</p>
+<p>尽情欣赏美吧，we <em>git</em> you。 😊</p>
+<h1 id="_5">总结<a class="headerlink" href="#_5" title="Permanent link">&para;</a></h1>
+<p>本文向你介绍了 <code>git</code> 的内部原理，我们一开始讲了基本对象——<strong>blob</strong>、<strong>树对象</strong> 和 <strong>提交对象</strong> 。</p>
+<p>我们了解到 <strong>blob</strong> 持有文件的内容，<strong>树对象</strong> 是一个包含 <strong>blob 对象</strong> 和 <strong>子树对象</strong> 的目录列表，<strong>提交对象</strong> 是工作目录的一个快照，包含了一些像时间或提交信息这样的元数据。</p>
+<p>我们接着讨论了 <strong>分支</strong>，它们不过是 <strong>提交对象</strong> 的命名引用。</p>
+<p>我们继续描述了 <strong>工作目录</strong>，它是一个目录，有着相应的仓库。<strong>暂存区（索引）</strong> 为下一个 <strong>提交对象</strong> 持有对应的 <strong>树对象</strong>，而仓库就是一个 <strong>提交对象</strong> 的集合。</p>
+<p>我们阐明了这些术语与 <code>git init</code>、<code>git add</code> 和 <code>git commit</code> 之间的关系，我们用这几条著名的命令创建新仓库、提交文件。</p>
+<p>然后，我们大胆地深入 <code>git</code> 内部，停止使用上层命令，转而使用底层命令。</p>
+<p>借助 <code>echo</code> 和 <code>git bash-object</code> 这类的底层命令，我们创建了 <strong>blob</strong>，把它添加到 <strong>索引</strong>，创建了 <strong>索引</strong> 的 <strong>树对象</strong>，以及指向这个 <strong>树对象</strong> 的 <strong>提交对象</strong>。</p>
+<p>我们还创建了 <strong>分支</strong>，在 <strong>分支</strong> 间来回切换。为你们中那些亲身尝试这个过程的人鼓个掌！👏</p>
+<p>希望你在跟着本文操作一遍之后，对使用 <code>git</code> 过程中背后发生的事情有了更深入的理解。</p>
+<p><strong>感谢阅读本文！</strong> 如果你喜欢这篇文章，你可以在 <a href="http://swimm.io/">swimm.io blog</a> 阅读更多这个主题的内容。</p>
+<p><em><a href="https://www.linkedin.com/in/omer-rosenbaum-034a08b9/">Omer Rosenbaum</a> 是 <a href="https://swimm.io/">Swimm</a> 的首席技术官、网络培训专家、Checkpoint 安全学院的创始人和<a href="https://data.cyber.org.il/networks/networks.pdf">计算机网络（希伯来语）</a>的作者</em>。</p>
+<p>访问我的 <em><a href="https://www.youtube.com/watch?v=79jlgESHzKQ&amp;list=PL9lx0DXCC4BMS7dB7vsrKI5wzFyVIk2Kg">YouTube 频道</a></em>。</p>
+<hr />
+<h1 id="_6">附加资源<a class="headerlink" href="#_6" title="Permanent link">&para;</a></h1>
+<p><code>git</code> 相关的资源已经有的很多了，我发现下面这些参考特别有用：</p>
+<ul>
+<li><a href="https://www.youtube.com/playlist?list=PL9lx0DXCC4BNUby5H58y6s2TQVLadV8v7">Git Internals YouTube playlist — by Brief</a></li>
+<li><a href="https://www.youtube.com/watch?v=MYP56QJpDr4">Tim Berglund’s lecture — “Git From the Bits Up”</a></li>
+<li><a href="https://jwiegley.github.io/git-from-the-bottom-up/">Git from the Bottom Up — by John Wiegley</a></li>
+<li><a href="http://www.gelato.unsw.edu.au/archives/git/0512/13748.html">as promised, docs: git for the confused</a></li>
+<li><a href="https://git-scm.com/book/en/v2/Git-Internals-Git-Objects">Git Internals — Git Objects — from Pro Git book, by Scott Chacon and Ben Straub</a></li>
+</ul>
+<p>原文：<a href="https://www.freecodecamp.org/news/git-internals-objects-branches-create-repo/">A Visual Guide to Git Internals — Objects, Branches, and How to Create a Repo From Scratch</a>，作者：<a href="https://www.freecodecamp.org/news/author/omer/">Omer Rosenbaum</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/01mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.indexes", "navigation.expand", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "header.autohide", "announce.dismiss", "toc.integrate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5090c770.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js"></script>
+      
+    
+  </body>
+</html>

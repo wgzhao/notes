@@ -1,0 +1,3338 @@
+
+<!doctype html>
+<html lang="zh" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="examples to take your remote system admin game to the next level. Commands and tips to not only use SSH but master ways to move around the network.">
+      
+      
+        <meta name="author" content="wgzhao">
+      
+      
+        <link rel="canonical" href="https://wgzhao.github.io/notes/tips/ssh-tips/">
+      
+      
+        <link rel="prev" href="../ssh-three-key-features/">
+      
+      
+        <link rel="next" href="../wechat-contacts-backup/">
+      
+      
+        <link rel="alternate" type="application/rss+xml" title="RSS 订阅" href="../../feed_rss_created.xml">
+        <link rel="alternate" type="application/rss+xml" title="已更新内容的 RSS 订阅" href="../../feed_rss_updated.xml">
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.1">
+    
+    
+      
+        <title>SSH examples, tips and tunnels - 个人笔记</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.a40c8224.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#ssh-examples-tips-and-tunnels" class="md-skip">
+          跳转至
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow md-header--lifted" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="页眉">
+    <a href="../.." title="个人笔记" class="md-header__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            个人笔记
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              SSH examples, tips and tunnels
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      <label class="md-header__button md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+      </label>
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="搜索" placeholder="搜索" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="查找">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="分享" aria-label="分享" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="清空当前内容" aria-label="清空当前内容" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            正在初始化搜索引擎
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+    
+      
+<nav class="md-tabs" aria-label="标签" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../tags/" class="md-tabs__link">
+        
+  
+    
+  
+  Tags
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../bigdata/ambari-cli/" class="md-tabs__link">
+          
+  
+    
+  
+  Bigdata
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../courses/commands-in-sbin/" class="md-tabs__link">
+          
+  
+    
+  
+  Courses
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../database/maridb-ax-setup/" class="md-tabs__link">
+          
+  
+    
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-tabs__link">
+          
+  
+    
+  
+  Kubernetes
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../misc/Latex%20Math%20Symbols/" class="md-tabs__link">
+          
+  
+    
+  
+  Misc
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-tabs__link">
+          
+  
+    
+  
+  Programming
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../bash-tips/" class="md-tabs__link">
+          
+  
+    
+  
+  Tips
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-tabs__link">
+          
+  
+    
+  
+  Troubleshooting
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+    
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+  
+
+<nav class="md-nav md-nav--primary md-nav--lifted md-nav--integrated" aria-label="导航栏" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="个人笔记" class="md-nav__button md-logo" aria-label="个人笔记" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    个人笔记
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/wgzhao/notes" title="前往仓库" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    wgzhao/notes
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../tags/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Tags
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Bigdata
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            Bigdata
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ambari-cli/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Ambari API 来操作 Hadoop 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/flink-cdc-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Flink SQL CDC 实践以及一致性分析
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-hive-with-spark/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Integrating Apache Hive with Apache Spark
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/integrating-phoenix-with-kerberos/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Phoenix 集成 HBase 并支持 Kerberos 认证
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/ipa-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    free IPA setup
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/kerberos-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MIT Kerberos  安装及维护手册
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/mafengwo-warehouse-design-and-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    马蜂窝数据仓库设计与实践
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/presto-with-ssl/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Presto SSL 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bigdata/zookeeper-optimize/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    zookeeper集群应对万级并发的调优
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Courses
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            Courses
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/commands-in-sbin/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux 命令学习
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/linux-cfs-scheduler/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Linux CFS 调度器：原理、设计与内核实现
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/pg9_high_performance_notes/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《PostgreSQL 9 High Performance》读书笔记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_4" id="__nav_4_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Mysql lecture
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_4">
+            <span class="md-nav__icon md-icon"></span>
+            Mysql lecture
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-1/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第一部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第二部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-3/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第三部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-4/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第四部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/mysql-lecture/mysql-practices-lecture-45-5/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    《MySQL 实战45讲》节选第五部分
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_4_5" id="__nav_4_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Time series analysis
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_5">
+            <span class="md-nav__icon md-icon"></span>
+            Time series analysis
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/01-basic/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基础篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/02-primer/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    初级篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/03-advance/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    进阶篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/04-practices/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    应用篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../courses/time-series-analysis/05-complete/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    补完篇
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Database
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            Database
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/maridb-ax-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MariaDB AX 安装测试简记
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/mysql-cluster-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    MySQL Cluster 配置
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-11g-imp-and-exp/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 11g 导入导出基本操作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/oracle-silent-installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Oracle 静默安装
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/percona-cluster-with-haproxy/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    HAProxy + Percona XtraDB Cluster 部署
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/setup-a-clickhouse-cluster-on-one-node/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在一个节点上部署 ClickHouse 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../database/why-mysql8-slower-than-mysql57/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    默认配置下，为什么 MySQL 8.0 比 MySQL 5.7 慢
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Kubernetes
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            Kubernetes
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/access-k8s-pod-from-outersider/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    外部机器如何直接直接访问 kubernetes 集群内服务
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/calico-node-troubleshooting/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Calico Node 无法启动的排查
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/collect-k8s-log-with-filebeat/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    基于 ELK 的 日志收集与自动索引创建
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/coredns-support-hosts-file/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    CoreDNS 支持解析宿主机的 hosts 文件
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/deep-dive-into-k8s-internals/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用奇怪的方式构建简单 k8s 集群
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/how-to-create-user-for-k8s-dashboard/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    在 Kubernetes Dashboard 创建基于 RBAC 的授权用户
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/kubernetes-setup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 kubeadm 安装 kubernetes
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../kubernetes/take-flannel-to-calico/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Migrate kubernetes cluster from Flannel to Calico
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Misc
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            Misc
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/Latex%20Math%20Symbols/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    用于 LateX 的数学符号
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/git-from-zero-to-hero/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git从入门到应付日常工作
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/gitlab-ci-configuration/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    gitlab-ci.yml 详解
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../misc/osint-introduce/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    超级情报手机工具库：开源验证和调查工具及使用方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_8" >
+        
+          
+          <label class="md-nav__link" for="__nav_8" id="__nav_8_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Programming
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_8_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_8">
+            <span class="md-nav__icon md-icon"></span>
+            Programming
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/design-restful-api-with-python-and-flask/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    使用 Python 和 Flask 设计 RESTful API
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/programming-with-vim/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    无插件Vim编程技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/pure-bash-bible/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Pure Bash Bible
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../programming/understanding-awk/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Understanding AWK
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_9" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_9" id="__nav_9_label" tabindex="">
+            
+  
+  <span class="md-ellipsis">
+    Tips
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_9_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_9">
+            <span class="md-nav__icon md-icon"></span>
+            Tips
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../bash-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    BASH 的一些技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../batch-convert-word-to-pdf/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Windows 下批量转换 word 文档为 pdf 的方法
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../change-keyboard-layout-in-ubuntu/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Ubuntu 下修改键盘映射
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-internals-objects-branches-create-repo/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Git 内部原理图解 -- 对象、分支以及如何从零开始建仓库
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../git-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    git 不常见的操作技巧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../how-to-create-dummy-rpm-package/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    快速创建一个虚假 RPM 包
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-change-git-author/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to change git author name and email
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-delete-old-images-from-nexus-registry/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    如何删除 nexus 私服上的 Docker 镜像
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../howto-save-tmux-session/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    How to save tmux session
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../learn-seaborn-with-10min/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    十分钟掌握 Seaborn
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../matplotlib-support-chinese/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Python 中 matplotlib 图支持中文
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../move-running-process-into-tmux/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    把一个运行的进程放到 tmux 会话中
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rpm-tutorial/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    rpm 包管理基本技能
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sed-one-line-tips/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    SED 单行脚本快速参考
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../setup-gitlab-ci-for-android/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Setup Gitlab CI For Android
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../ssh-three-key-features/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    ssh的三板斧
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    SSH examples, tips and tunnels
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+  
+
+<nav class="md-nav md-nav--secondary" aria-label="On this page">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      On this page
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#practical-ssh-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical SSH examples
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#first-the-basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      First The Basics
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#practical-examples" class="md-nav__link">
+    <span class="md-ellipsis">
+      Practical Examples
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Practical Examples">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-proxy-traffic-over-ssh-using-socks" class="md-nav__link">
+    <span class="md-ellipsis">
+      1. Proxy Traffic over SSH using SOCKS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-ssh-tunnel-port-forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      2. SSH Tunnel (port forward)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-ssh-tunnel-forward-to-secondary-remote-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      3. SSH Tunnel Forward to Secondary Remote host
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-ssh-reverse-tunnel" class="md-nav__link">
+    <span class="md-ellipsis">
+      4. SSH Reverse Tunnel
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-ssh-reverse-proxy" class="md-nav__link">
+    <span class="md-ellipsis">
+      5. SSH Reverse Proxy
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-establish-a-vpn-over-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      6. Establish a VPN over SSH
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#7-copy-your-ssh-key-ssh-copy-id" class="md-nav__link">
+    <span class="md-ellipsis">
+      7. Copy your SSH key (ssh-copy-id)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#8-run-command-remotely-non-interactive" class="md-nav__link">
+    <span class="md-ellipsis">
+      8. Run Command Remotely (non-interactive)
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#9-remote-packet-capture-view-in-wireshark" class="md-nav__link">
+    <span class="md-ellipsis">
+      9. Remote Packet Capture &amp; View in Wireshark
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#10-ssh-copy-folder-from-local-to-remote" class="md-nav__link">
+    <span class="md-ellipsis">
+      10. SSH Copy Folder from Local to Remote
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#11-remote-gui-applications-with-ssh-x11-forwarding" class="md-nav__link">
+    <span class="md-ellipsis">
+      11. Remote GUI Applications with SSH x11 Forwarding
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-copy-files-remotely-with-rsync-and-ssh" class="md-nav__link">
+    <span class="md-ellipsis">
+      12. Copy files remotely with rsync and SSH
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-ssh-over-tor-network" class="md-nav__link">
+    <span class="md-ellipsis">
+      13. SSH over Tor Network
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#14-ssh-to-ec2-instance" class="md-nav__link">
+    <span class="md-ellipsis">
+      14. SSH to EC2 instance
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#15-edit-text-files-with-vim-over-sshscp" class="md-nav__link">
+    <span class="md-ellipsis">
+      15. Edit text files with VIM over ssh/scp
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#16-mount-remote-ssh-location-as-local-folder-with-sshfs" class="md-nav__link">
+    <span class="md-ellipsis">
+      16. Mount remote SSH location as local folder with SSHFS
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#17-ssh-multiplex-using-controlpath" class="md-nav__link">
+    <span class="md-ellipsis">
+      17. SSH Multiplex using ControlPath
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#18-stream-video-over-ssh-using-vlc-sftp" class="md-nav__link">
+    <span class="md-ellipsis">
+      18. Stream Video over SSH using VLC + SFTP
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#19-two-factor-authentication" class="md-nav__link">
+    <span class="md-ellipsis">
+      19. Two Factor Authentication
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#20-bouncing-through-jump-hosts-with-ssh-and-j" class="md-nav__link">
+    <span class="md-ellipsis">
+      20. Bouncing through jump hosts with ssh and -J
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#21-block-ssh-brute-force-attempts-with-iptables" class="md-nav__link">
+    <span class="md-ellipsis">
+      21. Block SSH Brute Force Attempts with iptables
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-modify-port-forwarding-within-a-session-with-c" class="md-nav__link">
+    <span class="md-ellipsis">
+      22. Modify Port Forwarding within a session with ~C
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#wrapping-up" class="md-nav__link">
+    <span class="md-ellipsis">
+      Wrapping Up
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../wechat-contacts-backup/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    微信通讯录备份
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_10" >
+        
+          
+          <label class="md-nav__link" for="__nav_10" id="__nav_10_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    Troubleshooting
+    
+  </span>
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_10_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_10">
+            <span class="md-nav__icon md-icon"></span>
+            Troubleshooting
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/capture-http-requests-with-tcpdump/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    TCPDump Capture HTTP GET/POST requests
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/deep-in-tcp-connect/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    详解 TCP 半连接队列与全连接队列
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/docker-run-no-space-left/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    Docker 运行容器报磁盘空间不足的错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/fix-ora-00227/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    修复 Oracle ORA-00227 错误
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../troubleshooting/jdk1.6-support-tlsv1.2/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    让 Oracle JDK 1.6 TLSv1.2
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  <nav class="md-tags" >
+    
+      
+      
+      
+        <a href="../../tags/#tag:forward" class="md-tag">forward</a>
+      
+    
+      
+      
+      
+        <a href="../../tags/#tag:proxy" class="md-tag">proxy</a>
+      
+    
+      
+      
+      
+        <a href="../../tags/#tag:ssh" class="md-tag">ssh</a>
+      
+    
+      
+      
+      
+        <a href="../../tags/#tag:tunnel" class="md-tag">tunnel</a>
+      
+    
+  </nav>
+
+
+
+<h1 id="ssh-examples-tips-and-tunnels">SSH examples, tips and tunnels<a class="headerlink" href="#ssh-examples-tips-and-tunnels" title="Permanent link">&para;</a></h1>
+<p><a href="https://hackertarget.com/ssh-examples-tunnels/" title="Permalink to 22 SSH Examples, Practical Tips &amp; Tunnels | HackerTarget.com">Source</a></p>
+<p><img alt="SSH examples, tips and tunnels" src="https://hackertarget.com/wp-content/uploads/2018/12/ssh-examples-tunnel.png" />Practical <a href="https://en.wikipedia.org/wiki/Secure_Shell">SSH</a> examples to take your <strong>remote system admin</strong> game to the next level. Commands and tips to not only use <code>SSH</code> but master ways to move around the network. </p>
+<p>Knowing a few <code>ssh</code> tricks will benefit any <strong>system administrator</strong>, <strong>network engineer</strong> or <strong>security professional</strong>.</p>
+<h2 id="practical-ssh-examples">Practical SSH examples<a class="headerlink" href="#practical-ssh-examples" title="Permanent link">&para;</a></h2>
+<p>Even if you are an experienced <strong>*nix guru</strong> there are a couple of examples further down that are only available in later versions of <a href="https://www.openssh.com/releasenotes.html">OpenSSH</a>. Take a look at <a href="https://hackertarget.com/ssh-examples-tunnels/#ssh-jump">Proxy Jump <strong>-J</strong></a> and <a href="https://hackertarget.com/ssh-examples-tunnels/#ssh-tunnel-reverse-proxy">reverse dynamic forwarding <strong>-R</strong></a>.</p>
+<h2 id="first-the-basics">First The Basics<a class="headerlink" href="#first-the-basics" title="Permanent link">&para;</a></h2>
+<h4 id="breaking-down-the-ssh-command-line">Breaking down the SSH Command Line<a class="headerlink" href="#breaking-down-the-ssh-command-line" title="Permanent link">&para;</a></h4>
+<p>The following <code>ssh</code> example command uses common parameters often seen when connecting to a remote <code>SSH</code> server.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -v -p 22 -C neo@remoteserver
+</code></pre></div>
+<p>-v : Print debug information, particularly helpful when debugging an authentication problem. Can be used multiple times to print additional information.
+-p 22 : Specify which <strong>port to connect to</strong> on the remote SSH server. <strong>22</strong> is not required as this is the default, but if any other port is listening connect to it using the <code>-p</code> parameter. The listening port is configured in the <code>sshd_config</code> file using the <code>Port 2222</code> format.
+-C : Compression is enabled on the connection using this parameter. If you are using the terminal over a slow link or viewing lots of text this can speed up the connection as it will compress the data transferred on the fly.
+neo@ : The string before the <strong>@</strong> symbol denotes the username to authenticate with against the remote server. Leaving out the <strong>user@</strong> will default to using the username of the account you are currently logged in to (~$ whoami). User can also be specified with the <code>-l</code> parameter.
+remoteserver : The hostname that the <code>ssh</code> is connecting to, this can be a fully qualified domain name, an IP address or any host in your local machines hosts file. To connect to a host that resolves to both <strong>IPv4</strong> and <strong>IPv6</strong> you can specify add a parameter <code>-4</code> or <code>-6</code> to the command line so it resolves correctly.</p>
+<p>Each of the above a parameters are optional apart from the remoteserver.</p>
+<h4 id="using-a-configuration-file">Using a Configuration File<a class="headerlink" href="#using-a-configuration-file" title="Permanent link">&para;</a></h4>
+<p>While many users are familiar with the <code>sshd_config</code> file, there is also a client configuration file for the <code>ssh</code> command. This defaults to <code>~/.ssh/config</code> but can also be specified as a parameter with the <code>-F</code> option.</p>
+<div class="highlight"><pre><span></span><code>Host remoteserver
+     HostName remoteserver.thematrix.io
+     User neo
+     Port 2112
+     IdentityFile /home/test/.ssh/remoteserver.private_key
+
+Host *
+     Port 2222
+</code></pre></div>
+<p>In the above <strong>example ssh configuration</strong> file you can see that there are two Host entries. The first is a specific host entry with <strong>Port 2112</strong> configured, as well as a custom IdentifyFile and username. The second is a wildcard value of <strong>*</strong> that will match all hosts. Note that <strong>the first configuration option found will be used</strong>, so the most specific should be at the top of the configuration. More information is found in the man page (<code>man ssh_config</code>).</p>
+<p>The configuration file can save a lot of typing by including advanced configuration shortcuts any time a connection is made to particular hosts.</p>
+<h4 id="copy-files-over-ssh-with-scp">Copy Files over SSH with SCP<a class="headerlink" href="#copy-files-over-ssh-with-scp" title="Permanent link">&para;</a></h4>
+<p>The <code>ssh</code> client comes with two other very handy tools for moving files around over an <strong>encrypted ssh connection</strong>. The commands are <code>scp</code> and <code>sftp</code>, see the examples below for basic usage. Note that many parameters for the <code>ssh</code> can be applied to these commands also.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ scp mypic.png neo@remoteserver:/media/data/mypic_2.png
+</code></pre></div>
+<p>In this example the file <strong>mypic.png</strong> was copied to the <strong>remoteserver</strong> to file system location <strong>/media/data</strong> and was renamed to <strong>mypic_2.png</strong>.</p>
+<p>Don't forget <strong>the difference in the port parameter</strong>. This is a gotcha that hits everyone using <code>scp</code> on the command line. The port parameter is <code>-P</code> not <code>-p</code> as it is in the <code>ssh</code> client.!. You will forget, but don't worry everyone does.</p>
+<p>For those familiar with command line <code>ftp</code>, many of the commands are similar when using <code>sftp</code>. You can <strong>push</strong>, <strong>put</strong> and <strong>ls</strong> to your hearts desire.</p>
+<div class="highlight"><pre><span></span><code>sftp neo@remoteserver
+</code></pre></div>
+<h2 id="practical-examples">Practical Examples<a class="headerlink" href="#practical-examples" title="Permanent link">&para;</a></h2>
+<p>In many of these examples we could achieve the result using a number of methods. As in all our <a href="https://hackertarget.com/research/#tutorial">tutorials</a> and example command sheets, the focus is practical examples that get the job done.</p>
+<h3 id="1-proxy-traffic-over-ssh-using-socks">1. Proxy Traffic over SSH using SOCKS<a class="headerlink" href="#1-proxy-traffic-over-ssh-using-socks" title="Permanent link">&para;</a></h3>
+<p>The SSH Proxy feature has been placed at number 1 for good reason. It is more powerful than many users realise giving you access to any system that the remote server can reach, using almost any application. The <code>ssh</code> client can tunnel traffic over the connection using a <strong>SOCKS</strong> proxy server with a quick one liner. A key thing to understand is that traffic to the remote systems will have a source of the remote server. For example in a web server log file.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -D 8888 user@remoteserver
+
+localhost:~$ netstat -pan | grep 8888
+tcp        0      0 127.0.0.1:8888       0.0.0.0:*               LISTEN      23880/ssh
+</code></pre></div>
+<p>Here we start the socks proxy server running on TCP port 8888, the second command checks that the port is now listening. The <code>127.0.0.1</code> indicates the service is running on localhost only. We can use a slightly different command to listen on all interfaces including ethernet or wifi, this will allow other applications (browsers or other) on our network to connect to the <strong>ssh socks proxy</strong> service.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -D 0.0.0.0:8888 user@remoteserver
+</code></pre></div>
+<p>Now we can configure our browser to connect to the socks proxy. In Firefox select <strong>preferences</strong> | <strong>general</strong> | <strong>network settings</strong>. Add the IP address and the port for the browser to connect to.</p>
+<p><img alt="SSH Socks Proxy with DNS" src="https://hackertarget.com/wp-content/uploads/2018/12/ssh-socks-proxy.png" /></p>
+<p>Note the option at the bottom of the form to <strong>force browser DNS requests to also go over the socks proxy</strong>. If you are using the proxy to encrypt your web traffic on the local network you will definitely want to select this option so the DNS requests are also tunnelled over the SSH connection.</p>
+<h5 id="enable-socks-proxy-on-chrome">Enable Socks Proxy on Chrome<a class="headerlink" href="#enable-socks-proxy-on-chrome" title="Permanent link">&para;</a></h5>
+<p>Using a command line parameter when launching Chrome will use the <strong>socks proxy</strong> and also <strong>tunnel DNS</strong> requests from the browser over the socks5 proxy. Trust but verify, use <a href="https://hackertarget.com/tcpdump-examples/">tcpdump</a> (tcpdump not port 22) to confirm the DNS requests are no longer visible.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ google-chrome --proxy-server=&quot;socks5://192.168.1.10:8888&quot;
+</code></pre></div>
+<h5 id="using-other-applications-with-the-proxy">Using other applications with the Proxy<a class="headerlink" href="#using-other-applications-with-the-proxy" title="Permanent link">&para;</a></h5>
+<p>Keep in mind that there are many other applications that can utilise a <strong>socks proxy</strong>. A web browser is simply the most popular. Some applications will have configuration options for use of the proxy. Others may need some help by using a helper program that talks the socks protocol. An example of this is <a href="https://github.com/haad/proxychains">proxychains</a>. Using this tool we can for example use Microsoft RDP over the socks proxy.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ proxychains rdesktop $RemoteWindowsServer
+</code></pre></div>
+<p>The configuration options for the socks proxy are set in the proxychains configuration file.</p>
+<p>Hot Tip: Using remote desktop from Linux to Windows? Try the <a href="https://github.com/FreeRDP/FreeRDP">FreeRDP</a> client. A more modern implementation than <code>rdesktop</code> with much smoother interaction.</p>
+<h5 id="use-case-for-the-ssh-socks-proxy">Use Case for the SSH Socks Proxy<a class="headerlink" href="#use-case-for-the-ssh-socks-proxy" title="Permanent link">&para;</a></h5>
+<p>You are in a cafe or hotel having to use the somewhat sketchy WIFI. From our Laptop we run the <code>ssh</code> proxy locally and establish an <code>ssh</code> tunnel into our home network using a our local Rasberry Pi. Using the browser or other applications configured for the SOCKS proxy we can access any network services on our home network or browse to the Internet via our Home Network Connection. Everything between our Laptop and the Home Server (across the WIFI and Internet to home) is encrypted in the SSH tunnel.</p>
+<h3 id="2-ssh-tunnel-port-forward">2. SSH Tunnel (port forward)<a class="headerlink" href="#2-ssh-tunnel-port-forward" title="Permanent link">&para;</a></h3>
+<p>In its simplest form an SSH tunnel opens a port on your local system that connects through to another port at the other end of the tunnel. </p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh  -L 9999:127.0.0.1:80 user@remoteserver
+</code></pre></div>
+<p>Lets break down the -L parameter. Think of -L as the Local listening side. So in our example above the port 9999 is listening on localhost and port forwards through to port 80 on <strong>remoteserver</strong>, note that the 127.0.0.1 refers to localhost on the remote server!</p>
+<p>Lets take it up a notch. In this following example the port that is listening can be connected to from other hosts on the local network.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh  -L 0.0.0.0:9999:127.0.0.1:80 user@remoteserver
+</code></pre></div>
+<p>In these examples the port we are connecting is a listening web server. It could also be a proxy server or any other TCP service.</p>
+<h3 id="3-ssh-tunnel-forward-to-secondary-remote-host">3. SSH Tunnel Forward to Secondary Remote host<a class="headerlink" href="#3-ssh-tunnel-forward-to-secondary-remote-host" title="Permanent link">&para;</a></h3>
+<p>We can use the same options seen above to have the tunnel connect to <strong>another service running on a secondary system</strong> from the remote server.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh  -L 0.0.0.0:9999:10.10.10.10:80 user@remoteserver
+</code></pre></div>
+<p>In this example we are forwarding the tunnel from <strong>remoteserver</strong> to the web server running on 10.10.10.10. The traffic from <strong>remoteserver</strong> -&gt; <strong>10.10.10.10</strong> is <strong>no longer within the ssh tunnel</strong>. The web server on <strong>10.10.10.10</strong> will see <strong>remoteserver</strong> as the source of the web requests.</p>
+<h3 id="4-ssh-reverse-tunnel">4. SSH Reverse Tunnel<a class="headerlink" href="#4-ssh-reverse-tunnel" title="Permanent link">&para;</a></h3>
+<p>In this scenario we want to setup a listening port on the remote server that will connect back to a local port on our localhost (or other system).</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -v -R 0.0.0.0:1999:127.0.0.1:902 192.168.1.100 user@remoteserver
+</code></pre></div>
+<p>With this ssh session established a connection to the <strong>remoteserver</strong> port <strong>1999</strong> will be forwarded to port <strong>902</strong> on our local client.</p>
+<h3 id="5-ssh-reverse-proxy">5. SSH Reverse Proxy<a class="headerlink" href="#5-ssh-reverse-proxy" title="Permanent link">&para;</a></h3>
+<p>In this case we are establishing a SOCKS proxy with our ssh connection, however the proxy is listening at the remote server end. With connections to that remote socks proxy now emerging from the tunnel as traffic originating from our localhost. <strong>Requires OpenSSH version 7.6+</strong>.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -v -R 0.0.0.0:1999 192.168.1.100 user@remoteserver
+</code></pre></div>
+<h5 id="troubleshooting-remote-ssh-tunnels">Troubleshooting Remote SSH Tunnels<a class="headerlink" href="#troubleshooting-remote-ssh-tunnels" title="Permanent link">&para;</a></h5>
+<p>If you are having trouble getting the remote SSH options to work, check with <code>netstat</code> which interface the listening port is attached too. Even though we have specified <strong>0.0.0.0</strong> in the above examples, if <strong>GatewayPorts</strong> is set to no in the <strong>sshd_config</strong> then the listener will only bind to <strong>localhost</strong> (127.0.0.1).</p>
+<p><strong>Security Warning</strong>
+ Note that when you are opening tunnels and socks proxies you may be exposing internal network resources to untrusted networks (like the Internet!). This can be a serious security risk so ensure you understand what is listening and what it has access too.</p>
+<h3 id="6-establish-a-vpn-over-ssh">6. Establish a VPN over SSH<a class="headerlink" href="#6-establish-a-vpn-over-ssh" title="Permanent link">&para;</a></h3>
+<p>A common term amongst offensive security folks (pentesters / red teams / etc), is to pivot into a network. Once you have a connection established on one system that system becomes a gateway point for further access to the network. This is known as pivoting and enables lateral movement through the network.</p>
+<p>We can use the SSH proxy for this and <strong>proxychains</strong>, however there are some limitations. For example we cannot use raw sockets, so <a href="https://hackertarget.com/nmap-online-port-scanner/">Nmap</a> <code>SYN</code> scans cannot be used to port scan the Internal network.</p>
+<p>Using this more advanced VPN option we move the connectivity down to <strong>layer 3</strong>. We can then route traffic through the tunnel using standard network routing.</p>
+<p>This technique uses <code>ssh</code>, <code>iptables</code>, <code>tun interfaces</code> and routing.</p>
+<p>First we need these options set in the <code>sshd_config</code>. Since we are making interface changes on the remote system and the client system, we will <strong>need root privileges on both sides</strong>.</p>
+<div class="highlight"><pre><span></span><code>PermitRootLogin yes
+PermitTunnel yes
+</code></pre></div>
+<p>Then we will establish our <code>ssh</code> connection using the parameter that requests <code>tun</code> devices be initialised.</p>
+<div class="highlight"><pre><span></span><code>localhost:~# ssh -v -w any root@remoteserver
+</code></pre></div>
+<p>Now you should have a <code>tun</code> device when you show interfaces (<code># ip a</code>). Next step is to add IP addresses to the tunnel interfaces.</p>
+<p>SSH Client Side:</p>
+<div class="highlight"><pre><span></span><code>localhost:~# ip addr add 10.10.10.2/32 peer 10.10.10.10 dev tun0
+localhost:~# ip tun0 up
+</code></pre></div>
+<p>SSH Server Side:</p>
+<div class="highlight"><pre><span></span><code>remoteserver:~# ip addr add 10.10.10.10/32 peer 10.10.10.2 dev tun0
+remoteserver:~# ip tun0 up
+</code></pre></div>
+<p>Now we should have a direct route to the other host (<code>route -n</code> and <code>ping 10.10.10.10</code>).</p>
+<p>It is now possible to route any subnet through the other side host. </p>
+<div class="highlight"><pre><span></span><code>localhost:~# route add -net 10.10.10.0 netmask 255.255.255.0 dev tun0
+</code></pre></div>
+<p>On the remote side we need to enable <code>ip_forward</code> and <code>iptables</code>.</p>
+<div class="highlight"><pre><span></span><code>remoteserver:~# echo 1 &gt; /proc/sys/net/ipv4/ip_forward
+remoteserver:~# iptables -t nat -A POSTROUTING -s 10.10.10.2 -o enp7s0 -j MASQUERADE
+</code></pre></div>
+<p>Boom! <strong>Layer three VPN through an SSH tunnel</strong>. Now that's winning.</p>
+<p>Any trouble, try <a href="https://hackertarget.com/tcpdump-examples/">tcpdump</a> and <code>ping</code> to see where its broken. Since we are playing at layer 3 our <code>icmp</code> packets should be jumping through that tunnel.</p>
+<h3 id="7-copy-your-ssh-key-ssh-copy-id">7. Copy your SSH key (ssh-copy-id)<a class="headerlink" href="#7-copy-your-ssh-key-ssh-copy-id" title="Permanent link">&para;</a></h3>
+<p>There are multiple ways to achieve this however this command is a shortcut that saves time. What does it actually do? This command replicates what you can also do manually. Copying the <code>~/.ssh/id_rsa.pub</code> (or the default) key from your system and adds it to an <code>~/.ssh/authorized_keys</code> file on the remote server.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh-copy-id user@remoteserver
+</code></pre></div>
+<h3 id="8-run-command-remotely-non-interactive">8. Run Command Remotely (non-interactive)<a class="headerlink" href="#8-run-command-remotely-non-interactive" title="Permanent link">&para;</a></h3>
+<p>The <code>ssh</code> command can be chained to other commands for the usual piping fun. Add the command you want to run on the remote host as a final parameter in quotes.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh remoteserver &quot;cat /var/log/nginx/access.log&quot; | grep badstuff.php
+</code></pre></div>
+<p>In this example the <code>grep</code> is being performed on the local system after the log file has been pushed across the <code>ssh</code> session. If the file is large it would be more efficient to run the <code>grep</code> on the remote side by enclosing the pipe and <code>grep</code> in the double quotes.</p>
+<p>Another example performs the same function as the <code>ssh-copy-id</code> short cut in Tip 7.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ cat ~/.ssh/id_rsa.pub | ssh remoteserver &#39;cat &gt;&gt; .ssh/authorized_keys&#39;
+</code></pre></div>
+<h3 id="9-remote-packet-capture-view-in-wireshark">9. Remote Packet Capture &amp; View in Wireshark<a class="headerlink" href="#9-remote-packet-capture-view-in-wireshark" title="Permanent link">&para;</a></h3>
+<p>I grabbed this one from our <a href="https://hackertarget.com/tcpdump-examples/">tcpdump examples</a>. Use it for a remote packet capture with the results feeding directly into your local Wireshark GUI.</p>
+<div class="highlight"><pre><span></span><code>:~$ ssh root@remoteserver &#39;tcpdump -c 1000 -nn -w - not port 22&#39; | wireshark -k -i -
+</code></pre></div>
+<h3 id="10-ssh-copy-folder-from-local-to-remote">10. SSH Copy Folder from Local to Remote<a class="headerlink" href="#10-ssh-copy-folder-from-local-to-remote" title="Permanent link">&para;</a></h3>
+<p>A neat trick that compresses a folder using <code>bzip2</code> (that's the -j in the <code>tar</code> command), then extracts the <code>bzip2</code> stream on the other side creating a duplicate of the folder on the remote server.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ tar -cvj /datafolder | ssh remoteserver &quot;tar -xj -C /datafolder&quot;
+</code></pre></div>
+<p><strong>Copy remote folder to local tar archive</strong></p>
+<p>To go the other way, copying a remote folder to a local archive. Handy for quick backups of remote resources.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh user@remoteserver &quot;tar -jcf - /path/to/backup&quot; &gt; dir.tar.bz2
+</code></pre></div>
+<h3 id="11-remote-gui-applications-with-ssh-x11-forwarding">11. Remote GUI Applications with SSH x11 Forwarding<a class="headerlink" href="#11-remote-gui-applications-with-ssh-x11-forwarding" title="Permanent link">&para;</a></h3>
+<p>If the client and remote server both have X installed. It is possible to run a GUI command remotely, with the Window appearing on your local desktop. This feature has been around since the beginning of time, but can still be very useful. Run a remote web browser or even the VMWawre Workstation console as I do in this example.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -X remoteserver vmware
+</code></pre></div>
+<p>Requires <code>X11Forwarding yes</code> in the <code>sshd_config</code>.</p>
+<h3 id="12-copy-files-remotely-with-rsync-and-ssh">12. Copy files remotely with rsync and SSH<a class="headerlink" href="#12-copy-files-remotely-with-rsync-and-ssh" title="Permanent link">&para;</a></h3>
+<p>Using the <code>rsync</code> has many advantages over <code>scp</code>, if periodically need to backup a directory, large numbers of files or very large files it should be used. It has the ability to recover from failed transfers and only copy differences between two locations saving bandwidth and time.</p>
+<p>The example here uses <code>gzip</code> compression (-z) and archive mode (-a) that includes recursive copy.</p>
+<div class="highlight"><pre><span></span><code>:~$ rsync -az /home/testuser/data remoteserver:backup/
+</code></pre></div>
+<h3 id="13-ssh-over-tor-network">13. SSH over Tor Network<a class="headerlink" href="#13-ssh-over-tor-network" title="Permanent link">&para;</a></h3>
+<p>The anonymised <strong>Tor Network</strong> can tunnel SSH traffic by using the <code>torsocks</code> command. The following command will proxy the <code>ssh</code> connection through the Tor network. </p>
+<div class="highlight"><pre><span></span><code>localhost:~$ torsocks ssh myuntracableuser@remoteserver
+</code></pre></div>
+<p><a href="https://github.com/dgoulet/torsocks">Torsocks</a> will use the <strong>localhost</strong> port <strong>9050</strong> to proxy traffic. As always when using <code>tor</code> serious consideration must be taken to understand what traffic is being tunnelled and other <strong>operational security</strong> (opsec) concerns. <strong>Where are your DNS requests going</strong>?</p>
+<h3 id="14-ssh-to-ec2-instance">14. SSH to EC2 instance<a class="headerlink" href="#14-ssh-to-ec2-instance" title="Permanent link">&para;</a></h3>
+<p>When using SSH to connect to your EC2 instance within Amazon you will need to use a private key. Download the key (extension .pem) from your Amazon EC2 control panel and change the permissions (<code>chmod 400 my-ec2-ssh-key.pem</code>. Keep this key somewhere safe or put it in your <code>~/.ssh/</code> folder.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -i ~/.ssh/my-ec2-key.pem ubuntu@my-ec2-public
+</code></pre></div>
+<p>The -i parameter tells the <code>ssh</code> client to use this key. This would be an ideal example of where to use the <code>~/.ssh/config</code> to configure the use of the key automatically when connecting to the ec2 host.</p>
+<div class="highlight"><pre><span></span><code>Host my-ec2-public
+   Hostname ec2???.compute-1.amazonaws.com
+   User ubuntu
+   IdentityFile ~/.ssh/my-ec2-key.pem
+</code></pre></div>
+<h3 id="15-edit-text-files-with-vim-over-sshscp">15. Edit text files with VIM over ssh/scp<a class="headerlink" href="#15-edit-text-files-with-vim-over-sshscp" title="Permanent link">&para;</a></h3>
+<p>For all those <code>vim</code> users out there, this one can save some time. Using <code>vim</code> we can edit files over <code>scp</code> with one command. Using this method creates a file in <code>/tmp</code> on the local system and then copies it back once we write the file in <code>vim</code>.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ vim scp://user@remoteserver//etc/hosts
+</code></pre></div>
+<p>Note the format is slightly different to regular <code>scp</code>. After the host we have a double <code>//</code>. This references the absolute path. A single slash will have a path that is relative to the users home directory.</p>
+<div class="highlight"><pre><span></span><code>**warning** (netrw) cannot determine method (format: protocol://[user@]hostname[:port]/[path])
+</code></pre></div>
+<p>If you see this error, double check the format of your command. It usually means there is a syntax error.</p>
+<h3 id="16-mount-remote-ssh-location-as-local-folder-with-sshfs">16. Mount remote SSH location as local folder with SSHFS<a class="headerlink" href="#16-mount-remote-ssh-location-as-local-folder-with-sshfs" title="Permanent link">&para;</a></h3>
+<p>Using <code>sshfs</code> - an <code>ssh</code> filesystem client, we can mount a local directory to a remote location with all file interaction taking place over the encrypted <code>ssh</code> session.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ apt install sshfs
+</code></pre></div>
+<p>On Ubuntu and Debian based system we install the <code>sshfs</code> package and then mount the remote location.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ sshfs user@remoteserver:/media/data ~/data/
+</code></pre></div>
+<h3 id="17-ssh-multiplex-using-controlpath">17. SSH Multiplex using ControlPath<a class="headerlink" href="#17-ssh-multiplex-using-controlpath" title="Permanent link">&para;</a></h3>
+<p>By default when you have an existing connection to a remote server with <code>ssh</code>, a second connection using <code>ssh</code> or <code>scp</code> will establish a new session with the overhead of authentication. Using the <code>ControlPath</code> options we can have the existing session be used for all subsequent connections. This will speed things up significantly. It is noticeable even on a local network but even more so when connecting to remote resources.</p>
+<div class="highlight"><pre><span></span><code>Host remoteserver
+        HostName remoteserver.example.org
+        ControlMaster auto
+        ControlPath ~/.ssh/control/%r@%h:%p
+        ControlPersist 10m
+</code></pre></div>
+<p><strong>ControlPath</strong> denotes a socket that is checked by new connections to see if there is an existing <code>ssh</code> session that can be used. The <strong>ControlPersist</strong> option above means even after you exit the terminal, the existing session will remain open for 10 minutes, so if you were to reconnect within that time you would use that existing socket. See the <code>ssh_config</code> <code>man</code> page for more information.</p>
+<h3 id="18-stream-video-over-ssh-using-vlc-sftp">18. Stream Video over SSH using VLC + SFTP<a class="headerlink" href="#18-stream-video-over-ssh-using-vlc-sftp" title="Permanent link">&para;</a></h3>
+<p>Long time users of <code>ssh</code> and <code>vlc</code> (Video Lan Client) are not always of aware of this handy option for when you need to watch video over the network. Using the <code>vlc</code> option to File | Open Network Stream one can enter the location as a an <code>sftp://</code> location. A prompt will appear for authentication details if password is required.</p>
+<div class="highlight"><pre><span></span><code>sftp://remoteserver//media/uploads/myvideo.mkv
+</code></pre></div>
+<h3 id="19-two-factor-authentication">19. Two Factor Authentication<a class="headerlink" href="#19-two-factor-authentication" title="Permanent link">&para;</a></h3>
+<p>Most readers will understand the value in using <strong>Two Factor Authentication</strong>, the same benefits that apply to your banking or Google Account can be applied to your SSH service.</p>
+<p>Of course <code>ssh</code> comes with a form of Two Factor capability included, that being a passphrase and an SSH key. An advantage of using a hardware based token or the <a href="https://hackertarget.com/ssh-two-factor-google-authenticator/">Google Authenticator App</a> is the fact that they are generally coming from a second physical device.</p>
+<p>See our 8 minute guide to getting started with <a href="https://hackertarget.com/ssh-two-factor-google-authenticator/">Google Authenticator and SSH</a>.</p>
+<h3 id="20-bouncing-through-jump-hosts-with-ssh-and-j">20. Bouncing through jump hosts with ssh and -J<a class="headerlink" href="#20-bouncing-through-jump-hosts-with-ssh-and-j" title="Permanent link">&para;</a></h3>
+<p>When network segmentation means you are jumping through multiple <code>ssh</code> hosts to get to a final destination network or host, this jump host shortcut might be just what you need. <strong>Requires OpenSSH version 7.3+</strong>.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ssh -J host1,host2,host3 user@host4.internal
+</code></pre></div>
+<p>A key thing to understand here is that this is not the same as <code>ssh host1</code> then <code>user@host1:~$ ssh host2</code>, the <code>-J</code> jump parameter uses forwarding trickery so that the <strong>localhost</strong> is establishing the session with the next host in the chain. So our <strong>localhost</strong> is authenticating with <strong>host4</strong> in the above example; meaning our <strong>localhost keys</strong> are used and the session from <strong>localhost</strong> to <strong>host4</strong> is <strong>encrypted end to end</strong>.</p>
+<p>To use this ability in the <code>ssh_config</code> use the <strong>ProxyJump</strong> configuration option. If you regularly have to jump through multiple hosts; use the config file and your alias to <code>host4</code> will save you a lot of time.</p>
+<h3 id="21-block-ssh-brute-force-attempts-with-iptables">21. Block SSH Brute Force Attempts with iptables<a class="headerlink" href="#21-block-ssh-brute-force-attempts-with-iptables" title="Permanent link">&para;</a></h3>
+<p>Anyone who has managed an <strong>SSH</strong> service on the Internet, and viewed the logs will be aware of the amount of SSH <strong>brute force attempts</strong> that take place every hour of every day. An immediate way to reduce the noise in your logs is to move SSH to a port other than <strong>22</strong>. Make the change in the <code>sshd_config</code> file using the <strong>Port ##</strong> configuration option.</p>
+<p>Using <code>iptables</code> we can also block attempts to connect to the port from sources that reach a certain threshold. A way to do this is to use <a href="https://hackertarget.com/enable-ossec-active-response/">OSSEC</a>, as this not only blocks SSH but will also perform a bunch of other host based intrusion detection functions (HIDS).</p>
+<h3 id="22-modify-port-forwarding-within-a-session-with-c">22. Modify Port Forwarding within a session with ~C<a class="headerlink" href="#22-modify-port-forwarding-within-a-session-with-c" title="Permanent link">&para;</a></h3>
+<p>And our final <code>ssh</code> example is for modifying port forwarding on the fly within an existing <code>ssh</code> session. Picture this example scenario. You are deep in a network; perhaps you have jumped through half a dozen jump hosts and need a local port on your workstation forwarded to Microsoft SMB on the old Windows 2003 system you spotted (ms08-67 anyone?).</p>
+<p>After hitting <code>enter</code> try typing <code>~C</code> in your terminal. This a control escape sequence within the session that allows to make changes to the existing connection.</p>
+<div class="highlight"><pre><span></span><code>localhost:~$ ~C
+ssh&gt; -h
+Commands:
+      -L[bind_address:]port:host:hostport    Request local forward
+      -R[bind_address:]port:host:hostport    Request remote forward
+      -D[bind_address:]port                  Request dynamic forward
+      -KL[bind_address:]port                 Cancel local forward
+      -KR[bind_address:]port                 Cancel remote forward
+      -KD[bind_address:]port                 Cancel dynamic forward
+ssh&gt; -L 1445:remote-win2k3:445
+Forwarding port.
+</code></pre></div>
+<p>You can see here we have forwarded our local port 1445 to the <strong>Windows 2003</strong> host we found on the internal network. Now launch <code>msfconsole</code> and we are good to go (assuming you were planning on <strong>exploiting that host</strong>).</p>
+<h2 id="wrapping-up">Wrapping Up<a class="headerlink" href="#wrapping-up" title="Permanent link">&para;</a></h2>
+<p>These <code>ssh</code> examples, tips and commands are intended to give you a starting point; additional detail on each of the commands and capabilities is available using the <code>man</code> pages (<code>man ssh</code>, <code>man ssh_config</code>, <code>man sshd_config</code>).</p>
+<p>Being able to reach out and run commands on systems anywhere in the world has always fascinated me. By developing your skills with tools such as <code>ssh</code> you will become more productive and effective at whatever game you play.</p>
+<p>Thanks for reading and if you have any comments or suggestions please drop me a note using the contact form. Have fun!</p>
+<p>Know Your Attack Surface</p>
+<p><a href="https://hackertarget.com/use-cases/">USE CASES &amp; MORE INFO</a></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  回到页面顶部
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; wgzhao
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/01mlsx" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/wgzhao" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8M97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.indexes", "navigation.expand", "content.code.annotate", "content.tabs.link", "navigation.top", "navigation.tabs", "navigation.tabs.sticky", "navigation.sections", "navigation.tracking", "search.highlight", "search.share", "search.suggest", "header.autohide", "announce.dismiss", "toc.integrate"], "search": "../../assets/javascripts/workers/search.f8cc74c7.min.js", "translations": {"clipboard.copied": "\u5df2\u590d\u5236", "clipboard.copy": "\u590d\u5236", "search.result.more.one": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.more.other": "\u5728\u8be5\u9875\u4e0a\u8fd8\u6709 # \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.none": "\u6ca1\u6709\u627e\u5230\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.one": "\u627e\u5230 1 \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.other": "# \u4e2a\u7b26\u5408\u6761\u4ef6\u7684\u7ed3\u679c", "search.result.placeholder": "\u952e\u5165\u4ee5\u5f00\u59cb\u641c\u7d22", "search.result.term.missing": "\u7f3a\u5c11", "select.version": "\u9009\u62e9\u5f53\u524d\u7248\u672c"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.5090c770.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      
+        <script src="https://cdn.jsdelivr.net/gh/rod2ik/cdn@main/mkdocs/javascripts/mkdocs-graphviz.js"></script>
+      
+    
+  </body>
+</html>
